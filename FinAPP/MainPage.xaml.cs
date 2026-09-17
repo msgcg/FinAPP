@@ -198,6 +198,13 @@ public partial class MainPage : ContentPage
     {
         if (view == null) return;
         try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+
+        // Автопроигрывание 1 такта анимации Финни при любом нажатии на кнопку интерфейса
+        if (view != PetView)
+        {
+            PetView?.ReplayCurrent();
+        }
+
         await view.ScaleToAsync(0.93, 60, Easing.CubicOut);
         await view.ScaleToAsync(1.0, 60, Easing.CubicIn);
     }
@@ -354,30 +361,36 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void OnBudgetObligPlus(object? sender, EventArgs e)
+    private async void OnBudgetObligPlus(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         if (_tempOblig + 10 <= PeriodIncome) { _tempOblig += 10; UpdateBudgetModalLabels(); }
     }
-    private void OnBudgetObligMinus(object? sender, EventArgs e)
+    private async void OnBudgetObligMinus(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         if (_tempOblig - 10 >= 0) { _tempOblig -= 10; UpdateBudgetModalLabels(); }
     }
 
-    private void OnBudgetDiscPlus(object? sender, EventArgs e)
+    private async void OnBudgetDiscPlus(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         if (_tempDisc + 10 <= PeriodIncome) { _tempDisc += 10; UpdateBudgetModalLabels(); }
     }
-    private void OnBudgetDiscMinus(object? sender, EventArgs e)
+    private async void OnBudgetDiscMinus(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         if (_tempDisc - 10 >= 0) { _tempDisc -= 10; UpdateBudgetModalLabels(); }
     }
 
-    private void OnBudgetSavPlus(object? sender, EventArgs e)
+    private async void OnBudgetSavPlus(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         if (_tempSav + 10 <= PeriodIncome) { _tempSav += 10; UpdateBudgetModalLabels(); }
     }
-    private void OnBudgetSavMinus(object? sender, EventArgs e)
+    private async void OnBudgetSavMinus(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         if (_tempSav - 10 >= 0) { _tempSav -= 10; UpdateBudgetModalLabels(); }
     }
 
@@ -403,8 +416,9 @@ public partial class MainPage : ContentPage
         await CloseModal();
     }
 
-    private void OnShowPlanFactClicked(object? sender, EventArgs e)
+    private async void OnShowPlanFactClicked(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         var p = _engine.Profile;
         string report = $"Сравнение План vs Факт:\n\n" +
             $"Обязательные: План {_tempOblig} монет | Факт {p.SpentObligatory} монет\n" +
@@ -543,12 +557,6 @@ public partial class MainPage : ContentPage
             Grid.SetColumnSpan(BtnTaskResultNext, 2);
             LblTaskResultNext.Text = "Следующее задание ➜";
             BtnTaskResultNext.BackgroundColor = Color.FromArgb("#10B981");
-
-            // Анимация гордого Финни
-            string gif = $"{stagePrefix}_proud.gif";
-            string html = await FinnyPetView.GetOrLoadHtmlAsync(gif);
-            var stampedHtml = html.Replace("</html>", $"<!-- {DateTime.UtcNow.Ticks} --></html>");
-            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = stampedHtml };
         }
         else
         {
@@ -581,21 +589,28 @@ public partial class MainPage : ContentPage
             Grid.SetColumnSpan(BtnTaskResultNext, 1);
             LblTaskResultNext.Text = "Дальше ➜";
             BtnTaskResultNext.BackgroundColor = Color.FromArgb("#6B7280");
-
-            // Анимация расстроенного Финни (подлинный плачущий котик со слезой)
-            string gif = $"{stagePrefix}_sad.gif";
-            string html = await FinnyPetView.GetOrLoadHtmlAsync(gif);
-            var stampedHtml = html.Replace("</html>", $"<!-- {DateTime.UtcNow.Ticks} --></html>");
-            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = stampedHtml };
         }
 
+        // 1. Делаем контейнер видимым, чтобы нативный Android WebView инициализировался
         ModalTaskResult.Opacity = 0;
         ModalTaskResult.IsVisible = true;
         TaskResultCard.Scale = 0.88;
+        WvTaskResultFinny.Scale = 0.85;
 
+        // 2. Получаем СВЕЖИЙ HTML с уникальным Comment Extension для гарантированного автопроигрывания 1 такта
+        string gif = success ? $"{stagePrefix}_proud.gif" : $"{stagePrefix}_sad.gif";
+        string html = await FinnyPetView.GetFreshHtmlAsync(gif);
+        if (!string.IsNullOrEmpty(html))
+        {
+            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
+            FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny);
+        }
+
+        // 3. Плавное появление с подскоком персонажа
         var f = ModalTaskResult.FadeToAsync(1.0, 160, Easing.CubicOut);
         var s = TaskResultCard.ScaleToAsync(1.0, 160, Easing.CubicOut);
-        await Task.WhenAll(f, s);
+        var w = WvTaskResultFinny.ScaleToAsync(1.0, 180, Easing.CubicOut);
+        await Task.WhenAll(f, s, w);
     }
 
     private async void OnTaskResultTryAgainClicked(object? sender, EventArgs e)
@@ -605,6 +620,7 @@ public partial class MainPage : ContentPage
         var s = TaskResultCard.ScaleToAsync(0.88, 120, Easing.CubicIn);
         await Task.WhenAll(f, s);
         ModalTaskResult.IsVisible = false;
+        WvTaskResultFinny.Source = null;
     }
 
     private async void OnTaskResultNextClicked(object? sender, EventArgs e)
@@ -614,13 +630,15 @@ public partial class MainPage : ContentPage
         var s = TaskResultCard.ScaleToAsync(0.88, 120, Easing.CubicIn);
         await Task.WhenAll(f, s);
         ModalTaskResult.IsVisible = false;
+        WvTaskResultFinny.Source = null;
 
         _currentTaskIndex = (_currentTaskIndex + 1) % _tasks.Count;
         RenderCurrentTask();
     }
 
-    private void OnNextTaskClicked(object? sender, EventArgs e)
+    private async void OnNextTaskClicked(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         _currentTaskIndex = (_currentTaskIndex + 1) % _tasks.Count;
         RenderCurrentTask();
     }
@@ -636,14 +654,16 @@ public partial class MainPage : ContentPage
         await ShowModal("Магазин заботы о Финни", PanelShop);
     }
 
-    private void OnShopTabObligClicked(object? sender, EventArgs e)
+    private async void OnShopTabObligClicked(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         _isShopObligCategory = true;
         RenderShopCategoryUI();
     }
 
-    private void OnShopTabDiscClicked(object? sender, EventArgs e)
+    private async void OnShopTabDiscClicked(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         _isShopObligCategory = false;
         RenderShopCategoryUI();
     }
@@ -979,14 +999,16 @@ public partial class MainPage : ContentPage
         await ShowModal("Перевод средств", PanelTransfer);
     }
 
-    private void OnTransferModeSavingsClicked(object? sender, EventArgs e)
+    private async void OnTransferModeSavingsClicked(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         _isTransferToSavings = true;
         UpdateTransferUI();
     }
 
-    private void OnTransferModeWalletClicked(object? sender, EventArgs e)
+    private async void OnTransferModeWalletClicked(object? sender, EventArgs e)
     {
+        if (sender is VisualElement v) await AnimateTap(v);
         _isTransferToSavings = false;
         UpdateTransferUI();
     }

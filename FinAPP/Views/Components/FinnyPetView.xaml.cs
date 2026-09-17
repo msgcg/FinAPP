@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FinAPP.Models;
+using FinAPP.Services;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
@@ -43,8 +44,8 @@ public partial class FinnyPetView : ContentView
     // Делегат для обновления текста в облачке мыслей на главном экране
     public Action<string>? SpeechTextChanged { get; set; }
 
-    // Потокобезопасный кэш HTML с Base64 данными анимаций для мгновенного переключения без лагов
-    private static readonly ConcurrentDictionary<string, string> s_htmlCache = new();
+    // Потокобезопасный кэш бинарных байтов GIF для мгновенной генерации уникальных тактов в памяти
+    private static readonly ConcurrentDictionary<string, byte[]> s_gifBytesCache = new();
 
     public FinnyPetView()
     {
@@ -136,7 +137,7 @@ public partial class FinnyPetView : ContentView
             foreach (var action in actions)
             {
                 var gif = $"{_currentStagePrefix}_{action}.gif";
-                await GetOrLoadHtmlAsync(gif);
+                await GetRawGifBytesAsync(gif);
             }
         }
         catch { }
@@ -249,12 +250,35 @@ public partial class FinnyPetView : ContentView
 
     public void PlayAction(string action)
     {
-        ApplyAnimation($"{_currentStagePrefix}_{action}.gif", force: true);
+        _waveCts?.Cancel();
+        _waveCts?.Dispose();
+        _waveCts = new CancellationTokenSource();
+        var ct = _waveCts.Token;
+
+        _ = LoadAndRenderGifAsync($"{_currentStagePrefix}_{action}.gif");
+
+        // После 1 такта возвращаем текущую базовую эмоцию котика
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(1800, ct);
+                if (!ct.IsCancellationRequested)
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        _ = LoadAndRenderGifAsync(_currentEmotionGif);
+                    });
+                }
+            }
+            catch { }
+        });
     }
 
     public void ReplayCurrent()
     {
-        ApplyAnimation(_currentEmotionGif, force: true);
+        if (_isReacting) return;
+        _ = LoadAndRenderGifAsync(_currentEmotionGif);
     }
 
     private void ApplyAnimation(string gifName, bool force = false)
@@ -269,15 +293,13 @@ public partial class FinnyPetView : ContentView
     {
         try
         {
-            var html = await GetOrLoadHtmlAsync(gifName);
+            var html = await GetFreshHtmlAsync(gifName);
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 if (!string.IsNullOrEmpty(html))
                 {
-                    // Adding a timestamp ensures WebView parses fresh HTML and plays 1 complete animation cycle
-                    var stampedHtml = html.Replace("</html>", $"<!-- {DateTime.UtcNow.Ticks} --></html>");
-                    PetWebView.Source = new HtmlWebViewSource { Html = stampedHtml };
+                    PetWebView.Source = new HtmlWebViewSource { Html = html };
                     PetWebView.IsVisible = true;
                     ImgPetFallback.IsVisible = false;
                     ConfigurePlatformWebView(PetWebView);
@@ -303,11 +325,11 @@ public partial class FinnyPetView : ContentView
         }
     }
 
-    public static async Task<string> GetOrLoadHtmlAsync(string gifName)
+    public static async Task<byte[]?> GetRawGifBytesAsync(string gifName)
     {
-        if (s_htmlCache.TryGetValue(gifName, out var cachedHtml))
+        if (s_gifBytesCache.TryGetValue(gifName, out var cachedBytes))
         {
-            return cachedHtml;
+            return cachedBytes;
         }
 
         try
@@ -315,63 +337,31 @@ public partial class FinnyPetView : ContentView
             using var stream = await FileSystem.OpenAppPackageFileAsync(gifName);
             using var ms = new MemoryStream();
             await stream.CopyToAsync(ms);
-            var base64 = Convert.ToBase64String(ms.ToArray());
-
-            // Важно: justify-content: flex-start прижимает Финни к левому краю кадра,
-            // благодаря чему левый срез хвоста идеально совпадает с границей экрана и выглядит естественно!
-            var html = $@"<!DOCTYPE html>
-<html>
-<head>
-    <meta charset=""utf-8"">
-    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
-    <style>
-        * {{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            background: transparent !important;
-            background-color: transparent !important;
-        }}
-        html, body {{
-            width: 100%;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background: transparent !important;
-            background-color: transparent !important;
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            user-select: none;
-            -webkit-user-select: none;
-        }}
-        img {{
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            display: block;
-            margin-left: 0;
-            pointer-events: none;
-        }}
-    </style>
-</head>
-<body>
-    <img src=""data:image/gif;base64,{base64}"" alt=""Finny"" />
-</body>
-</html>";
-
-            s_htmlCache[gifName] = html;
-            return html;
+            var bytes = ms.ToArray();
+            s_gifBytesCache[gifName] = bytes;
+            return bytes;
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error loading {gifName}: {ex.Message}");
-            return string.Empty;
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error loading raw {gifName}: {ex.Message}");
+            return null;
         }
     }
+
+    public static async Task<string> GetFreshHtmlAsync(string gifName)
+    {
+        var raw = await GetRawGifBytesAsync(gifName);
+        if (raw == null || raw.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var uniqueBytes = GifAnimationHelper.CreateUniqueGifBytes(raw);
+        var base64 = Convert.ToBase64String(uniqueBytes);
+        return GifAnimationHelper.GenerateFinnyHtml(base64);
+    }
+
+    public static Task<string> GetOrLoadHtmlAsync(string gifName) => GetFreshHtmlAsync(gifName);
 
     public void SetSpeechText(string text)
     {
