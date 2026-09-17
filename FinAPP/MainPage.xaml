@@ -742,17 +742,25 @@
 
                         <!-- A. МОДАЛКА: ПЛАН БЮДЖЕТА (3 КОНВЕРТА) -->
                         <VerticalStackLayout x:Name="PanelBudget" Spacing="12" IsVisible="False">
-                            <Border BackgroundColor="#F3E8FF" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="12,8">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                                        <Border BackgroundColor="#520978" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
-                                            <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                        </Border>
-                                        <Label x:Name="LblBudgetIncome" Text="Доход: 500 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" VerticalOptions="Center"/>
-                                    </HorizontalStackLayout>
-                                    <Label x:Name="LblBudgetRemaining" Grid.Column="1" Text="Осталось: 0 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#FF0053" VerticalOptions="Center"/>
-                                </Grid>
-                            </Border>
+                            <!-- Адаптивная шапка дохода и остатка: раздельные карточки (гарантия от наложения) -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Border BackgroundColor="#F3E8FF" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="ДОХОД" FontFamily="MontserratBold" FontSize="10" TextColor="#6B7280"/>
+                                        <HorizontalStackLayout Spacing="5" VerticalOptions="Center">
+                                            <Image Source="ic_stat_balance.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center"/>
+                                            <Label x:Name="LblBudgetIncome" Text="500 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border x:Name="BorderBudgetRemaining" Grid.Column="1" BackgroundColor="#FFE4E6" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="10,8">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label x:Name="LblBudgetRemainingTitle" Text="ОСТАЛОСЬ" FontFamily="MontserratBold" FontSize="10" TextColor="#6B7280"/>
+                                        <Label x:Name="LblBudgetRemaining" Text="0 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#FF0053" VerticalOptions="Center"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
 
                             <!-- Круговая диаграмма структуры бюджета (Donut Chart) -->
                             <Border BackgroundColor="#F8F7FD" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="10,8">
@@ -851,16 +859,81 @@
 
                             <Label Text="Совет Финни: Правило 50/30/20 помогает копить без стресса!" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280" HorizontalTextAlignment="Center"/>
 
+                            <!-- Плашка обратной связи / подтверждения плана -->
+                            <Border x:Name="BorderBudgetAlert"
+                                    IsVisible="False"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 12"
+                                    Padding="12,10">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
+                                    <Image x:Name="ImgBudgetAlert" Source="ic_stat_balance.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"/>
+                                    <Label x:Name="LblBudgetAlertText" Grid.Column="1" FontFamily="MontserratBold" FontSize="12" LineBreakMode="WordWrap" VerticalOptions="Center"/>
+                                </Grid>
+                            </Border>
+
                             <!-- Кнопка утвердить план -->
-                            <Border BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 14" HeightRequest="48" InputTransparent="False">
-                                <Label Text="Утвердить план бюджета" TextColor="White" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                            <Border x:Name="BtnSaveBudgetPlan" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 14" HeightRequest="48" InputTransparent="False">
+                                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image Source="ic_shield.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                    <Label x:Name="LblSaveBudgetPlan" Text="Утвердить план бюджета" TextColor="White" FontFamily="MontserratBold" FontSize="14" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
                                 <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSaveBudgetPlanClicked"/></Border.GestureRecognizers>
                             </Border>
 
                             <!-- Кнопка сравнить план и факт -->
                             <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 14" HeightRequest="44" InputTransparent="False">
-                                <Label Text="Сравнить План и Факт" TextColor="#520978" FontFamily="MontserratBold" FontSize="13" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image Source="ic_stat_balance.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                    <Label x:Name="LblComparePlanFactButton" Text="Сравнить План и Факт" TextColor="#520978" FontFamily="MontserratBold" FontSize="13" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
                                 <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShowPlanFactClicked"/></Border.GestureRecognizers>
+                            </Border>
+
+                            <!-- Интерактивная карточка сравнения: План vs Факт -->
+                            <Border x:Name="BorderPlanFactCard"
+                                    IsVisible="False"
+                                    BackgroundColor="#F8F7FD"
+                                    Stroke="#8A83D1"
+                                    StrokeThickness="1.5"
+                                    StrokeShape="RoundRectangle 14"
+                                    Padding="12,10">
+                                <VerticalStackLayout Spacing="8">
+                                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                        <Label Text="Сравнение: План vs Факт" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" VerticalOptions="Center"/>
+                                        <Border Grid.Column="1" BackgroundColor="#EDE9FE" StrokeShape="RoundRectangle 10" Padding="8,3" VerticalOptions="Center">
+                                            <Label x:Name="LblPlanFactStatusBadge" Text="В норме" FontFamily="MontserratBold" FontSize="10" TextColor="#520978"/>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- Строка 1: Обязательные -->
+                                    <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <BoxView Color="#10B981" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Text="Обязательные:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
+                                            <Label x:Name="LblPlanFactOblig" Grid.Column="2" Text="250 / 120 м." FontFamily="MontserratBold" FontSize="11" TextColor="#166534" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Строка 2: Желания -->
+                                    <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <BoxView Color="#8B5CF6" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Text="Желания:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
+                                            <Label x:Name="LblPlanFactDisc" Grid.Column="2" Text="150 / 80 м." FontFamily="MontserratBold" FontSize="11" TextColor="#9D174D" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Строка 3: Копилка -->
+                                    <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                                            <BoxView Color="#F59E0B" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Text="В копилку:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
+                                            <Label x:Name="LblPlanFactSav" Grid.Column="2" Text="100 / 100 м." FontFamily="MontserratBold" FontSize="11" TextColor="#1E40AF" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </Border>
+
+                                    <Label x:Name="LblPlanFactAdvice" Text="Совет: Отличная дисциплина! Траты не превышают план." FontFamily="MontserratMedium" FontSize="11" TextColor="#4B5563" LineBreakMode="WordWrap"/>
+                                </VerticalStackLayout>
                             </Border>
                         </VerticalStackLayout>
 
@@ -1196,16 +1269,7 @@
                                     </VerticalStackLayout>
                                 </Border>
 
-                                <!-- Лицензии сторонних ресурсов -->
-                                <Border BackgroundColor="#F3F0FA" Stroke="#D8D2E8" StrokeThickness="1" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
-                                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
-                                        <Image Source="ic_stat_balance.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
-                                        <Label Text="Лицензии сторонних ресурсов (ГОСТ/ТЗ)" TextColor="#520978" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
-                                    </HorizontalStackLayout>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShowLicensesClicked"/></Border.GestureRecognizers>
-                                </Border>
-
-                                <!-- Управление PIN-кодом взрослого -->
+                                 <!-- Управление PIN-кодом взрослого -->
                                 <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
                                     <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
                                         <Image Source="ic_shield.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
@@ -1597,71 +1661,6 @@
                                 </VerticalStackLayout>
                             </Border>
 
-                            <!-- Кнопка перехода к просмотру лицензий -->
-                            <Border BackgroundColor="#F3F0FA" Stroke="#D8D2E8" StrokeThickness="1" StrokeShape="RoundRectangle 14" HeightRequest="48" InputTransparent="False">
-                                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
-                                    <Image Source="ic_stat_balance.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
-                                    <Label Text="Лицензии сторонних ресурсов (ГОСТ/ТЗ)" TextColor="#520978" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
-                                </HorizontalStackLayout>
-                                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShowLicensesClicked"/></Border.GestureRecognizers>
-                            </Border>
-                        </VerticalStackLayout>
-
-                        <!-- K. МОДАЛКА: ВЕДОМОСТЬ ЛИЦЕНЗИЙ И СТОРОННИХ РЕСУРСОВ (ГОСТ 7.32/54593) -->
-                        <VerticalStackLayout x:Name="PanelLicenses" Spacing="10" IsVisible="False">
-                            <Label Text="Ведомость покупных изделий и открытых лицензий по ГОСТ 7.32-2017 / ГОСТ Р 54593-2011"
-                                   FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280" LineBreakMode="WordWrap"/>
-
-                            <ScrollView MaximumHeightRequest="360">
-                                <VerticalStackLayout Spacing="10">
-                                    <!-- 1. ЗвукиПро -->
-                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
-                                        <VerticalStackLayout Spacing="4">
-                                            <Label Text="1. Звуковые эффекты и музыка (ЗвукиПро)" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
-                                            <Label Text="Лицензия: Royalty-Free Free License with Attribution" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
-                                            <Label Text="Источник: zvukipro.com (звуки покупок, оплаты, реакций маскота и фоновая музыка)." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
-                                            <Label Text="Файлы: sfx_money, sfx_success, sfx_error, sfx_meow, sfx_purr, bgm_idle." FontFamily="MontserratMedium" FontSize="10" TextColor="#6B7280"/>
-                                        </VerticalStackLayout>
-                                    </Border>
-
-                                    <!-- 2. Montserrat -->
-                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
-                                        <VerticalStackLayout Spacing="4">
-                                            <Label Text="2. Шрифт Montserrat" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
-                                            <Label Text="Лицензия: SIL Open Font License, Version 1.1 (OFL-1.1)" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
-                                            <Label Text="Авторы: Julieta Ulanovsky, Sol Matas, Juan Pablo del Peral. Свободное использование и встраивание." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
-                                        </VerticalStackLayout>
-                                    </Border>
-
-                                    <!-- 3. Open Sans -->
-                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
-                                        <VerticalStackLayout Spacing="4">
-                                            <Label Text="3. Шрифт Open Sans" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
-                                            <Label Text="Лицензия: Apache License, Version 2.0" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
-                                            <Label Text="Автор: Steve Matteson. Текстовый шрифт интерфейса." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
-                                        </VerticalStackLayout>
-                                    </Border>
-
-                                    <!-- 4. .NET MAUI & AndroidX -->
-                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
-                                        <VerticalStackLayout Spacing="4">
-                                            <Label Text="4. Фреймворк и системные библиотеки" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
-                                            <Label Text="Microsoft .NET MAUI: MIT License (.NET Foundation)" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
-                                            <Label Text="AndroidX Support Libraries: Apache License 2.0 (Google LLC)" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
-                                            <Label Text="xUnit.net Testing Framework: Apache License 2.0" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
-                                        </VerticalStackLayout>
-                                    </Border>
-
-                                    <!-- 5. Маскот Финни -->
-                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
-                                        <VerticalStackLayout Spacing="4">
-                                            <Label Text="5. Маскот Финни и графические материалы" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
-                                            <Label Text="Оригинальные скетчи художницы команды + Google Generative AI" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
-                                            <Label Text="Исключительные авторские права принадлежат команде FinAPP. Сторонние эмодзи исключены." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
-                                        </VerticalStackLayout>
-                                    </Border>
-                                </VerticalStackLayout>
-                            </ScrollView>
                         </VerticalStackLayout>
 
                     </VerticalStackLayout>

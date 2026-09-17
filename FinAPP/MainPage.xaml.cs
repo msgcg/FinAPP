@@ -243,10 +243,8 @@ public partial class MainPage : ContentPage
         await view.ScaleToAsync(1.0, 60, Easing.CubicIn);
     }
 
-    private async Task ShowModal(string title, VisualElement activePanel)
+    private void HideAllPanels()
     {
-        LblModalHeader.Text = title;
-
         PanelBudget.IsVisible = false;
         PanelTasks.IsVisible = false;
         PanelShop.IsVisible = false;
@@ -256,6 +254,13 @@ public partial class MainPage : ContentPage
         PanelCustomizer.IsVisible = false;
         PanelTransfer.IsVisible = false;
         PanelAnalytics.IsVisible = false;
+        PanelAudioSettings.IsVisible = false;
+    }
+
+    private async Task ShowModal(string title, VisualElement activePanel)
+    {
+        LblModalHeader.Text = title;
+        HideAllPanels();
 
         activePanel.IsVisible = true;
         ModalOverlay.Opacity = 0;
@@ -273,6 +278,7 @@ public partial class MainPage : ContentPage
         var s = ModalCard.ScaleToAsync(0.92, 130, Easing.CubicIn);
         await Task.WhenAll(f, s);
         ModalOverlay.IsVisible = false;
+        HideAllPanels();
     }
 
     private async void OnCloseModalClicked(object? sender, EventArgs e)
@@ -466,13 +472,29 @@ public partial class MainPage : ContentPage
         _tempOblig = p.PlannedObligatory > 0 ? p.PlannedObligatory : 250;
         _tempDisc = p.PlannedDiscretionary > 0 ? p.PlannedDiscretionary : 150;
         _tempSav = p.PlannedSavings > 0 ? p.PlannedSavings : 100;
+
+        BorderPlanFactCard.IsVisible = false;
+        BorderBudgetAlert.IsVisible = false;
+        LblComparePlanFactButton.Text = "Сравнить План и Факт";
+
+        if (p.IsPlanConfirmed)
+        {
+            LblSaveBudgetPlan.Text = "Обновить план бюджета";
+            BtnSaveBudgetPlan.BackgroundColor = Color.FromArgb("#520978");
+        }
+        else
+        {
+            LblSaveBudgetPlan.Text = "Утвердить план бюджета";
+            BtnSaveBudgetPlan.BackgroundColor = Color.FromArgb("#520978");
+        }
+
         UpdateBudgetModalLabels();
         await ShowModal($"Бюджет периода #{p.CurrentPeriod}", PanelBudget);
     }
 
     private void UpdateBudgetModalLabels()
     {
-        LblBudgetIncome.Text = $"Доход: {PeriodIncome} монет";
+        LblBudgetIncome.Text = $"{PeriodIncome} монет";
         LblBudgetObligVal.Text = $"{_tempOblig} монет";
         LblBudgetDiscVal.Text = $"{_tempDisc} монет";
         LblBudgetSavVal.Text = $"{_tempSav} монет";
@@ -481,18 +503,24 @@ public partial class MainPage : ContentPage
         int diff = PeriodIncome - sum;
         if (diff == 0)
         {
-            LblBudgetRemaining.Text = "Распределено 100%";
-            LblBudgetRemaining.TextColor = Color.FromArgb("#10B981");
+            LblBudgetRemainingTitle.Text = "БАЛАНС";
+            LblBudgetRemaining.Text = "100% сошлось ✓";
+            LblBudgetRemaining.TextColor = Color.FromArgb("#059669");
+            BorderBudgetRemaining.BackgroundColor = Color.FromArgb("#DCFCE7");
         }
         else if (diff > 0)
         {
-            LblBudgetRemaining.Text = $"Осталось: {diff} монет";
-            LblBudgetRemaining.TextColor = Color.FromArgb("#FF0053");
+            LblBudgetRemainingTitle.Text = "ОСТАЛОСЬ";
+            LblBudgetRemaining.Text = $"{diff} монет";
+            LblBudgetRemaining.TextColor = Color.FromArgb("#520978");
+            BorderBudgetRemaining.BackgroundColor = Color.FromArgb("#EBE9F8");
         }
         else
         {
-            LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} монет";
-            LblBudgetRemaining.TextColor = Color.FromArgb("#EF4444");
+            LblBudgetRemainingTitle.Text = "ПЕРЕРАСХОД";
+            LblBudgetRemaining.Text = $"-{Math.Abs(diff)} монет";
+            LblBudgetRemaining.TextColor = Color.FromArgb("#DC2626");
+            BorderBudgetRemaining.BackgroundColor = Color.FromArgb("#FEE2E2");
         }
 
         // Обновляем визуальную круговую диаграмму (ТЗ п. 2.5.5) и легенду
@@ -545,6 +573,13 @@ public partial class MainPage : ContentPage
         int total = _tempOblig + _tempDisc + _tempSav;
         if (total > PeriodIncome)
         {
+            AudioService.Instance.PlaySfx("sfx_error");
+            BorderBudgetAlert.BackgroundColor = Color.FromArgb("#FEE2E2");
+            BorderBudgetAlert.Stroke = Color.FromArgb("#F87171");
+            ImgBudgetAlert.Source = "ic_stat_mood.png";
+            LblBudgetAlertText.Text = $"Мяу! План ({total} м.) превышает доход ({PeriodIncome} м.)! Уменьши конверты.";
+            LblBudgetAlertText.TextColor = Color.FromArgb("#991B1B");
+            BorderBudgetAlert.IsVisible = true;
             PetView.SetSpeechText("Мяу! План превышает доход! Уменьши одну из категорий.");
             return;
         }
@@ -555,21 +590,68 @@ public partial class MainPage : ContentPage
         p.PlannedSavings = _tempSav;
         p.IsPlanConfirmed = true;
 
+        AudioService.Instance.PlaySfx("sfx_success");
+        BorderBudgetAlert.BackgroundColor = Color.FromArgb("#DCFCE7");
+        BorderBudgetAlert.Stroke = Color.FromArgb("#4ADE80");
+        ImgBudgetAlert.Source = "ic_shield.png";
+        LblBudgetAlertText.Text = "План бюджета успешно утверждён! Следуй распределению конвертов.";
+        LblBudgetAlertText.TextColor = Color.FromArgb("#166534");
+        BorderBudgetAlert.IsVisible = true;
+
+        LblSaveBudgetPlan.Text = "План утверждён ✓";
+        BtnSaveBudgetPlan.BackgroundColor = Color.FromArgb("#059669");
+
+        PetView.PlayAction("proud");
+        PetView.SetSpeechText("Отличный план! Теперь совершай покупки согласно конвертам.");
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Отличный план! Теперь совершай покупки согласно конвертам.");
+
+        // Задержка 800мс, чтобы ребенок увидел подтверждение в окне, затем плавное закрытие
+        await Task.Delay(800);
         await CloseModal();
     }
 
     private async void OnShowPlanFactClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
+        AudioService.Instance.PlaySfx("sfx_money");
+
+        BorderPlanFactCard.IsVisible = !BorderPlanFactCard.IsVisible;
+        if (!BorderPlanFactCard.IsVisible)
+        {
+            LblComparePlanFactButton.Text = "Сравнить План и Факт";
+            return;
+        }
+
+        LblComparePlanFactButton.Text = "Скрыть сравнение";
+
         var p = _engine.Profile;
-        string report = $"Сравнение План vs Факт:\n\n" +
-            $"Обязательные: План {_tempOblig} монет | Факт {p.SpentObligatory} монет\n" +
-            $"Желания: План {_tempDisc} монет | Факт {p.SpentDiscretionary} монет\n" +
-            $"В копилку: План {_tempSav} монет | Накоплено {p.Savings} монет";
-        PetView.SetSpeechText(report);
+        int obligDiff = p.SpentObligatory - _tempOblig;
+        int discDiff = p.SpentDiscretionary - _tempDisc;
+
+        LblPlanFactOblig.Text = $"План {_tempOblig} м. | Факт {p.SpentObligatory} м.";
+        LblPlanFactOblig.TextColor = obligDiff > 0 ? Color.FromArgb("#DC2626") : Color.FromArgb("#166534");
+
+        LblPlanFactDisc.Text = $"План {_tempDisc} м. | Факт {p.SpentDiscretionary} м.";
+        LblPlanFactDisc.TextColor = discDiff > 0 ? Color.FromArgb("#DC2626") : Color.FromArgb("#9D174D");
+
+        LblPlanFactSav.Text = $"План {_tempSav} м. | Факт {p.Savings} м.";
+        LblPlanFactSav.TextColor = Color.FromArgb("#1E40AF");
+
+        if (obligDiff > 0 || discDiff > 0)
+        {
+            LblPlanFactStatusBadge.Text = "Есть перерасход!";
+            LblPlanFactStatusBadge.TextColor = Color.FromArgb("#DC2626");
+            LblPlanFactAdvice.Text = "Внимание: по одной из категорий факт превысил план. Старайся не превышать конверт!";
+        }
+        else
+        {
+            LblPlanFactStatusBadge.Text = "В рамках плана ✓";
+            LblPlanFactStatusBadge.TextColor = Color.FromArgb("#166534");
+            LblPlanFactAdvice.Text = "Отличная дисциплина! Твои расходы строго в рамках запланированного бюджета.";
+        }
+
+        PetView.SetSpeechText("Вот как соотносятся твои планы и реальные расходы!");
     }
 
     // =========================================================================
@@ -1608,19 +1690,13 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
-    // 8.5. УПРАВЛЕНИЕ ЗВУКОМ, МУЗЫКОЙ И ЛИЦЕНЗИЯМИ (ТЗ / ГОСТ)
+    // 8.5. УПРАВЛЕНИЕ ЗВУКОМ И МУЗЫКОЙ
     // =========================================================================
     private async void OnAudioQuickClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
         SyncAudioSwitches();
-        await ShowModal("Звук, музыка и лицензии", PanelAudioSettings);
-    }
-
-    private async void OnShowLicensesClicked(object? sender, EventArgs e)
-    {
-        if (sender is VisualElement v) await AnimateTap(v);
-        await ShowModal("Лицензии сторонних ресурсов", PanelLicenses);
+        await ShowModal("Звук и музыка", PanelAudioSettings);
     }
 
     private void OnSfxToggled(object? sender, ToggledEventArgs e)

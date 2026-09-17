@@ -22,11 +22,11 @@ public class BudgetDonutChartDrawable : IDrawable
 
         float centerX = dirtyRect.Center.X;
         float centerY = dirtyRect.Center.Y;
-        float radius = Math.Min(dirtyRect.Width, dirtyRect.Height) / 2f - 14f;
-        float strokeWidth = 22f;
+        float radius = Math.Min(dirtyRect.Width, dirtyRect.Height) / 2f - 10f;
+        float strokeWidth = 14f;
 
-        // Фон кольца (подложка)
-        canvas.StrokeColor = Color.FromArgb("#2D124D");
+        // Фон кольца (нейтральный светлый трек)
+        canvas.StrokeColor = Color.FromArgb("#E5E7EB");
         canvas.StrokeSize = strokeWidth;
         canvas.StrokeLineCap = LineCap.Round;
         canvas.DrawCircle(centerX, centerY, radius);
@@ -66,14 +66,14 @@ public class BudgetDonutChartDrawable : IDrawable
             DrawArc(canvas, centerX, centerY, radius, currentAngle, currentAngle + savAngle);
         }
 
-        // Текст в центре: общая сумма и подпись
-        canvas.FontColor = Colors.White;
-        canvas.FontSize = 20f;
-        canvas.DrawString($"{(int)total}", centerX - 50, centerY - 14, 100, 24, HorizontalAlignment.Center, VerticalAlignment.Center);
+        // Текст в центре: общая сумма и подпись (контрастные цвета, помещаются без наезда на кольцо)
+        canvas.FontColor = Color.FromArgb("#310F53");
+        canvas.FontSize = 16f;
+        canvas.DrawString($"{(int)total}", centerX - 35, centerY - 12, 70, 18, HorizontalAlignment.Center, VerticalAlignment.Center);
 
-        canvas.FontColor = Color.FromArgb("#D1D5DB");
-        canvas.FontSize = 10f;
-        canvas.DrawString("МОНЕТ", centerX - 50, centerY + 10, 100, 16, HorizontalAlignment.Center, VerticalAlignment.Center);
+        canvas.FontColor = Color.FromArgb("#6B7280");
+        canvas.FontSize = 9f;
+        canvas.DrawString("МОНЕТ", centerX - 35, centerY + 6, 70, 14, HorizontalAlignment.Center, VerticalAlignment.Center);
 
         canvas.RestoreState();
     }
