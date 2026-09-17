@@ -236,4 +236,48 @@ public class GameEngineTests
         var allTasks = ContentRepository.GetFinancialTasks();
         Assert.Equal(12, allTasks.Count);
     }
+
+    [Fact]
+    public void FinnyMascotGifs_AllStagesAndEmotions_ShouldExistAndBeValidGifFiles()
+    {
+        // 3 стадии эволюции x 4 эмоции = 12 обязательных файлов анимаций
+        var stages = new[] { "finny_baby", "finny_teen", "finny_master" };
+        var emotions = new[] { "idle", "wave", "proud", "sad" };
+
+        var testDir = AppContext.BaseDirectory;
+        // Ищем путь к папке проекта FinAPP
+        var currentDir = new DirectoryInfo(testDir);
+        while (currentDir != null && !File.Exists(Path.Combine(currentDir.FullName, "FinAPP.slnx")))
+        {
+            currentDir = currentDir.Parent;
+        }
+        Assert.NotNull(currentDir);
+
+        var rawDir = Path.Combine(currentDir.FullName, "FinAPP", "Resources", "Raw");
+        Assert.True(Directory.Exists(rawDir), $"Папка Resources/Raw не найдена по пути {rawDir}");
+
+        foreach (var stage in stages)
+        {
+            foreach (var emotion in emotions)
+            {
+                var fileName = $"{stage}_{emotion}.gif";
+                var filePath = Path.Combine(rawDir, fileName);
+
+                Assert.True(File.Exists(filePath), $"Отсутствует файл анимации: {fileName}");
+
+                var fileInfo = new FileInfo(filePath);
+                Assert.True(fileInfo.Length > 100_000, $"Размер файла {fileName} подозрительно мал: {fileInfo.Length} байт");
+
+                // Проверяем GIF-сигнатуру (GIF87a или GIF89a)
+                using var fs = File.OpenRead(filePath);
+                var header = new byte[6];
+                int bytesRead = fs.Read(header, 0, 6);
+                Assert.Equal(6, bytesRead);
+
+                var headerStr = System.Text.Encoding.ASCII.GetString(header);
+                Assert.True(headerStr == "GIF89a" || headerStr == "GIF87a",
+                    $"Файл {fileName} не имеет валидной сигнатуры GIF: {headerStr}");
+            }
+        }
+    }
 }

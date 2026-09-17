@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using FinAPP.Models;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 
@@ -28,28 +31,109 @@ public partial class FinnyPetView : ContentView
     private bool _isReacting = false;
     private CancellationTokenSource? _waveCts;
 
+    // Потокобезопасный кэш HTML с Base64 данными анимаций для мгновенного переключения без лагов
+    private static readonly ConcurrentDictionary<string, string> s_htmlCache = new();
+
     public FinnyPetView()
     {
         InitializeComponent();
         Loaded += OnLoaded;
-        ImgPet.HandlerChanged += OnImgPetHandlerChanged;
+        PetWebView.HandlerChanged += OnPetWebViewHandlerChanged;
     }
 
-    private void OnImgPetHandlerChanged(object? sender, EventArgs e)
+    private void OnPetWebViewHandlerChanged(object? sender, EventArgs e)
     {
-        if (!string.IsNullOrEmpty(_activeGif))
+        ConfigurePlatformWebView();
+    }
+
+    private void ConfigurePlatformWebView()
+    {
+#if ANDROID
+        try
         {
-            ApplyNativeAnimation(_activeGif);
+            if (PetWebView.Handler?.PlatformView is Android.Webkit.WebView nativeWebView)
+            {
+                nativeWebView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                nativeWebView.VerticalScrollBarEnabled = false;
+                nativeWebView.HorizontalScrollBarEnabled = false;
+                nativeWebView.SetScrollContainer(false);
+                if (nativeWebView.Settings != null)
+                {
+                    nativeWebView.Settings.DisplayZoomControls = false;
+                    nativeWebView.Settings.SetSupportZoom(false);
+                    nativeWebView.Settings.BuiltInZoomControls = false;
+                    nativeWebView.Settings.UseWideViewPort = false;
+                    nativeWebView.Settings.LoadWithOverviewMode = false;
+                    nativeWebView.Settings.JavaScriptEnabled = false;
+                }
+            }
         }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Android WebView config error: {ex.Message}");
+        }
+#endif
+#if IOS || MACCATALYST
+        try
+        {
+            if (PetWebView.Handler?.PlatformView is WebKit.WKWebView wkWeb)
+            {
+                wkWeb.Opaque = false;
+                wkWeb.BackgroundColor = UIKit.UIColor.Clear;
+                if (wkWeb.ScrollView != null)
+                {
+                    wkWeb.ScrollView.ScrollEnabled = false;
+                    wkWeb.ScrollView.Bounces = false;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] iOS WKWebView config error: {ex.Message}");
+        }
+#endif
+#if WINDOWS
+        try
+        {
+            if (PetWebView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 winWebView)
+            {
+                winWebView.DefaultBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Windows WebView2 config error: {ex.Message}");
+        }
+#endif
     }
 
     private void OnLoaded(object? sender, EventArgs e)
     {
+        ConfigurePlatformWebView();
         ApplyAnimation(_currentEmotionGif, force: true);
+
+        // В фоне прогреваем кэш остальных анимаций текущей стадии для мгновенного переключения
+        _ = Task.Run(PreloadStageGifsAsync);
+    }
+
+    private async Task PreloadStageGifsAsync()
+    {
+        try
+        {
+            var actions = new[] { "idle", "wave", "proud", "sad" };
+            foreach (var action in actions)
+            {
+                var gif = $"{_currentStagePrefix}_{action}.gif";
+                await GetOrLoadHtmlAsync(gif);
+            }
+        }
+        catch { }
     }
 
     public void UpdatePet(PetProfile profile, string emotion)
     {
+        var prevPrefix = _currentStagePrefix;
+
         // 1. Выбор префикса стадии эволюции котика (Малыш, Юниор, Мастер)
         _currentStagePrefix = profile.Stage switch
         {
@@ -57,6 +141,11 @@ public partial class FinnyPetView : ContentView
             GrowthStage.Teen => "finny_teen",
             _ => "finny_master"
         };
+
+        if (prevPrefix != _currentStagePrefix)
+        {
+            _ = Task.Run(PreloadStageGifsAsync);
+        }
 
         // 2. Выбор действия/эмоции
         string action = emotion.ToLowerInvariant() switch
@@ -126,79 +215,110 @@ public partial class FinnyPetView : ContentView
         if (!force && _activeGif == gifName) return;
         _activeGif = gifName;
 
-#if !ANDROID
-        // Базовое назначение для MAUI на Windows / iOS / MacCatalyst
-        if (ImgPet != null)
-        {
-            ImgPet.Source = gifName;
-            ImgPet.IsAnimationPlaying = true;
-        }
-#endif
-
-        ApplyNativeAnimation(gifName);
+        _ = LoadAndRenderGifAsync(gifName);
     }
 
-    private void ApplyNativeAnimation(string gifName)
+    private async Task LoadAndRenderGifAsync(string gifName)
     {
-#if ANDROID
         try
         {
-            if (ImgPet?.Handler?.PlatformView is Android.Widget.ImageView nativeImageView)
-            {
-                nativeImageView.Post(() =>
-                {
-                    try
-                    {
-                        nativeImageView.SetBackgroundColor(Android.Graphics.Color.Transparent);
-                        if (OperatingSystem.IsAndroidVersionAtLeast(28))
-                        {
-                            var context = Android.App.Application.Context;
-                            if (context?.CacheDir != null)
-                            {
-                                var cacheFilePath = System.IO.Path.Combine(context.CacheDir.AbsolutePath, gifName);
-                                if (!System.IO.File.Exists(cacheFilePath) || new System.IO.FileInfo(cacheFilePath).Length == 0)
-                                {
-                                    using var assetStream = context.Assets?.Open(gifName);
-                                    if (assetStream != null)
-                                    {
-                                        using var outStream = System.IO.File.Create(cacheFilePath);
-                                        assetStream.CopyTo(outStream);
-                                    }
-                                }
+            var html = await GetOrLoadHtmlAsync(gifName);
 
-                                var cacheFile = new Java.IO.File(cacheFilePath);
-                                if (cacheFile.Exists() && cacheFile.Length() > 0)
-                                {
-                                    var source = Android.Graphics.ImageDecoder.CreateSource(cacheFile);
-                                    var drawable = Android.Graphics.ImageDecoder.DecodeDrawable(source);
-                                    
-                                    nativeImageView.SetImageDrawable(drawable);
-                                    
-                                    if (drawable is Android.Graphics.Drawables.AnimatedImageDrawable animDrawable)
-                                    {
-                                        animDrawable.RepeatCount = Android.Graphics.Drawables.AnimatedImageDrawable.RepeatInfinite;
-                                        animDrawable.Start();
-                                    }
-                                    else if (drawable is Android.Graphics.Drawables.IAnimatable animatable)
-                                    {
-                                        animatable.Start();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error in nativeImageView.Post: {ex.Message}");
-                    }
-                });
-            }
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (!string.IsNullOrEmpty(html))
+                {
+                    PetWebView.Source = new HtmlWebViewSource { Html = html };
+                    PetWebView.IsVisible = true;
+                    ImgPetFallback.IsVisible = false;
+                    ConfigurePlatformWebView();
+                }
+                else
+                {
+                    // Резервный режим, если файл не удалось прочесть через WebView
+                    ImgPetFallback.Source = gifName;
+                    ImgPetFallback.IsVisible = true;
+                    PetWebView.IsVisible = false;
+                }
+            });
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error loading Android AnimatedImageDrawable: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] LoadAndRenderGifAsync error: {ex.Message}");
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ImgPetFallback.Source = gifName;
+                ImgPetFallback.IsVisible = true;
+                PetWebView.IsVisible = false;
+            });
         }
-#endif
+    }
+
+    private static async Task<string> GetOrLoadHtmlAsync(string gifName)
+    {
+        if (s_htmlCache.TryGetValue(gifName, out var cachedHtml))
+        {
+            return cachedHtml;
+        }
+
+        try
+        {
+            using var stream = await FileSystem.OpenAppPackageFileAsync(gifName);
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            var base64 = Convert.ToBase64String(ms.ToArray());
+
+            var html = $@"<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""utf-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"">
+    <style>
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: transparent !important;
+            background-color: transparent !important;
+        }}
+        html, body {{
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: transparent !important;
+            background-color: transparent !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+            -webkit-user-select: none;
+        }}
+        img {{
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+            pointer-events: none;
+        }}
+    </style>
+</head>
+<body>
+    <img src=""data:image/gif;base64,{base64}"" alt=""Finny"" />
+</body>
+</html>";
+
+            s_htmlCache[gifName] = html;
+            return html;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error loading {gifName}: {ex.Message}");
+            return string.Empty;
+        }
     }
 
     public void SetSpeechText(string text)
