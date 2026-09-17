@@ -355,4 +355,22 @@ public class GameEngineTests
         Assert.Equal("1234", _engine.Profile.ParentPin);
         Assert.True(_engine.Profile.IsOnboardingCompleted);
     }
+
+    [Fact]
+    public void AdvanceToNextPeriod_DemoMode_ShouldSimulateExpensesAndTrackCumulativeSavings()
+    {
+        _engine.Profile.IsDemoMode = true;
+        _engine.Profile.Savings = 100;
+        _engine.Profile.ActualObligatory = 0;
+        _engine.Profile.ActualDiscretionary = 0;
+        _engine.Profile.ActualSavings = 0;
+
+        _engine.AdvanceToNextPeriod();
+
+        var summary = _engine.Profile.History.Last();
+        Assert.True(summary.ActualObligatory > 0, "В демо-режиме должны быть сгенерированы обязательные траты");
+        Assert.True(summary.ActualDiscretionary > 0, "В демо-режиме должны быть сгенерированы траты на желания");
+        Assert.True(summary.EndPeriodSavings > 0, "EndPeriodSavings должен фиксировать баланс сбережений");
+        Assert.Equal(_engine.Profile.Savings, summary.EndPeriodSavings);
+    }
 }

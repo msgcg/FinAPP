@@ -59,6 +59,7 @@ public class PeriodSummary
     public int ActualObligatory { get; set; }
     public int ActualDiscretionary { get; set; }
     public int ActualSavings { get; set; }
+    public int EndPeriodSavings { get; set; } = 0;
     public int InterestEarned { get; set; } = 0;
     public bool IsBudgetSuccess { get; set; }
     public string SummaryNotes { get; set; } = string.Empty;

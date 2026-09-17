@@ -215,6 +215,19 @@ public class GameEngine
     {
         int prevPeriod = Profile.CurrentPeriod;
         
+        // В демо-режиме, если игрок просто перелистывает периоды, генерируем реалистичные траты и накопления
+        if (Profile.IsDemoMode && Profile.ActualObligatory == 0 && Profile.ActualDiscretionary == 0)
+        {
+            Profile.ActualObligatory = Math.Min(Profile.PlannedObligatory, 60 + (prevPeriod * 15) % 45);
+            Profile.ActualDiscretionary = Math.Min(Profile.PlannedDiscretionary, 35 + (prevPeriod * 20) % 45);
+            if (Profile.ActualSavings == 0)
+            {
+                int demoSav = 30 + (prevPeriod * 10) % 30;
+                Profile.ActualSavings = demoSav;
+                Profile.Savings += demoSav;
+            }
+        }
+
         // Анализ соблюдения бюджета
         bool isBudgetKept = Profile.ActualObligatory <= Profile.PlannedObligatory * 1.2 &&
                             Profile.ActualDiscretionary <= Profile.PlannedDiscretionary * 1.2;
@@ -236,6 +249,7 @@ public class GameEngine
             ActualObligatory = Profile.ActualObligatory,
             ActualDiscretionary = Profile.ActualDiscretionary,
             ActualSavings = Profile.ActualSavings,
+            EndPeriodSavings = Profile.Savings,
             InterestEarned = interest,
             IsBudgetSuccess = isBudgetKept,
             SummaryNotes = isBudgetKept ? "Бюджет соблюден отлично!" : "Траты превысили запланированный план."

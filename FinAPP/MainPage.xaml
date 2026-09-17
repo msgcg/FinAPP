@@ -36,7 +36,8 @@
                     <!-- Кнопка интерактивного обучения -->
                     <Border x:Name="BtnOnboarding"
                             BackgroundColor="#FEF3C7"
-                            StrokeThickness="0"
+                            Stroke="#F59E0B"
+                            StrokeThickness="1.5"
                             HeightRequest="42"
                             WidthRequest="42"
                             StrokeShape="RoundRectangle 21"
@@ -53,8 +54,9 @@
 
                     <!-- Кнопка аналитики и истории периодов -->
                     <Border x:Name="BtnAnalytics"
-                            BackgroundColor="#DCFCE7"
-                            StrokeThickness="0"
+                            BackgroundColor="#059669"
+                            Stroke="#047857"
+                            StrokeThickness="1.5"
                             HeightRequest="42"
                             WidthRequest="42"
                             StrokeShape="RoundRectangle 21"
@@ -71,8 +73,9 @@
 
                     <!-- Кнопка гардероба и подиума -->
                     <Border x:Name="BtnCustomizer"
-                            BackgroundColor="#EBE9F8"
-                            StrokeThickness="0"
+                            BackgroundColor="#7C3AED"
+                            Stroke="#6D28D9"
+                            StrokeThickness="1.5"
                             HeightRequest="42"
                             WidthRequest="42"
                             StrokeShape="RoundRectangle 21"
@@ -254,7 +257,7 @@
                                 <TapGestureRecognizer Tapped="OnTransferMoneyClicked"/>
                             </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" VerticalOptions="Center">
-                                <Border BackgroundColor="#EBE9F8"
+                                <Border BackgroundColor="#520978"
                                         StrokeThickness="0"
                                         StrokeShape="RoundRectangle 8"
                                         WidthRequest="28"
@@ -287,7 +290,7 @@
                                 <TapGestureRecognizer Tapped="OnTransferMoneyClicked"/>
                             </Border.GestureRecognizers>
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" VerticalOptions="Center">
-                                <Border BackgroundColor="#FCE7F3"
+                                <Border BackgroundColor="#BE185D"
                                         StrokeThickness="0"
                                         StrokeShape="RoundRectangle 8"
                                         WidthRequest="28"
@@ -477,10 +480,12 @@
                         StrokeThickness="1.5"
                         StrokeShape="RoundRectangle 16"
                         HeightRequest="58"
-                        Padding="12,0"
+                        Padding="10,0"
                         InputTransparent="False">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Image Source="ic_nav_budget.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Border BackgroundColor="#F3E8FF" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                            <Image Source="ic_nav_budget.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
                         <Label Grid.Column="1" Text="План бюджета"
                                TextColor="#520978"
                                FontFamily="MontserratBold"
@@ -499,10 +504,12 @@
                         StrokeThickness="1.5"
                         StrokeShape="RoundRectangle 16"
                         HeightRequest="58"
-                        Padding="12,0"
+                        Padding="10,0"
                         InputTransparent="False">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Image Source="ic_nav_tasks.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Border BackgroundColor="#FFE4E6" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                            <Image Source="ic_nav_tasks.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
                         <Label Grid.Column="1" Text="Задания (+монеты)"
                                TextColor="#FF0053"
                                FontFamily="MontserratBold"
@@ -521,10 +528,12 @@
                         StrokeThickness="1.5"
                         StrokeShape="RoundRectangle 16"
                         HeightRequest="58"
-                        Padding="12,0"
+                        Padding="10,0"
                         InputTransparent="False">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Image Source="ic_nav_shop.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Border BackgroundColor="#DCFCE7" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                            <Image Source="ic_nav_shop.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
                         <Label Grid.Column="1" Text="Магазин заботы"
                                TextColor="#059669"
                                FontFamily="MontserratBold"
@@ -543,10 +552,12 @@
                         StrokeThickness="1.5"
                         StrokeShape="RoundRectangle 16"
                         HeightRequest="58"
-                        Padding="12,0"
+                        Padding="10,0"
                         InputTransparent="False">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Image Source="ic_nav_goals.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Border BackgroundColor="#E0E7FF" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                            <Image Source="ic_nav_goals.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
                         <Label Grid.Column="1" Text="Копилка и цели"
                                TextColor="#4F46E5"
                                FontFamily="MontserratBold"
@@ -565,10 +576,12 @@
                         StrokeThickness="1.5"
                         StrokeShape="RoundRectangle 16"
                         HeightRequest="58"
-                        Padding="12,0"
+                        Padding="10,0"
                         InputTransparent="False">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Image Source="ic_nav_glossary.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Border BackgroundColor="#FEF3C7" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                            <Image Source="ic_nav_glossary.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
                         <Label Grid.Column="1" Text="Словарь и рост"
                                TextColor="#D97706"
                                FontFamily="MontserratBold"
@@ -587,10 +600,12 @@
                         StrokeThickness="1.5"
                         StrokeShape="RoundRectangle 16"
                         HeightRequest="58"
-                        Padding="12,0"
+                        Padding="10,0"
                         InputTransparent="False">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <Image Source="ic_nav_parent.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Border BackgroundColor="#F1F5F9" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                            <Image Source="ic_nav_parent.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
                         <Label Grid.Column="1" Text="Родителям"
                                TextColor="#4B5563"
                                FontFamily="MontserratBold"
@@ -708,8 +723,10 @@
                         <VerticalStackLayout x:Name="PanelBudget" Spacing="12" IsVisible="False">
                             <Border BackgroundColor="#F3E8FF" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="12,8">
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Border BackgroundColor="#520978" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
+                                            <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
                                         <Label x:Name="LblBudgetIncome" Text="Доход: 500 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Label x:Name="LblBudgetRemaining" Grid.Column="1" Text="Осталось: 0 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#FF0053" VerticalOptions="Center"/>
@@ -745,8 +762,10 @@
                             <!-- Конверт 1: Обязательные -->
                             <Border BackgroundColor="#F0FDF4" Stroke="#86EFAC" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="12,10">
                                 <VerticalStackLayout Spacing="6">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Image Source="ic_stat_hunger.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Border BackgroundColor="#166534" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
+                                            <Image Source="ic_stat_hunger.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
                                         <Label Text="1. Обязательные расходы (еда, уход)" FontFamily="MontserratBold" FontSize="13" TextColor="#166534" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
@@ -766,8 +785,10 @@
                             <!-- Конверт 2: Желания -->
                             <Border BackgroundColor="#FDF2F8" Stroke="#FBCFE8" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="12,10">
                                 <VerticalStackLayout Spacing="6">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Image Source="ic_stat_mood.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Border BackgroundColor="#9D174D" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
+                                            <Image Source="ic_stat_mood.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
                                         <Label Text="2. Желания и радости (игры, сладости)" FontFamily="MontserratBold" FontSize="13" TextColor="#9D174D" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
@@ -787,8 +808,10 @@
                             <!-- Конверт 3: Сбережения -->
                             <Border BackgroundColor="#EFF6FF" Stroke="#BFDBFE" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="12,10">
                                 <VerticalStackLayout Spacing="6">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Image Source="ic_stat_savings.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Border BackgroundColor="#1E40AF" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
+                                            <Image Source="ic_stat_savings.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
                                         <Label Text="3. Сбережения (в копилку на цель)" FontFamily="MontserratBold" FontSize="13" TextColor="#1E40AF" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
@@ -849,8 +872,10 @@
 
                         <!-- C. МОДАЛКА: МАГАЗИН ЗАБОТЫ -->
                         <VerticalStackLayout x:Name="PanelShop" Spacing="10" IsVisible="False">
-                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                <Border BackgroundColor="#520978" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
+                                    <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
                                 <Label x:Name="LblShopBalance" Text="Доступно: 400 монет" FontFamily="MontserratBold" FontSize="14" TextColor="#520978" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
 
@@ -965,8 +990,10 @@
                         <VerticalStackLayout x:Name="PanelGlossary" Spacing="10" IsVisible="False">
                             <Border BackgroundColor="#FEF3C7" Stroke="#FCD34D" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="12,10">
                                 <VerticalStackLayout Spacing="4">
-                                    <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                        <Image Source="ic_gift.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <Border BackgroundColor="#D97706" StrokeShape="RoundRectangle 6" WidthRequest="26" HeightRequest="26" Padding="4" VerticalOptions="Center">
+                                            <Image Source="ic_gift.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
                                         <Label Text="Стадии взросления Финни" FontFamily="MontserratBold" FontSize="13" TextColor="#92400E" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Label Text="1. Малыш (1–2 период) — базовые потребности (еда и уход)&#10;2. Подросток (3–4 период) — баланс обязательного и желаний&#10;3. Финни-Мастер (5+ периодов) — грамотные сбережения и финансовая устойчивость"
@@ -1149,20 +1176,24 @@
                         <VerticalStackLayout x:Name="PanelTransfer" Spacing="12" IsVisible="False">
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                                 <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10">
-                                    <VerticalStackLayout Spacing="2">
-                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                            <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
-                                            <Label Text="Кошелёк" FontFamily="MontserratBold" FontSize="11" TextColor="#6B7280"/>
+                                    <VerticalStackLayout Spacing="4">
+                                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                            <Border BackgroundColor="#520978" StrokeShape="RoundRectangle 6" WidthRequest="24" HeightRequest="24" Padding="4" VerticalOptions="Center">
+                                                <Image Source="ic_stat_balance.png" WidthRequest="14" HeightRequest="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Border>
+                                            <Label Text="Кошелёк" FontFamily="MontserratBold" FontSize="11" TextColor="#6B7280" VerticalOptions="Center"/>
                                         </HorizontalStackLayout>
                                         <Label x:Name="LblTransferWalletVal" Text="400 монет" FontFamily="MontserratBold" FontSize="16" TextColor="#310F53"/>
                                     </VerticalStackLayout>
                                 </Border>
 
                                 <Border Grid.Column="1" BackgroundColor="#FDF2F8" Stroke="#F472B6" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10">
-                                    <VerticalStackLayout Spacing="2">
-                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                            <Image Source="ic_stat_savings.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
-                                            <Label Text="Копилка" FontFamily="MontserratBold" FontSize="11" TextColor="#9D174D"/>
+                                    <VerticalStackLayout Spacing="4">
+                                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                            <Border BackgroundColor="#BE185D" StrokeShape="RoundRectangle 6" WidthRequest="24" HeightRequest="24" Padding="4" VerticalOptions="Center">
+                                                <Image Source="ic_stat_savings.png" WidthRequest="14" HeightRequest="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Border>
+                                            <Label Text="Копилка" FontFamily="MontserratBold" FontSize="11" TextColor="#9D174D" VerticalOptions="Center"/>
                                         </HorizontalStackLayout>
                                         <Label x:Name="LblTransferSavingsVal" Text="100 монет" FontFamily="MontserratBold" FontSize="16" TextColor="#BE185D"/>
                                     </VerticalStackLayout>
@@ -1179,10 +1210,12 @@
                                         </HorizontalStackLayout>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferModeSavingsClicked"/></Border.GestureRecognizers>
                                     </Border>
-                                    <Border x:Name="BtnTransferModeWallet" Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                    <Border x:Name="BtnTransferModeWallet" Grid.Column="1" BackgroundColor="#F3F4F6" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
                                         <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
-                                            <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
-                                            <Label x:Name="LblTransferModeWallet" Text="В кошелёк" TextColor="#6B7280" FontFamily="MontserratMedium" FontSize="12" VerticalOptions="Center"/>
+                                            <Border BackgroundColor="#520978" StrokeShape="RoundRectangle 4" WidthRequest="20" HeightRequest="20" Padding="3" VerticalOptions="Center">
+                                                <Image Source="ic_stat_balance.png" WidthRequest="12" HeightRequest="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Border>
+                                            <Label x:Name="LblTransferModeWallet" Text="В кошелёк" TextColor="#4B5563" FontFamily="MontserratMedium" FontSize="12" VerticalOptions="Center"/>
                                         </HorizontalStackLayout>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferModeWalletClicked"/></Border.GestureRecognizers>
                                     </Border>

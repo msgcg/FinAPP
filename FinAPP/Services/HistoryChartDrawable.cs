@@ -40,18 +40,22 @@ public class HistoryChartDrawable : IDrawable
             return;
         }
 
-        int count = History.Count;
+        // Отображаем до 8 последних периодов для предотвращения наложения меток
+        var list = History.Count > 8 ? History.TakeLast(8).ToList() : History;
+        int count = list.Count;
+
         float maxVal = 200f;
-        foreach (var s in History)
+        foreach (var s in list)
         {
-            float periodMax = Math.Max(s.ActualObligatory + s.ActualDiscretionary, s.ActualSavings);
+            float sav = s.EndPeriodSavings > 0 ? s.EndPeriodSavings : s.ActualSavings;
+            float periodMax = Math.Max(s.ActualObligatory + s.ActualDiscretionary, sav);
             periodMax = Math.Max(periodMax, Math.Max(s.PlannedObligatory + s.PlannedDiscretionary, s.PlannedSavings));
             if (periodMax > maxVal) maxVal = periodMax;
         }
         maxVal = (float)Math.Ceiling(maxVal / 50.0) * 50f;
 
-        // Координатная сетка
-        canvas.StrokeColor = Color.FromArgb("#3B1B5D");
+        // Координатная сетка (мягкий контрастный серый для светлого фона #F8F7FD)
+        canvas.StrokeColor = Color.FromArgb("#E5E7EB");
         canvas.StrokeSize = 1f;
 
         int gridLines = 4;
@@ -64,7 +68,7 @@ public class HistoryChartDrawable : IDrawable
             canvas.DrawLine(paddingLeft, y, paddingLeft + chartW, y);
 
             // Значение на оси Y
-            canvas.FontColor = Color.FromArgb("#9CA3AF");
+            canvas.FontColor = Color.FromArgb("#6B7280");
             canvas.FontSize = 10f;
             canvas.DrawString($"{(int)val}", 2, y - 7, paddingLeft - 6, 14, HorizontalAlignment.Right, VerticalAlignment.Center);
         }
@@ -72,34 +76,49 @@ public class HistoryChartDrawable : IDrawable
         float stepX = chartW / Math.Max(1, count);
         var savingsPoints = new List<PointF>();
 
-        // Отрисовка столбиков расходов для каждого периода
+        // Отрисовка столбиков и цветных маркеров расходов для каждого периода
         for (int i = 0; i < count; i++)
         {
-            var p = History[i];
+            var p = list[i];
             float colCenterX = paddingLeft + (i + 0.5f) * stepX;
-            float barWidth = Math.Min(22f, stepX * 0.35f);
+            float barWidth = Math.Min(18f, stepX * 0.32f);
 
-            // Столбик обязательных расходов (Изумрудный)
+            // Столбик обязательных расходов (Изумрудный) + маркер
             float oblH = (p.ActualObligatory / maxVal) * chartH;
             float oblY = paddingTop + chartH - oblH;
             canvas.FillColor = Color.FromArgb("#10B981");
-            canvas.FillRoundedRectangle(colCenterX - barWidth - 1, oblY, barWidth, oblH, 3);
+            canvas.FillRoundedRectangle(colCenterX - barWidth - 2, oblY, barWidth, oblH, 3);
+            if (p.ActualObligatory > 0)
+            {
+                canvas.FillColor = Color.FromArgb("#10B981");
+                canvas.FillCircle(colCenterX - barWidth * 0.5f - 2, oblY, 4f);
+                canvas.FillColor = Colors.White;
+                canvas.FillCircle(colCenterX - barWidth * 0.5f - 2, oblY, 2f);
+            }
 
-            // Столбик свободных расходов (Фиолетовый)
+            // Столбик свободных расходов (Фиолетовый) + маркер
             float discH = (p.ActualDiscretionary / maxVal) * chartH;
             float discY = paddingTop + chartH - discH;
             canvas.FillColor = Color.FromArgb("#8B5CF6");
-            canvas.FillRoundedRectangle(colCenterX + 1, discY, barWidth, discH, 3);
+            canvas.FillRoundedRectangle(colCenterX + 2, discY, barWidth, discH, 3);
+            if (p.ActualDiscretionary > 0)
+            {
+                canvas.FillColor = Color.FromArgb("#8B5CF6");
+                canvas.FillCircle(colCenterX + barWidth * 0.5f + 2, discY, 4f);
+                canvas.FillColor = Colors.White;
+                canvas.FillCircle(colCenterX + barWidth * 0.5f + 2, discY, 2f);
+            }
 
             // Точка сбережений (Золотой)
-            float savH = (p.ActualSavings / maxVal) * chartH;
+            float savVal = p.EndPeriodSavings > 0 ? p.EndPeriodSavings : p.ActualSavings;
+            float savH = (savVal / maxVal) * chartH;
             float savY = paddingTop + chartH - savH;
             savingsPoints.Add(new PointF(colCenterX, savY));
 
-            // Подпись периода на оси X
-            canvas.FontColor = Color.FromArgb("#E5E7EB");
+            // Подпись периода на оси X (высококонтрастный фиолетовый)
+            canvas.FontColor = Color.FromArgb("#520978");
             canvas.FontSize = 11f;
-            canvas.DrawString($"#{p.PeriodNumber}", colCenterX - 20, paddingTop + chartH + 8, 40, 16, HorizontalAlignment.Center, VerticalAlignment.Center);
+            canvas.DrawString($"#{p.PeriodNumber}", colCenterX - 18, paddingTop + chartH + 8, 36, 16, HorizontalAlignment.Center, VerticalAlignment.Center);
         }
 
         // Соединяющая линия динамики сбережений (Золотая)
@@ -114,11 +133,11 @@ public class HistoryChartDrawable : IDrawable
                 canvas.DrawLine(savingsPoints[i], savingsPoints[i + 1]);
             }
 
-            // Маркеры точек сбережений
+            // Маркеры точек сбережений (Золотой кружок с белым центром)
             foreach (var pt in savingsPoints)
             {
                 canvas.FillColor = Color.FromArgb("#F59E0B");
-                canvas.FillCircle(pt.X, pt.Y, 5f);
+                canvas.FillCircle(pt.X, pt.Y, 5.5f);
                 canvas.FillColor = Colors.White;
                 canvas.FillCircle(pt.X, pt.Y, 2.5f);
             }

@@ -31,16 +31,16 @@ public partial class MainPage : ContentPage
     {
         ("Привет! Я твой кот Финни!", 
          "Добро пожаловать в FinAPP — твой персональный тренажёр финансовой грамотности! Вместе мы научимся планировать бюджет, копить на мечту и принимать умные решения!",
-         "ic_gift.png", "#F3E8FF"),
+         "ic_gift.png", "#7C3AED"),
         ("Правило трёх конвертов",
          "Каждый период карманные деньги распределяются по трём конвертам:\n• Обязательные расходы (уход и здоровье Финни)\n• Желания и радости (игрушки и сладости)\n• Копилка (накопления на твою главную мечту!)",
-         "ic_stat_balance.png", "#DCFCE7"),
+         "ic_stat_balance.png", "#059669"),
         ("Зарабатывай и получай %!",
          "Решай финансовые задачки, получай монетные награды и откладывай в копилку. А в конце каждого периода банк начисляет +5% сложного процента на все твои сбережения!",
-         "ic_stat_savings.png", "#FEF3C7"),
+         "ic_stat_savings.png", "#D97706"),
         ("Стань Финни-Мастером!",
          "Заботься обо мне, выбирай подиумы и рабочие столы в гардеробе, следи за бюджетом и пройди путь эволюции от Малыша до Финни-Мастера 3-й стадии!",
-         "ic_shield.png", "#FDF2F8")
+         "ic_shield.png", "#520978")
     };
 
     // Ввод PIN-кода родителя
@@ -858,15 +858,26 @@ public partial class MainPage : ContentPage
                 ColumnSpacing = 10
             };
 
-            // Иконка товара из презентации (никаких эмоджи!)
+            // Иконка товара из презентации (в контрастном контейнере)
             var imgIcon = new Image
             {
                 Source = item.IconImage,
-                WidthRequest = 36,
-                HeightRequest = 36,
-                VerticalOptions = LayoutOptions.Center
+                WidthRequest = 32,
+                HeightRequest = 32,
+                VerticalOptions = LayoutOptions.Center,
+                HorizontalOptions = LayoutOptions.Center
             };
-            grid.Children.Add(imgIcon);
+            var iconBadge = new Border
+            {
+                BackgroundColor = item.Category == ExpenseCategory.Obligatory ? Color.FromArgb("#DCFCE7") : Color.FromArgb("#EDE9FE"),
+                StrokeThickness = 0,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                WidthRequest = 42,
+                HeightRequest = 42,
+                VerticalOptions = LayoutOptions.Center,
+                Content = imgIcon
+            };
+            grid.Children.Add(iconBadge);
 
             // Описание
             var vText = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
@@ -1203,8 +1214,8 @@ public partial class MainPage : ContentPage
             LblTransferModeSavings.TextColor = Colors.White;
             LblTransferModeSavings.FontFamily = "MontserratBold";
 
-            BtnTransferModeWallet.BackgroundColor = Colors.Transparent;
-            LblTransferModeWallet.TextColor = Color.FromArgb("#6B7280");
+            BtnTransferModeWallet.BackgroundColor = Color.FromArgb("#F3F4F6");
+            LblTransferModeWallet.TextColor = Color.FromArgb("#4B5563");
             LblTransferModeWallet.FontFamily = "MontserratMedium";
 
             LblTransferHint.Text = "Пополнение копилки приближает цель и радует Финни!";
@@ -1220,8 +1231,8 @@ public partial class MainPage : ContentPage
             LblTransferModeWallet.TextColor = Colors.White;
             LblTransferModeWallet.FontFamily = "MontserratBold";
 
-            BtnTransferModeSavings.BackgroundColor = Colors.Transparent;
-            LblTransferModeSavings.TextColor = Color.FromArgb("#6B7280");
+            BtnTransferModeSavings.BackgroundColor = Color.FromArgb("#F3F4F6");
+            LblTransferModeSavings.TextColor = Color.FromArgb("#4B5563");
             LblTransferModeSavings.FontFamily = "MontserratMedium";
 
             LblTransferHint.Text = "Снятие из копилки в кошелёк для неотложных трат.";
@@ -1264,6 +1275,7 @@ public partial class MainPage : ContentPage
             }
             p.Balance -= amount;
             p.Savings += amount;
+            p.ActualSavings += amount;
             BorderTransferAlert.IsVisible = false;
             PetView.SetSpeechText($"Звон монеток! +{amount} монет отправлены в копилку!");
             PetView.PlayAction("proud");
@@ -1278,6 +1290,7 @@ public partial class MainPage : ContentPage
             }
             p.Savings -= amount;
             p.Balance += amount;
+            p.ActualSavings = Math.Max(0, p.ActualSavings - amount);
             BorderTransferAlert.IsVisible = false;
             PetView.SetSpeechText($"Сняли из копилки {amount} монет в кошелёк.");
             PetView.PlayAction("wave");
@@ -1644,7 +1657,8 @@ public partial class MainPage : ContentPage
                 string details = $"Обязательные: {item.ActualObligatory}/{item.PlannedObligatory} м.  •  Желания: {item.ActualDiscretionary}/{item.PlannedDiscretionary} м.";
                 vStack.Children.Add(new Label { Text = details, FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#4B5563") });
 
-                string savDetails = $"Копилка: +{item.ActualSavings} м.";
+                int endSav = item.EndPeriodSavings > 0 ? item.EndPeriodSavings : item.ActualSavings;
+                string savDetails = $"Копилка: {endSav} м. (+{item.ActualSavings} за период)";
                 if (item.InterestEarned > 0) savDetails += $"  •  Сложный процент (+5%): +{item.InterestEarned} м.";
                 vStack.Children.Add(new Label { Text = savDetails, FontFamily = "MontserratBold", FontSize = 11, TextColor = Color.FromArgb("#D97706") });
 
