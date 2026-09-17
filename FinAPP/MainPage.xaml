@@ -4,7 +4,8 @@
              xmlns:comp="clr-namespace:FinAPP.Views.Components"
              x:Class="FinAPP.MainPage"
              BackgroundColor="#F5F6FA"
-             Title="FinAPP">
+             Shell.NavBarIsVisible="False"
+             NavigationPage.HasNavigationBar="False">
     <Grid>
         <ScrollView>
             <VerticalStackLayout Padding="16,12" Spacing="14">
