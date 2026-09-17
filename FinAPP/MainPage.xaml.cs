@@ -40,7 +40,7 @@ public partial class MainPage : ContentPage
          "ic_stat_savings.png", "#D97706"),
         ("Стань Финни-Мастером!",
          "Заботься обо мне, выбирай подиумы и рабочие столы в гардеробе, следи за бюджетом и пройди путь эволюции от Малыша до Финни-Мастера 3-й стадии!",
-         "ic_shield.png", "#520978")
+         "ic_master.png", "#520978")
     };
 
     // Ввод PIN-кода родителя
@@ -715,7 +715,7 @@ public partial class MainPage : ContentPage
             string? choice = await ShowStyledActionSheetAsync(
                 $"Стол «{GetDeskName(desk)}»",
                 $"Этот рабочий стол закрыт. Стоимость: {price} монет.",
-                "ic_customizer.png",
+                GetDeskIcon(desk),
                 "Отмена",
                 $"Купить за {price} монет", "Поставить целью накопления 🎯");
             if (choice == $"Купить за {price} монет")
@@ -1164,7 +1164,7 @@ public partial class MainPage : ContentPage
             TaskResultCard.Stroke = Color.FromArgb("#E11D48");
             ShadowTaskResult.Brush = Color.FromArgb("#E11D48");
 
-            ImgTaskResultIcon.Source = "ic_shield.png";
+            ImgTaskResultIcon.Source = "ic_shield_white.png";
             LblTaskResultTitle.Text = "ЕСТЬ НАД ЧЕМ ПОДУМАТЬ!";
             BadgeTaskResultReward.IsVisible = false;
 

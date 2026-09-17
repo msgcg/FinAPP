@@ -874,7 +874,7 @@
                             <!-- Кнопка утвердить план -->
                             <Border x:Name="BtnSaveBudgetPlan" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 14" HeightRequest="48" InputTransparent="False">
                                 <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
-                                    <Image Source="ic_shield.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                    <Image Source="ic_shield_white.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
                                     <Label x:Name="LblSaveBudgetPlan" Text="Утвердить план бюджета" TextColor="White" FontFamily="MontserratBold" FontSize="14" VerticalOptions="Center"/>
                                 </HorizontalStackLayout>
                                 <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSaveBudgetPlanClicked"/></Border.GestureRecognizers>
@@ -1834,6 +1834,7 @@
                                Source="ic_gift.png"
                                WidthRequest="46"
                                HeightRequest="46"
+                               Aspect="AspectFit"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
                     </Border>
@@ -1951,8 +1952,9 @@
                             VerticalOptions="Center">
                         <Image x:Name="StylizedDialogIcon"
                                Source="ic_stat_balance.png"
-                               WidthRequest="24"
-                               HeightRequest="24"
+                               WidthRequest="28"
+                               HeightRequest="28"
+                               Aspect="AspectFit"
                                VerticalOptions="Center"
                                HorizontalOptions="Center"/>
                     </Border>
