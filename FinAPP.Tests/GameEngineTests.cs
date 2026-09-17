@@ -347,6 +347,9 @@ public class GameEngineTests
     [Fact]
     public void Profile_DeskAndParentPinAndOnboarding_ShouldPersistCorrectly()
     {
+        var initial = new StorageService().CreateInitialProfile();
+        Assert.False(initial.IsOnboardingCompleted, "При первом запуске обучение должно быть не пройдено (false)");
+
         _engine.Profile.Desk = PetDeskType.Modern;
         _engine.Profile.ParentPin = "1234";
         _engine.Profile.IsOnboardingCompleted = true;

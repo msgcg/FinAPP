@@ -121,7 +121,7 @@ public class PetProfile
     public int CurrentPeriod { get; set; } = 1;
     public bool IsDemoMode { get; set; } = false;
     public bool HasMigratedDemoDefault { get; set; } = false;
-    public bool IsOnboardingCompleted { get; set; } = true;
+    public bool IsOnboardingCompleted { get; set; } = false;
 
     // Настройки доступности (ТЗ п. 3.6)
     public bool AnimationsEnabled { get; set; } = true;

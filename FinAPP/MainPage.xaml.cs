@@ -94,6 +94,7 @@ public partial class MainPage : ContentPage
 
         if (!_engine.Profile.IsOnboardingCompleted)
         {
+            await Task.Delay(200);
             ShowOnboarding();
         }
     }
