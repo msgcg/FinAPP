@@ -52,7 +52,7 @@
    ```powershell
    pwsh -File .\scripts\build_apk.ps1
    ```
-   Готовый файл: `dist/FinAPP.apk` (82.34 МБ, подписан ключом RSA 2048-bit `dist/finapp_release.keystore`, SHA-256: `9382F37F6BCA86F22C46D2FBD5B9BF8D11A3E322F878CDE5A090DBF691CED92A`).
+   Готовый файл: `dist/FinAPP.apk` (83.04 МБ, подписан ключом RSA 2048-bit `dist/finapp_release.keystore`, SHA-256: `B3A10E134F6436E574E6EFB0B955BA8CBEB4D0713C7B604C57ADDE92559ABB42`).
 
 ---
 
@@ -114,7 +114,7 @@ FinAPP/
 ├── scripts/
 │   └── build_apk.ps1            # Скрипт автоматической сборки подписанного релизного APK
 ├── dist/
-│   └── FinAPP.apk               # Готовый подписанный релизный APK (82.34 МБ)
+│   └── FinAPP.apk               # Готовый подписанный релизный APK (83.04 МБ)
 ├── docs/
 │   ├── ARCHITECTURE_AND_SPEC.md # Полная спецификация, матрица ТЗ, аудит и формулы
 │   ├── VS_RUN_GUIDE.md          # Иллюстрированное руководство по запуску в VS 2022

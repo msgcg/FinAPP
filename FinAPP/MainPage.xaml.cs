@@ -1572,7 +1572,7 @@ public partial class MainPage : ContentPage
     private async void OnParentResetDataClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        bool confirm = await DisplayAlert("Сброс данных приложения", "Вы действительно хотите сбросить все данные приложения к начальному состоянию?", "Сбросить", "Отмена");
+        bool confirm = await DisplayAlertAsync("Сброс данных приложения", "Вы действительно хотите сбросить все данные приложения к начальному состоянию?", "Сбросить", "Отмена");
         if (!confirm) return;
         _engine.ResetData();
         RefreshUI();

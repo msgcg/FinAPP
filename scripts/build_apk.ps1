@@ -75,7 +75,7 @@ if ($SignedApk) {
     $SizeMb = [math]::Round((Get-Item $TargetApk).Length / 1MB, 2)
 
     Write-Host "`nРелизный APK успешно собран и подписан!" -ForegroundColor Green
-    Write-Host "Файл: $TargetApk ($SizeMb МБ)" -ForegroundColor Green
+    Write-Host "Файл: $TargetApk ($SizeMb MB)" -ForegroundColor Green
     Write-Host "SHA-256: $Hash" -ForegroundColor Green
 } else {
     Write-Warning "APK файл не найден в путях публикации. Проверьте вывод сборки."
