@@ -121,72 +121,214 @@
                 </Grid>
             </Border>
 
-            <!-- КАРТОЧКА ПИТОМЦА И ЕГО СОСТОЯНИЯ -->
+            <!-- 1. ОБЛАЧКО МЫСЛЕЙ ФИННИ (Яркие, живые советы и финансовые лайфхаки) -->
+            <Border x:Name="SpeechBubble"
+                    BackgroundColor="White"
+                    Stroke="#8A83D1"
+                    StrokeThickness="2"
+                    Padding="14,10"
+                    Margin="0,0"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle 18"
+                    InputTransparent="False">
+                <Border.Shadow>
+                    <Shadow Brush="#8A83D1" Offset="0,4" Radius="10" Opacity="0.22"/>
+                </Border.Shadow>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnSpeechBubbleTapped"/>
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+                    <Image Grid.Column="0"
+                           Source="ic_speech_bubble.png"
+                           WidthRequest="24"
+                           HeightRequest="24"
+                           VerticalOptions="Center"/>
+                    <Label Grid.Column="1"
+                           x:Name="LblSpeech"
+                           Text="Привет! Я котик Финни! Нажми на меня, чтобы узнать секреты сбережений!"
+                           FontSize="13"
+                           FontFamily="MontserratMedium"
+                           TextColor="#310F53"
+                           LineBreakMode="WordWrap"
+                           MaxLines="3"
+                           VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+
+            <!-- 2. СЕКЦИЯ ДАШБОРДА: ФИННИ СЛЕВА + ПОКАЗАТЕЛИ КОШЕЛЬКА СПРАВА -->
+            <Grid ColumnDefinitions="165,*" ColumnSpacing="10" Margin="0,2">
+                
+                <!-- Финни до упора влево (без внешней рамки) -->
+                <comp:FinnyPetView x:Name="PetView"
+                                   Grid.Column="0"
+                                   HorizontalOptions="Start"
+                                   VerticalOptions="Center"/>
+
+                <!-- Карточка финансовых балансов и периода справа от Финни -->
+                <Border Grid.Column="1"
+                        BackgroundColor="White"
+                        Stroke="#E5E7EB"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 20"
+                        Padding="12,10"
+                        VerticalOptions="Center">
+                    <Border.Shadow>
+                        <Shadow Brush="#520978" Offset="0,4" Radius="12" Opacity="0.09"/>
+                    </Border.Shadow>
+
+                    <VerticalStackLayout Spacing="8">
+                        
+                        <!-- Заголовок: имя питомца и номер периода -->
+                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                            <Label x:Name="LblPetHeader"
+                                   Text="Питомец Финни"
+                                   FontFamily="MontserratBold"
+                                   FontSize="14"
+                                   TextColor="#1C1D22"
+                                   LineBreakMode="TailTruncation"
+                                   VerticalOptions="Center"/>
+                            <Border Grid.Column="1"
+                                    BackgroundColor="#F3E8FF"
+                                    Stroke="#8A83D1"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    Padding="6,2">
+                                <Label x:Name="LblPeriodHeader"
+                                       Text="Период #1"
+                                       FontFamily="MontserratBold"
+                                       FontSize="11"
+                                       TextColor="#520978"/>
+                            </Border>
+                        </Grid>
+
+                        <!-- Баланс: Кошелёк -->
+                        <Border BackgroundColor="#F8F7FD"
+                                Stroke="#8A83D1"
+                                StrokeThickness="1.2"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,6"
+                                InputTransparent="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTransferMoneyClicked"/>
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="#EBE9F8"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8"
+                                        WidthRequest="28"
+                                        HeightRequest="28"
+                                        VerticalOptions="Center">
+                                    <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                                    <Label Text="КОШЕЛЁК"
+                                           FontFamily="MontserratBold"
+                                           FontSize="10"
+                                           TextColor="#6B7280"/>
+                                    <Label x:Name="LblBalance"
+                                           Text="400 монет"
+                                           FontFamily="MontserratBold"
+                                           FontSize="14"
+                                           TextColor="#310F53"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+
+                        <!-- Баланс: Копилка -->
+                        <Border BackgroundColor="#FDF2F8"
+                                Stroke="#F472B6"
+                                StrokeThickness="1.2"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,6"
+                                InputTransparent="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTransferMoneyClicked"/>
+                            </Border.GestureRecognizers>
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6" VerticalOptions="Center">
+                                <Border BackgroundColor="#FCE7F3"
+                                        StrokeThickness="0"
+                                        StrokeShape="RoundRectangle 8"
+                                        WidthRequest="28"
+                                        HeightRequest="28"
+                                        VerticalOptions="Center">
+                                    <Image Source="ic_stat_savings.png" WidthRequest="16" HeightRequest="16" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                                    <Label Text="В КОПИЛКЕ"
+                                           FontFamily="MontserratBold"
+                                           FontSize="10"
+                                           TextColor="#9D174D"/>
+                                    <Label x:Name="LblSavings"
+                                           Text="100 монет"
+                                           FontFamily="MontserratBold"
+                                           FontSize="14"
+                                           TextColor="#BE185D"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+
+                        <!-- Кнопка быстрого двустороннего перевода -->
+                        <Border BackgroundColor="#520978"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,7"
+                                InputTransparent="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTransferMoneyClicked"/>
+                            </Border.GestureRecognizers>
+                            <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
+                                <Image Source="ic_refresh.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center"/>
+                                <Label Text="⇄ Перевести"
+                                       TextColor="White"
+                                       FontFamily="MontserratBold"
+                                       FontSize="12"
+                                       VerticalOptions="Center"/>
+                            </HorizontalStackLayout>
+                        </Border>
+
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- 3. ИНДИКАТОРЫ СЫТОСТИ И НАСТРОЕНИЯ -->
             <Border BackgroundColor="White"
                     Stroke="#E5E7EB"
                     StrokeThickness="1"
-                    StrokeShape="RoundRectangle 20"
-                    Padding="14,12">
+                    StrokeShape="RoundRectangle 16"
+                    Padding="12,10">
                 <Border.Shadow>
-                    <Shadow Brush="#520978" Offset="0,4" Radius="12" Opacity="0.08"/>
+                    <Shadow Brush="#520978" Offset="0,3" Radius="8" Opacity="0.06"/>
                 </Border.Shadow>
 
-                <VerticalStackLayout Spacing="10">
-                    
-                    <!-- Заголовок карточки и индикатор периода -->
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label x:Name="LblPetHeader"
-                               Text="Питомец Финни"
-                               FontFamily="MontserratBold"
-                               FontSize="16"
-                               TextColor="#1C1D22"
-                               VerticalOptions="Center"/>
-                        <Border Grid.Column="1"
-                                BackgroundColor="#F3E8FF"
-                                Stroke="#8A83D1"
-                                StrokeThickness="1"
-                                StrokeShape="RoundRectangle 12"
-                                Padding="8,3">
-                            <Label x:Name="LblPeriodHeader"
-                                   Text="Период #1"
-                                   FontFamily="MontserratBold"
-                                   FontSize="12"
-                                   TextColor="#520978"/>
-                        </Border>
-                    </Grid>
-
-                    <!-- Компонент котика со слоями и анимацией -->
-                    <comp:FinnyPetView x:Name="PetView" HorizontalOptions="Center"/>
-
-                    <!-- Индикаторы сытости и настроения (ТЗ п. 2.5.3) -->
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,4,0,0">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                         
                         <!-- Сытость (зависит от обязательных расходов) -->
                         <Border BackgroundColor="#F0FDF4"
                                 Stroke="#86EFAC"
                                 StrokeThickness="1"
-                                StrokeShape="RoundRectangle 14"
-                                Padding="10,8">
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,6">
                             <VerticalStackLayout Spacing="4">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                    <Image Source="ic_stat_hunger.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <Image Source="ic_stat_hunger.png" WidthRequest="15" HeightRequest="15" VerticalOptions="Center"/>
                                     <Label Grid.Column="1" Text="Сытость"
                                            FontFamily="MontserratBold"
-                                           FontSize="13"
+                                           FontSize="12"
                                            TextColor="#166534"
                                            VerticalOptions="Center"/>
                                     <Label x:Name="LblHungerVal"
                                            Grid.Column="2"
                                            Text="90%"
                                            FontFamily="MontserratBold"
-                                           FontSize="13"
+                                           FontSize="12"
                                            TextColor="#166534"
                                            VerticalOptions="Center"/>
                                 </Grid>
                                 <ProgressBar x:Name="BarHunger"
                                              Progress="0.9"
                                              ProgressColor="#10B981"
-                                             HeightRequest="8"/>
+                                             HeightRequest="6"/>
                             </VerticalStackLayout>
                         </Border>
 
@@ -194,28 +336,28 @@
                         <Border BackgroundColor="#FDF2F8"
                                 Stroke="#FBCFE8"
                                 StrokeThickness="1"
-                                StrokeShape="RoundRectangle 14"
-                                Padding="10,8">
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,6">
                             <VerticalStackLayout Spacing="4">
                                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
-                                    <Image Source="ic_stat_mood.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                    <Image Source="ic_stat_mood.png" WidthRequest="15" HeightRequest="15" VerticalOptions="Center"/>
                                     <Label Grid.Column="1" Text="Настроение"
                                            FontFamily="MontserratBold"
-                                           FontSize="13"
+                                           FontSize="12"
                                            TextColor="#9D174D"
                                            VerticalOptions="Center"/>
                                     <Label x:Name="LblMoodVal"
                                            Grid.Column="2"
                                            Text="90%"
                                            FontFamily="MontserratBold"
-                                           FontSize="13"
+                                           FontSize="12"
                                            TextColor="#9D174D"
                                            VerticalOptions="Center"/>
                                 </Grid>
                                 <ProgressBar x:Name="BarMood"
                                              Progress="0.9"
                                              ProgressColor="#FC3777"
-                                             HeightRequest="8"/>
+                                             HeightRequest="6"/>
                             </VerticalStackLayout>
                         </Border>
                     </Grid>
@@ -224,112 +366,58 @@
                     <Label x:Name="LblStatusExplanation"
                            Text="Финни сыт, доволен и гордится твоим грамотным бюджетом!"
                            FontFamily="MontserratMedium"
-                           FontSize="12"
+                           FontSize="11"
                            TextColor="#6B7280"
-                           HorizontalTextAlignment="Center"
-                           Margin="0,2,0,0"/>
-
+                           HorizontalTextAlignment="Center"/>
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ГЛАВНАЯ ФИНАНСОВАЯ КАРТОЧКА (Баланс, Копилка, Цель) -->
+            <!-- 4. ИНТЕРАКТИВНАЯ КАРТОЧКА ФИНАНСОВОЙ ЦЕЛИ -->
             <Border BackgroundColor="#520978"
                     StrokeThickness="0"
-                    StrokeShape="RoundRectangle 20"
-                    Padding="16,14">
+                    StrokeShape="RoundRectangle 18"
+                    Padding="14,12"
+                    InputTransparent="False">
                 <Border.Shadow>
-                    <Shadow Brush="#520978" Offset="0,6" Radius="14" Opacity="0.25"/>
+                    <Shadow Brush="#520978" Offset="0,4" Radius="12" Opacity="0.22"/>
                 </Border.Shadow>
-
-                <VerticalStackLayout Spacing="10">
-                    
-                    <!-- Баланс и Копилка -->
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                        
-                        <!-- Доступный баланс -->
-                        <VerticalStackLayout Spacing="4">
-                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                <Image Source="ic_stat_balance.png" WidthRequest="15" HeightRequest="15" VerticalOptions="Center"/>
-                                <Label Text="ДОСТУПНО"
-                                       TextColor="#FFD6E4"
-                                       FontFamily="MontserratBold"
-                                       FontSize="11"
-                                       VerticalOptions="Center"/>
-                            </HorizontalStackLayout>
-                            <Label x:Name="LblBalance"
-                                   Text="400 монет"
-                                   TextColor="White"
-                                   FontFamily="MontserratBold"
-                                   FontSize="20"/>
-                        </VerticalStackLayout>
-
-                        <!-- Накопления в копилке -->
-                        <VerticalStackLayout Grid.Column="1" Spacing="4">
-                            <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
-                                <Image Source="ic_stat_savings.png" WidthRequest="15" HeightRequest="15" VerticalOptions="Center"/>
-                                <Label Text="В КОПИЛКЕ"
-                                       TextColor="#FFD6E4"
-                                       FontFamily="MontserratBold"
-                                       FontSize="11"
-                                       VerticalOptions="Center"/>
-                            </HorizontalStackLayout>
-                            <Label x:Name="LblSavings"
-                                   Text="100 монет"
-                                   TextColor="#FFD6E4"
-                                   FontFamily="MontserratBold"
-                                   FontSize="20"/>
-                        </VerticalStackLayout>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnGoalsClicked"/>
+                </Border.GestureRecognizers>
+                <VerticalStackLayout Spacing="6">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
+                        <Image x:Name="ImgGoalCard" Source="ic_goal_scooter.png" WidthRequest="24" HeightRequest="24" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" x:Name="LblGoalTitle"
+                               Text="Цель: Спортивный трюковой самокат"
+                               TextColor="White"
+                               FontFamily="MontserratBold"
+                               FontSize="13"
+                               VerticalOptions="Center"/>
+                        <Label Grid.Column="2" x:Name="LblGoalProgressText"
+                               Text="100 / 350 монет (28%)"
+                               TextColor="#FFD6E4"
+                               FontFamily="MontserratMedium"
+                               FontSize="12"
+                               VerticalOptions="Center"/>
                     </Grid>
 
-                    <BoxView HeightRequest="1" Color="#702299" Margin="0,2"/>
+                    <ProgressBar x:Name="BarGoal"
+                                 Progress="0.28"
+                                 ProgressColor="#FF0053"
+                                 HeightRequest="8"/>
 
-                    <!-- Интерактивная карточка финансовой цели: клик открывает копилку и выбор целей -->
-                    <Border BackgroundColor="#430763"
-                            Stroke="#702299"
-                            StrokeThickness="1"
-                            StrokeShape="RoundRectangle 14"
-                            Padding="12,10"
-                            InputTransparent="False">
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnGoalsClicked"/>
-                        </Border.GestureRecognizers>
-                        <VerticalStackLayout Spacing="6">
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                <Image x:Name="ImgGoalCard" Source="ic_goal_scooter.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center"/>
-                                <Label Grid.Column="1" x:Name="LblGoalTitle"
-                                       Text="Цель: Спортивный трюковой самокат"
-                                       TextColor="White"
-                                       FontFamily="MontserratBold"
-                                       FontSize="13"
-                                       VerticalOptions="Center"/>
-                                <Label Grid.Column="2" x:Name="LblGoalProgressText"
-                                       Text="100 / 350 монет (28%)"
-                                       TextColor="#FFD6E4"
-                                       FontFamily="MontserratMedium"
-                                       FontSize="12"
-                                       VerticalOptions="Center"/>
-                            </Grid>
-
-                            <ProgressBar x:Name="BarGoal"
-                                         Progress="0.28"
-                                         ProgressColor="#FF0053"
-                                         HeightRequest="8"/>
-
-                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
-                                <Label x:Name="LblGoalEstimatedTime"
-                                       Text="До цели осталось ~5 периодов"
-                                       TextColor="#FFD6E4"
-                                       FontFamily="MontserratMedium"
-                                       FontSize="11"/>
-                                <Label Grid.Column="1"
-                                       Text="Выбрать / пополнить ➜"
-                                       TextColor="#FCD34D"
-                                       FontFamily="MontserratBold"
-                                       FontSize="11"/>
-                            </Grid>
-                        </VerticalStackLayout>
-                    </Border>
-
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                        <Label x:Name="LblGoalEstimatedTime"
+                               Text="До цели осталось ~5 периодов"
+                               TextColor="#FFD6E4"
+                               FontFamily="MontserratMedium"
+                               FontSize="11"/>
+                        <Label Grid.Column="1"
+                               Text="Выбрать / пополнить ➜"
+                               TextColor="#FCD34D"
+                               FontFamily="MontserratBold"
+                               FontSize="11"/>
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
 
@@ -749,22 +837,46 @@
                                 </VerticalStackLayout>
                             </Border>
 
-                            <Label Text="Быстрое пополнение копилки:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
+                            <!-- Двустороннее перемещение средств: пополнение и снятие -->
+                            <Label Text="Перемещение денег между балансом и копилкой:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
                             
-                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="42" InputTransparent="False">
-                                    <Label Text="+20 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit20Clicked"/></Border.GestureRecognizers>
-                                </Border>
-                                <Border Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="42" InputTransparent="False">
-                                    <Label Text="+50 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit50Clicked"/></Border.GestureRecognizers>
-                                </Border>
-                                <Border Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="42" InputTransparent="False">
-                                    <Label Text="+100 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit100Clicked"/></Border.GestureRecognizers>
-                                </Border>
-                            </Grid>
+                            <!-- В копилку -->
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Положить в копилку (из кошелька):" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                    <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label Text="+20 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit20Clicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label Text="+50 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit50Clicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label Text="+100 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit100Clicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Снять из копилки -->
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="Снять в кошелёк (на текущие расходы):" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                    <Border BackgroundColor="#FEE2E2" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label Text="-20 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnWithdraw20Clicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border Grid.Column="1" BackgroundColor="#FEE2E2" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label Text="-50 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnWithdraw50Clicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border Grid.Column="2" BackgroundColor="#FEE2E2" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label Text="-100 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnWithdraw100Clicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
+                            </VerticalStackLayout>
 
                             <!-- Заголовок каталога и кнопка создания своей цели -->
                             <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0" VerticalOptions="Center">
@@ -831,6 +943,23 @@
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAgeSeniorClicked"/></Border.GestureRecognizers>
                                     </Border>
                                 </Grid>
+
+                                <!-- ПРЯМОЙ ПЕРЕКЛЮЧАТЕЛЬ СТАДИЙ ЭВОЛЮЦИИ ФИННИ -->
+                                <Label Text="Стадия эволюции Финни (проверка возрастов):" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937" Margin="0,4,0,0"/>
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
+                                    <Border x:Name="BtnParentStageBaby" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 10" HeightRequest="38" InputTransparent="False">
+                                        <Label x:Name="LblParentStageBaby" Text="1. Малыш" FontFamily="MontserratBold" FontSize="11" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentStageBabyClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border x:Name="BtnParentStageTeen" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 10" HeightRequest="38" InputTransparent="False">
+                                        <Label x:Name="LblParentStageTeen" Text="2. Юниор" FontFamily="MontserratBold" FontSize="11" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentStageTeenClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border x:Name="BtnParentStageMaster" Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 10" HeightRequest="38" InputTransparent="False">
+                                        <Label x:Name="LblParentStageMaster" Text="3. Мастер" FontFamily="MontserratBold" FontSize="11" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentStageMasterClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
                                 
                                 <Border BackgroundColor="#F3E8FF" Stroke="#D8B4FE" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12,10" Margin="0,4">
                                     <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
@@ -858,6 +987,74 @@
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentResetDataClicked"/></Border.GestureRecognizers>
                                 </Border>
                             </VerticalStackLayout>
+                        </VerticalStackLayout>
+
+                        <!-- H. МОДАЛКА: ДВУСТОРОННИЙ ПЕРЕВОД КОШЕЛЁК <-> КОПИЛКА -->
+                        <VerticalStackLayout x:Name="PanelTransfer" Spacing="12" IsVisible="False">
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                            <Label Text="Кошелёк" FontFamily="MontserratBold" FontSize="11" TextColor="#6B7280"/>
+                                        </HorizontalStackLayout>
+                                        <Label x:Name="LblTransferWalletVal" Text="400 монет" FontFamily="MontserratBold" FontSize="16" TextColor="#310F53"/>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <Border Grid.Column="1" BackgroundColor="#FDF2F8" Stroke="#F472B6" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10">
+                                    <VerticalStackLayout Spacing="2">
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <Image Source="ic_stat_savings.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                            <Label Text="Копилка" FontFamily="MontserratBold" FontSize="11" TextColor="#9D174D"/>
+                                        </HorizontalStackLayout>
+                                        <Label x:Name="LblTransferSavingsVal" Text="100 монет" FontFamily="MontserratBold" FontSize="16" TextColor="#BE185D"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </Grid>
+
+                            <!-- Переключатель направления -->
+                            <Border BackgroundColor="#F3F4F6" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="4">
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="4">
+                                    <Border x:Name="BtnTransferModeSavings" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image Source="ic_stat_savings.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                            <Label x:Name="LblTransferModeSavings" Text="В копилку" TextColor="White" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferModeSavingsClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border x:Name="BtnTransferModeWallet" Grid.Column="1" BackgroundColor="Transparent" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
+                                            <Image Source="ic_stat_balance.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                                            <Label x:Name="LblTransferModeWallet" Text="В кошелёк" TextColor="#6B7280" FontFamily="MontserratMedium" FontSize="12" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferModeWalletClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
+                            </Border>
+
+                            <Label x:Name="LblTransferHint" Text="Пополнение копилки приближает цель и радует Финни!" FontFamily="MontserratMedium" FontSize="12" TextColor="#6B7280"/>
+
+                            <!-- Фиксированные кнопки перевода -->
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                                <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
+                                    <Label x:Name="LblTransferBtn1" Text="+20 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferBtn1Clicked"/></Border.GestureRecognizers>
+                                </Border>
+                                <Border Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
+                                    <Label x:Name="LblTransferBtn2" Text="+50 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferBtn2Clicked"/></Border.GestureRecognizers>
+                                </Border>
+                                <Border Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
+                                    <Label x:Name="LblTransferBtn3" Text="+100 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferBtn3Clicked"/></Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
+
+                            <!-- Предупреждение/статус -->
+                            <Border x:Name="BorderTransferAlert" BackgroundColor="#FEF3C7" Stroke="#FCD34D" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12,10" IsVisible="False">
+                                <Label x:Name="LblTransferAlert" Text="Инфо..." FontFamily="MontserratMedium" FontSize="11" TextColor="#92400E"/>
+                            </Border>
                         </VerticalStackLayout>
 
                         <!-- G. МОДАЛКА: КАСТОМИЗАЦИЯ ФИННИ -->
@@ -910,6 +1107,139 @@
 
                     </VerticalStackLayout>
                 </ScrollView>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+
+    <!-- ========================================================================= -->
+    <!-- МОДАЛЬНОЕ ОКНО РЕЗУЛЬТАТА ЗАДАНИЯ (ПРАЗДНИЧНЫЙ / ПЕЧАЛЬНЫЙ СТИЛЬ)        -->
+    <!-- ========================================================================= -->
+    <Grid x:Name="ModalTaskResult"
+          IsVisible="False"
+          BackgroundColor="#CC090214"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
+          ZIndex="130">
+
+        <Border x:Name="TaskResultCard"
+                StrokeThickness="2.5"
+                StrokeShape="RoundRectangle 26"
+                Padding="0"
+                Margin="20"
+                MaximumWidthRequest="360"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+            <Border.Shadow>
+                <Shadow x:Name="ShadowTaskResult" Brush="#10B981" Offset="0,6" Radius="24" Opacity="0.4"/>
+            </Border.Shadow>
+
+            <VerticalStackLayout Spacing="0">
+                
+                <!-- Яркий анимированный/градиентный заголовок (шейдер-эффект) -->
+                <Border x:Name="HeaderTaskResult"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24,24,0,0"
+                        Padding="16,14">
+                    <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                        <Image x:Name="ImgTaskResultIcon"
+                               Source="ic_gift.png"
+                               WidthRequest="32"
+                               HeightRequest="32"
+                               HorizontalOptions="Center"/>
+                        <Label x:Name="LblTaskResultTitle"
+                               Text="УРА! ПРАВИЛЬНЫЙ ОТВЕТ!"
+                               FontFamily="MontserratBold"
+                               FontSize="16"
+                               TextColor="White"
+                               HorizontalTextAlignment="Center"
+                               HorizontalOptions="Center"/>
+                        <Border x:Name="BadgeTaskResultReward"
+                                BackgroundColor="#FEF08A"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 10"
+                                Padding="10,3"
+                                HorizontalOptions="Center">
+                            <Label x:Name="LblTaskResultReward"
+                                   Text="+50 монет на баланс!"
+                                   FontFamily="MontserratBold"
+                                   FontSize="12"
+                                   TextColor="#854D0E"/>
+                        </Border>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Основной контент: анимированный Финни и пояснение -->
+                <VerticalStackLayout Padding="16,14" Spacing="12" BackgroundColor="White">
+                    
+                    <!-- Анимированный Финни (WebView с _proud.gif или _sad.gif) -->
+                    <WebView x:Name="WvTaskResultFinny"
+                             HeightRequest="160"
+                             WidthRequest="160"
+                             BackgroundColor="Transparent"
+                             InputTransparent="True"
+                             HorizontalOptions="Center"/>
+
+                    <!-- Карточка с разбором и пояснением финансовой мудрости -->
+                    <Border x:Name="BorderTaskResultExplanation"
+                            StrokeThickness="1.5"
+                            StrokeShape="RoundRectangle 14"
+                            Padding="12,10">
+                        <VerticalStackLayout Spacing="4">
+                            <Label x:Name="LblTaskResultExplanationHeader"
+                                   Text="Мудрость Финни:"
+                                   FontFamily="MontserratBold"
+                                   FontSize="12"/>
+                            <Label x:Name="LblTaskResultExplanation"
+                                   Text="Объяснение..."
+                                   FontFamily="MontserratMedium"
+                                   FontSize="12"
+                                   LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!-- Кнопки действий -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
+                        <Border x:Name="BtnTaskResultTryAgain"
+                                BackgroundColor="#F3F4F6"
+                                Stroke="#D1D5DB"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14"
+                                HeightRequest="44"
+                                InputTransparent="False"
+                                IsVisible="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTaskResultTryAgainClicked"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Попробовать ещё"
+                                   FontFamily="MontserratBold"
+                                   FontSize="12"
+                                   TextColor="#374151"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+
+                        <Border x:Name="BtnTaskResultNext"
+                                Grid.Column="1"
+                                BackgroundColor="#10B981"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 14"
+                                HeightRequest="44"
+                                InputTransparent="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTaskResultNextClicked"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="LblTaskResultNext"
+                                   Text="Дальше ➜"
+                                   FontFamily="MontserratBold"
+                                   FontSize="13"
+                                   TextColor="White"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
         </Border>

@@ -102,7 +102,7 @@ public class GameEngine
         _ = SaveAsync();
 
         int remainder = Profile.Balance - totalPlan;
-        return (true, $"Бюджет периода {Profile.CurrentPeriod} успешно утвержден! 📋\n" +
+        return (true, $"Бюджет периода {Profile.CurrentPeriod} успешно утвержден!\n" +
                       $"• Обязательные расходы: {obligatory} монет\n" +
                       $"• Желания: {discretionary} монет\n" +
                       $"• Накопления: {savings} монет\n" +
@@ -130,52 +130,52 @@ public class GameEngine
         int remainingPeriods = goal.EstimateRemainingPeriods(Profile.Savings, 50);
 
         string goalAchievedMsg = Profile.Savings >= goal.TargetAmount 
-            ? $"\n\n🎉 УРА! ЦЕЛЬ «{goal.Title}» ДОСТИГНУТА! Вы накопили всю сумму!" 
+            ? $"\n\nУРА! ЦЕЛЬ «{goal.Title}» ДОСТИГНУТА! Вы накопили всю сумму!" 
             : $"\nПрогресс цели: {percent}%. Осталось накопить: {goal.GetRemainingAmount(Profile.Savings)} монет (~{remainingPeriods} периодов).";
 
-        return (true, $"В копилку добавлено +{amount} монет! 🏦{goalAchievedMsg}");
+        return (true, $"В копилку добавлено +{amount} монет!{goalAchievedMsg}");
     }
 
     // Снятие из копилки с предупреждением о последствиях (ТЗ п. 2.5.7)
     public (bool Success, string Message) WithdrawFromSavings(int amount, FinancialGoal goal)
     {
         if (amount <= 0)
-            return (false, "Укажите сумму для снятия.");
+            return (false, "Введите корректную сумму для снятия.");
 
         if (Profile.Savings < amount)
-            return (false, $"В копилке всего {Profile.Savings} монет, нельзя снять {amount}.");
+            return (false, $"В копилке недостаточно средств. Накоплено {Profile.Savings} монет, а запрошено {amount}.");
 
         Profile.Savings -= amount;
         Profile.Balance += amount;
+        Profile.ActualSavings = Math.Max(0, Profile.ActualSavings - amount);
 
         OnStateChanged?.Invoke();
         _ = SaveAsync();
 
-        int newEstimatedPeriods = goal.EstimateRemainingPeriods(Profile.Savings, 50);
-        return (true, $"Снято {amount} монет из копилки.\n⚠️ Внимание: срок достижения цели «{goal.Title}» увеличился до ~{newEstimatedPeriods} периодов!");
+        int remainingPeriods = goal.EstimateRemainingPeriods(Profile.Savings, 50);
+        return (true, $"Из копилки снято {amount} монет в кошелек.\n" +
+                      $"Внимание: теперь срок достижения цели «{goal.Title}» увеличился (~{remainingPeriods} периодов при обычном темпе).");
     }
 
-    // Выполнение обучающего финансового задания (ТЗ п. 2.5.8)
+    // Образовательные задания с немедленной обратной связью (ТЗ п. 2.5.8)
     public (bool Success, string Message) CompleteTask(FinancialTask task, TaskOption option)
     {
         if (option.IsCorrect)
         {
             Profile.Balance += option.RewardCoins;
+            Profile.CompletedTasksCount++;
             Profile.Mood = Math.Min(100, Profile.Mood + 15);
-            Profile.TestsPassedCount++;
-            if (!Profile.CompletedTaskIds.Contains(task.Id))
-                Profile.CompletedTaskIds.Add(task.Id);
 
             OnStateChanged?.Invoke();
             _ = SaveAsync();
 
-            return (true, $"Отлично! Ответ верный! 🎉\nВам начислено +{option.RewardCoins} монет.\n\nРазбор: {option.Explanation}");
+            return (true, $"Отлично! Ответ верный!\nВам начислено +{option.RewardCoins} монет.\n\nРазбор: {option.Explanation}");
         }
         else
         {
             // Обучение действием: ошибка — это учебный кейс без наказания
             OnStateChanged?.Invoke();
-            return (false, $"Не совсем так 🤔\n\nРазбор эксперта: {option.Explanation}\n\nПопробуйте ещё раз или выберите другое задание!");
+            return (false, $"Не совсем так.\n\nРазбор эксперта: {option.Explanation}\n\nПопробуйте ещё раз или выберите другое задание!");
         }
     }
 
@@ -265,12 +265,12 @@ public class GameEngine
 
         string growthMsg = Profile.Stage switch
         {
-            GrowthStage.Master => "🌟 Финни достиг высшей стадии развития: «Финни-Мастер»!",
-            GrowthStage.Teen => "🚀 Финни повзрослел и стал подростком!",
-            _ => "🐾 Финни активно растет и развивается."
+            GrowthStage.Master => "Финни достиг высшей стадии развития: «Финни-Мастер»!",
+            GrowthStage.Teen => "Финни повзрослел и стал подростком!",
+            _ => "Финни активно растет и развивается."
         };
 
-        return $"Наступил Период #{Profile.CurrentPeriod}! 📅\n" +
+        return $"Наступил Период #{Profile.CurrentPeriod}!\n" +
                $"• Начислено карманных денег: +{pocketMoney} монет.\n" +
                $"• {growthMsg}\n" +
                $"• Не забудьте составить план личного бюджета на новый период!";

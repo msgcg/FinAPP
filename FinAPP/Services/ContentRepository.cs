@@ -17,7 +17,7 @@ public static class ContentRepository
             Price = 50,
             HungerBoost = 35,
             MoodBoost = 10,
-            IconEmoji = "🍗",
+            IconEmoji = "",
             IconImage = "ic_shop_lunch.png",
             ThanksText = "Муррр! Спасибо за питательный обед! Теперь я сыт и полон сил!",
             Description = "Полноценный обед с белками и витаминами. Необходим для поддержания сил питомца."
@@ -30,7 +30,7 @@ public static class ContentRepository
             Price = 70,
             HungerBoost = 25,
             MoodBoost = 20,
-            IconEmoji = "💊",
+            IconEmoji = "",
             IconImage = "ic_shop_vitamins.png",
             ThanksText = "Муррр! Спасибо за полезные витаминки! Моя шерстка сияет!",
             Description = "Обязательный уход за шерсткой и иммунитетом Финни."
@@ -43,7 +43,7 @@ public static class ContentRepository
             Price = 40,
             HungerBoost = 15,
             MoodBoost = 25,
-            IconEmoji = "🧼",
+            IconEmoji = "",
             IconImage = "ic_shop_hygiene.png",
             ThanksText = "Муррр! Спасибо за гигиенический набор и щётку! Я такой чистый!",
             Description = "Регулярный уход: чистота и здоровье котика каждый период."
@@ -56,7 +56,7 @@ public static class ContentRepository
             Price = 90,
             HungerBoost = 20,
             MoodBoost = 35,
-            IconEmoji = "🩺",
+            IconEmoji = "",
             IconImage = "ic_shop_vet.png",
             ThanksText = "Муррр! Спасибо за заботу и визит к ветеринару! Чувствую себя отлично!",
             Description = "Обязательная забота: предотвращает усталость и плохое самочувствие."
@@ -71,7 +71,7 @@ public static class ContentRepository
             Price = 45,
             HungerBoost = 0,
             MoodBoost = 30,
-            IconEmoji = "🎾",
+            IconEmoji = "",
             IconImage = "ic_shop_ball.png",
             ThanksText = "Муррр! Спасибо за весёлый мячик! Побежали играть!",
             Description = "Забавная игрушка для активных игр. Финни обожает гонять мячик!"
@@ -84,7 +84,7 @@ public static class ContentRepository
             Price = 85,
             HungerBoost = 0,
             MoodBoost = 55,
-            IconEmoji = "🔦",
+            IconEmoji = "",
             IconImage = "ic_shop_laser.png",
             ThanksText = "Муррр! Спасибо за лазерную указку! Я поймаю этот огонёк!",
             Description = "Крутое развлечение! Дарит море радости, но покупку можно отложить при нехватке средств."
@@ -97,7 +97,7 @@ public static class ContentRepository
             Price = 140,
             HungerBoost = 0,
             MoodBoost = 75,
-            IconEmoji = "🛋️",
+            IconEmoji = "",
             IconImage = "ic_shop_bed.png",
             ThanksText = "Муррр! Спасибо за мягкую лежанку! Буду сладко мурлыкать!",
             Description = "Уютное место для сна. Приятная покупка из категории «Желания»."
@@ -110,7 +110,7 @@ public static class ContentRepository
             Price = 220,
             HungerBoost = 0,
             MoodBoost = 100,
-            IconEmoji = "🚁",
+            IconEmoji = "",
             IconImage = "ic_shop_drone.png",
             ThanksText = "Муррр! Спасибо за крутой мини-коптер! Финни теперь пилот!",
             Description = "Супер-гаджет для Финни. Покупать стоит только при избытке карманных денег!"
@@ -463,7 +463,7 @@ public static class ContentRepository
             Id = "goal_scooter",
             Title = "Спортивный трюковой самокат",
             TargetAmount = 350,
-            IconEmoji = "🛴",
+            IconEmoji = "",
             IconImage = "ic_goal_scooter.png",
             Description = "Отличная краткосрочная цель для прогулок в парке."
         },
@@ -472,7 +472,7 @@ public static class ContentRepository
             Id = "goal_game",
             Title = "Настольная экономическая игра",
             TargetAmount = 650,
-            IconEmoji = "🎲",
+            IconEmoji = "",
             IconImage = "ic_goal_game.png",
             Description = "Увлекательная игра для всей семьи, учит инвестициям и торговле."
         },
@@ -481,7 +481,7 @@ public static class ContentRepository
             Id = "goal_gadget",
             Title = "Умные детские часы с GPS",
             TargetAmount = 1000,
-            IconEmoji = "⌚",
+            IconEmoji = "",
             IconImage = "ic_goal_gadget.png",
             Description = "Полезный гаджет для связи с родителями и шагомера."
         }
@@ -497,7 +497,7 @@ public static class ContentRepository
                 Term = "Монеты и деньги",
                 Definition = "Условные единицы для покупки еды, одежды и полезных вещей.",
                 KidFriendlyExample = "Когда мы помогаем по дому или решаем задачки, мы получаем монетки для Финни.",
-                IconEmoji = "🪙",
+                IconEmoji = "",
                 TargetAge = null
             },
             new GlossaryTerm
@@ -505,7 +505,7 @@ public static class ContentRepository
                 Term = "Обязательное и Желания",
                 Definition = "Обязательное — то, без чего нельзя обойтись (еда, здоровье). Желания — то, что приносит радость, но может подождать (игрушки).",
                 KidFriendlyExample = "Обед для котика — это «Надо!», а лазерная указка — это «Хочу!».",
-                IconEmoji = "⚖️",
+                IconEmoji = "",
                 TargetAge = null
             },
             new GlossaryTerm
@@ -513,7 +513,7 @@ public static class ContentRepository
                 Term = "Копилка и накопления",
                 Definition = "Часть монет, которую мы откладываем прямо сейчас, чтобы потом купить большую мечту.",
                 KidFriendlyExample = "Откладывая по 5–10 монет каждый период, ты накопишь на самокат!",
-                IconEmoji = "🏦",
+                IconEmoji = "",
                 TargetAge = null
             },
             new GlossaryTerm
@@ -521,7 +521,7 @@ public static class ContentRepository
                 Term = "Сдача",
                 Definition = "Монеты, которые продавец возвращает тебе, если ты дал больше стоимости товара.",
                 KidFriendlyExample = "Товар стоит 15 монет, ты дал 20 — продавец возвращает 5 монет сдачи.",
-                IconEmoji = "🧾",
+                IconEmoji = "",
                 TargetAge = AgeGroup.Junior7_8
             },
             new GlossaryTerm
@@ -529,7 +529,7 @@ public static class ContentRepository
                 Term = "Личный бюджет",
                 Definition = "План доходов и расходов на период времени (неделю или месяц).",
                 KidFriendlyExample = "Как карта путешествия: помогает заранее знать, на что хватит средств и сколько удастся отложить.",
-                IconEmoji = "📋",
+                IconEmoji = "",
                 TargetAge = AgeGroup.Senior9_11
             },
             new GlossaryTerm
@@ -537,7 +537,7 @@ public static class ContentRepository
                 Term = "Подушка безопасности",
                 Definition = "Запас денег на случай непредвиденных ситуаций (поломка, лечение, срочный ремонт).",
                 KidFriendlyExample = "Резервный фонд, который защищает тебя от неприятных сюрпризов.",
-                IconEmoji = "🛡️",
+                IconEmoji = "",
                 TargetAge = AgeGroup.Senior9_11
             },
             new GlossaryTerm
@@ -545,7 +545,7 @@ public static class ContentRepository
                 Term = "Инфляция",
                 Definition = "Постепенный рост цен со временем, из-за которого на ту же сумму покупается меньше товаров.",
                 KidFriendlyExample = "Если корм стоил 50 монет, а через год стал стоить 60 — это действие инфляции.",
-                IconEmoji = "📈",
+                IconEmoji = "",
                 TargetAge = AgeGroup.Senior9_11
             },
             new GlossaryTerm
@@ -553,7 +553,7 @@ public static class ContentRepository
                 Term = "Фишинг и кибергигиена",
                 Definition = "Попытки мошенников выманить пароли или коды подтверждения из СМС.",
                 KidFriendlyExample = "Никому не сообщай коды из СМС и не вводи данные родителей на подозрительных сайтах!",
-                IconEmoji = "🎣",
+                IconEmoji = "",
                 TargetAge = AgeGroup.Senior9_11
             }
         };

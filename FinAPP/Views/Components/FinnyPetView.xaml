@@ -3,126 +3,79 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="FinAPP.Views.Components.FinnyPetView">
 
-    <VerticalStackLayout HorizontalOptions="Center" Spacing="8">
-        
-        <!-- Облачко мыслей Финни (реплика / подсказка) -->
-        <Border x:Name="SpeechBubble"
-                BackgroundColor="White"
-                Stroke="#8A83D1"
-                StrokeThickness="2"
-                Padding="12,8"
-                Margin="16,0"
+    <Grid x:Name="PetContainer"
+          WidthRequest="165"
+          HeightRequest="240"
+          HorizontalOptions="Start"
+          VerticalOptions="Center">
+
+        <!-- Золотое свечение для высшей стадии Мастер -->
+        <Border x:Name="MasterAura"
+                BackgroundColor="#F59E0B"
+                StrokeThickness="0"
+                StrokeShape="RoundRectangle 100"
+                Opacity="0.25"
+                IsVisible="False"
+                HeightRequest="200"
+                WidthRequest="200"
                 HorizontalOptions="Center"
-                MaximumWidthRequest="320"
-                StrokeShape="RoundRectangle 18">
-            <Border.Shadow>
-                <Shadow Brush="#8A83D1" Offset="0,3" Radius="8" Opacity="0.22"/>
-            </Border.Shadow>
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
-                <Image Grid.Column="0"
-                       Source="ic_speech_bubble.png"
-                       WidthRequest="22"
-                       HeightRequest="22"
-                       VerticalOptions="Center"/>
-                <Label Grid.Column="1"
-                       x:Name="LblSpeech"
-                       Text="Привет! Я котик Финни! Нажми на меня"
-                       FontSize="13"
-                       FontFamily="MontserratMedium"
-                       TextColor="#310F53"
-                       LineBreakMode="WordWrap"
-                       MaxLines="3"
-                       VerticalOptions="Center"/>
-            </Grid>
+                VerticalOptions="Center"/>
+
+        <!-- WebView для аппаратного проигрывания анимированных GIF (Android / iOS / Windows) -->
+        <WebView x:Name="PetWebView"
+                 BackgroundColor="Transparent"
+                 InputTransparent="True"
+                 HorizontalOptions="Fill"
+                 VerticalOptions="Fill"/>
+
+        <!-- Резервное нативное изображение на случай непредвиденных сбоев WebView -->
+        <Image x:Name="ImgPetFallback"
+               IsAnimationPlaying="True"
+               Aspect="AspectFit"
+               HorizontalOptions="Fill"
+               VerticalOptions="Fill"
+               IsVisible="False"
+               InputTransparent="True"/>
+
+        <!-- Накладной аксессуар (очки, шапочка, корона) поверх котика -->
+        <Image x:Name="ImgAccessory"
+               Source="acc_sunglasses.png"
+               Aspect="AspectFit"
+               WidthRequest="85"
+               HeightRequest="50"
+               AnchorX="0.5"
+               AnchorY="0.95"
+               HorizontalOptions="Center"
+               VerticalOptions="Start"
+               Margin="0, 16, 0, 0"
+               IsVisible="False"
+               InputTransparent="True"/>
+
+        <!-- Невидимый прозрачный слой для 100% надежного перехвата тапов по всей площади персонажа -->
+        <BoxView BackgroundColor="Transparent"
+                 HorizontalOptions="Fill"
+                 VerticalOptions="Fill">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPetTapped"/>
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <!-- Бейдж стадии роста в левом верхнем углу -->
+        <Border BackgroundColor="#520978"
+                Stroke="#FF0053"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 10"
+                Padding="6,3"
+                Margin="4,4,0,0"
+                HorizontalOptions="Start"
+                VerticalOptions="Start"
+                InputTransparent="True">
+            <Label x:Name="LblStageBadge"
+                   Text="Малыш (1 ст.)"
+                   FontSize="10"
+                   FontFamily="MontserratBold"
+                   TextColor="White"/>
         </Border>
-
-        <!-- Карточка-рамка персонажа (стильная скруглённая рамка, скрывающая срезы видео) -->
-        <Border x:Name="PetFrameCard"
-                Stroke="#8A83D1"
-                StrokeThickness="2.5"
-                StrokeShape="RoundRectangle 28"
-                BackgroundColor="#F8F7FD"
-                WidthRequest="240"
-                HeightRequest="280"
-                HorizontalOptions="Center"
-                VerticalOptions="Center">
-            <Border.Shadow>
-                <Shadow Brush="#8A83D1" Offset="0,4" Radius="12" Opacity="0.18"/>
-            </Border.Shadow>
-
-            <Grid x:Name="PetContainer"
-                  HorizontalOptions="Fill"
-                  VerticalOptions="Fill">
-
-                <!-- Золотое свечение для стадии Мастер -->
-                <Border x:Name="MasterAura"
-                        BackgroundColor="#F59E0B"
-                        StrokeThickness="0"
-                        StrokeShape="RoundRectangle 120"
-                        Opacity="0.25"
-                        IsVisible="False"
-                        HeightRequest="240"
-                        WidthRequest="240"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
-
-                <!-- WebView для аппаратного проигрывания анимированных GIF (Android / iOS / Windows) -->
-                <WebView x:Name="PetWebView"
-                         BackgroundColor="Transparent"
-                         InputTransparent="True"
-                         HorizontalOptions="Fill"
-                         VerticalOptions="Fill"/>
-
-                <!-- Резервное нативное изображение на случай непредвиденных сбоев WebView -->
-                <Image x:Name="ImgPetFallback"
-                       IsAnimationPlaying="True"
-                       Aspect="AspectFit"
-                       HorizontalOptions="Fill"
-                       VerticalOptions="Fill"
-                       IsVisible="False"
-                       InputTransparent="True"/>
-
-                <!-- Накладной аксессуар (очки, шапочка, корона) поверх котика -->
-                <Image x:Name="ImgAccessory"
-                       Source="acc_sunglasses.png"
-                       Aspect="AspectFit"
-                       WidthRequest="110"
-                       HeightRequest="60"
-                       AnchorX="0.5"
-                       AnchorY="0.95"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Start"
-                       Margin="0, 20, 0, 0"
-                       IsVisible="False"
-                       InputTransparent="True"/>
-
-                <!-- Невидимый прозрачный слой для 100% надежного перехвата тапов по всей площади персонажа -->
-                <BoxView BackgroundColor="Transparent"
-                         HorizontalOptions="Fill"
-                         VerticalOptions="Fill">
-                    <BoxView.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnPetTapped"/>
-                    </BoxView.GestureRecognizers>
-                </BoxView>
-
-                <!-- Бейдж стадии роста в левом верхнем углу рамки -->
-                <Border BackgroundColor="#520978"
-                        Stroke="#FF0053"
-                        StrokeThickness="1.5"
-                        StrokeShape="RoundRectangle 12"
-                        Padding="8,4"
-                        Margin="10,10,0,0"
-                        HorizontalOptions="Start"
-                        VerticalOptions="Start">
-                    <Label x:Name="LblStageBadge"
-                           Text="Малыш (1 стадия)"
-                           FontSize="11"
-                           FontFamily="MontserratBold"
-                           TextColor="White"/>
-                </Border>
-            </Grid>
-        </Border>
-        
-    </VerticalStackLayout>
+    </Grid>
 
 </ContentView>

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FinAPP.Models;
 using FinAPP.Services;
+using FinAPP.Views.Components;
 using Microsoft.Maui.Controls;
 
 namespace FinAPP;
@@ -31,6 +32,9 @@ public partial class MainPage : ContentPage
     private int _parentMathA = 7;
     private int _parentMathB = 8;
 
+    // Режим быстрого трансфера (true = в копилку, false = в кошелек)
+    private bool _isTransferToSavings = true;
+
     public MainPage()
     {
         InitializeComponent();
@@ -38,6 +42,16 @@ public partial class MainPage : ContentPage
         _storageService = new StorageService();
         _engine = new GameEngine(_storageService);
         _engine.OnStateChanged += () => MainThread.BeginInvokeOnMainThread(RefreshUI);
+
+        PetView.SpeechTextChanged = (text) =>
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                LblSpeech.Text = text;
+            });
+        };
+
+        WvTaskResultFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny);
 
         Loaded += OnPageLoaded;
     }
@@ -148,6 +162,14 @@ public partial class MainPage : ContentPage
             BtnParentAgeSenior.BackgroundColor = !isJunior ? Color.FromArgb("#520978") : Color.FromArgb("#EBE9F8");
             LblParentAgeSenior.TextColor = !isJunior ? Colors.White : Color.FromArgb("#520978");
         }
+
+        UpdateParentStageButtons();
+    }
+
+    private async void OnSpeechBubbleTapped(object? sender, EventArgs e)
+    {
+        await AnimateTap(SpeechBubble);
+        PetView.NextQuote();
     }
 
     private async void OnAgeJuniorClicked(object? sender, EventArgs e)
@@ -193,6 +215,7 @@ public partial class MainPage : ContentPage
         PanelGlossary.IsVisible = false;
         PanelParent.IsVisible = false;
         PanelCustomizer.IsVisible = false;
+        PanelTransfer.IsVisible = false;
 
         activePanel.IsVisible = true;
         ModalOverlay.Opacity = 0;
@@ -499,6 +522,121 @@ public partial class MainPage : ContentPage
             LblTaskFeedback.TextColor = Color.FromArgb("#92400E");
             PetView.SetSpeechText("Ошибаться полезно — так мы учимся быть финансово грамотными!");
         }
+
+        // Показываем праздничную / поучительную модалку результата с анимированным Финни
+        await ShowTaskResultModal(success, task, option);
+    }
+
+    private async Task ShowTaskResultModal(bool success, FinancialTask task, TaskOption option)
+    {
+        var p = _engine.Profile;
+        string stagePrefix = p.Stage switch
+        {
+            GrowthStage.Baby => "finny_baby",
+            GrowthStage.Teen => "finny_teen",
+            _ => "finny_master"
+        };
+
+        if (success)
+        {
+            // Праздничный стиль (изумрудно-зеленый шейдер-градиент)
+            HeaderTaskResult.Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(Color.FromArgb("#059669"), 0.0f),
+                    new GradientStop(Color.FromArgb("#10B981"), 1.0f)
+                }
+            };
+            TaskResultCard.Stroke = Color.FromArgb("#10B981");
+            ShadowTaskResult.Brush = Color.FromArgb("#10B981");
+
+            ImgTaskResultIcon.Source = "ic_gift.png";
+            LblTaskResultTitle.Text = "УРА! ПРАВИЛЬНЫЙ ОТВЕТ!";
+            BadgeTaskResultReward.IsVisible = true;
+            LblTaskResultReward.Text = $"+{option.RewardCoins} монет на баланс!";
+
+            LblTaskResultExplanationHeader.Text = "Мудрость Финни:";
+            LblTaskResultExplanationHeader.TextColor = Color.FromArgb("#059669");
+            LblTaskResultExplanation.Text = option.Explanation;
+            BorderTaskResultExplanation.BackgroundColor = Color.FromArgb("#F0FDF4");
+            BorderTaskResultExplanation.Stroke = Color.FromArgb("#86EFAC");
+
+            BtnTaskResultTryAgain.IsVisible = false;
+            LblTaskResultNext.Text = "Следующее задание ➜";
+            BtnTaskResultNext.BackgroundColor = Color.FromArgb("#10B981");
+
+            // Анимация гордого Финни
+            string gif = $"{stagePrefix}_proud.gif";
+            string html = await FinnyPetView.GetOrLoadHtmlAsync(gif);
+            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
+        }
+        else
+        {
+            // Поучительный/поддерживающий стиль (розово-коралловый шейдер-градиент)
+            HeaderTaskResult.Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(Color.FromArgb("#BE123C"), 0.0f),
+                    new GradientStop(Color.FromArgb("#E11D48"), 1.0f)
+                }
+            };
+            TaskResultCard.Stroke = Color.FromArgb("#E11D48");
+            ShadowTaskResult.Brush = Color.FromArgb("#E11D48");
+
+            ImgTaskResultIcon.Source = "ic_shield.png";
+            LblTaskResultTitle.Text = "ЕСТЬ НАД ЧЕМ ПОДУМАТЬ!";
+            BadgeTaskResultReward.IsVisible = false;
+
+            LblTaskResultExplanationHeader.Text = "Совет от Финни:";
+            LblTaskResultExplanationHeader.TextColor = Color.FromArgb("#BE123C");
+            LblTaskResultExplanation.Text = option.Explanation;
+            BorderTaskResultExplanation.BackgroundColor = Color.FromArgb("#FFF1F2");
+            BorderTaskResultExplanation.Stroke = Color.FromArgb("#FECDD3");
+
+            BtnTaskResultTryAgain.IsVisible = true;
+            LblTaskResultNext.Text = "Пропустить ➜";
+            BtnTaskResultNext.BackgroundColor = Color.FromArgb("#6B7280");
+
+            // Анимация расстроенного Финни
+            string gif = $"{stagePrefix}_sad.gif";
+            string html = await FinnyPetView.GetOrLoadHtmlAsync(gif);
+            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
+        }
+
+        ModalTaskResult.Opacity = 0;
+        ModalTaskResult.IsVisible = true;
+        TaskResultCard.Scale = 0.88;
+
+        var f = ModalTaskResult.FadeToAsync(1.0, 160, Easing.CubicOut);
+        var s = TaskResultCard.ScaleToAsync(1.0, 160, Easing.CubicOut);
+        await Task.WhenAll(f, s);
+    }
+
+    private async void OnTaskResultTryAgainClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        var f = ModalTaskResult.FadeToAsync(0.0, 120, Easing.CubicIn);
+        var s = TaskResultCard.ScaleToAsync(0.88, 120, Easing.CubicIn);
+        await Task.WhenAll(f, s);
+        ModalTaskResult.IsVisible = false;
+    }
+
+    private async void OnTaskResultNextClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        var f = ModalTaskResult.FadeToAsync(0.0, 120, Easing.CubicIn);
+        var s = TaskResultCard.ScaleToAsync(0.88, 120, Easing.CubicIn);
+        await Task.WhenAll(f, s);
+        ModalTaskResult.IsVisible = false;
+
+        _currentTaskIndex = (_currentTaskIndex + 1) % _tasks.Count;
+        RenderCurrentTask();
     }
 
     private void OnNextTaskClicked(object? sender, EventArgs e)
@@ -814,6 +952,158 @@ public partial class MainPage : ContentPage
         await DepositToSavings(100);
     }
 
+    private async Task WithdrawFromSavings(int amount)
+    {
+        var p = _engine.Profile;
+        if (p.Savings < amount)
+        {
+            PetView.SetSpeechText($"В копилке только {p.Savings} монет, нельзя снять {amount}!");
+            return;
+        }
+
+        p.Savings -= amount;
+        p.Balance += amount;
+        RefreshUI();
+        await _engine.SaveAsync();
+        RenderGoalsUI();
+        PetView.SetSpeechText($"Взяли из копилки {amount} монет в кошелёк. Не забывай пополнять снова!");
+    }
+
+    private async void OnWithdraw20Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await WithdrawFromSavings(20);
+    }
+    private async void OnWithdraw50Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await WithdrawFromSavings(50);
+    }
+    private async void OnWithdraw100Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await WithdrawFromSavings(100);
+    }
+
+    // =========================================================================
+    // 6.1 МОДАЛКА: БЫСТРЫЙ ДВУСТОРОННИЙ ПЕРЕВОД (КОШЕЛЁК <-> КОПИЛКА)
+    // =========================================================================
+    private async void OnTransferMoneyClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _isTransferToSavings = true;
+        UpdateTransferUI();
+        await ShowModal("Перевод средств", PanelTransfer);
+    }
+
+    private void OnTransferModeSavingsClicked(object? sender, EventArgs e)
+    {
+        _isTransferToSavings = true;
+        UpdateTransferUI();
+    }
+
+    private void OnTransferModeWalletClicked(object? sender, EventArgs e)
+    {
+        _isTransferToSavings = false;
+        UpdateTransferUI();
+    }
+
+    private void UpdateTransferUI()
+    {
+        var p = _engine.Profile;
+        LblTransferWalletVal.Text = $"{p.Balance} монет";
+        LblTransferSavingsVal.Text = $"{p.Savings} монет";
+        BorderTransferAlert.IsVisible = false;
+
+        if (_isTransferToSavings)
+        {
+            BtnTransferModeSavings.BackgroundColor = Color.FromArgb("#520978");
+            LblTransferModeSavings.TextColor = Colors.White;
+            LblTransferModeSavings.FontFamily = "MontserratBold";
+
+            BtnTransferModeWallet.BackgroundColor = Colors.Transparent;
+            LblTransferModeWallet.TextColor = Color.FromArgb("#6B7280");
+            LblTransferModeWallet.FontFamily = "MontserratMedium";
+
+            LblTransferHint.Text = "Пополнение копилки приближает цель и радует Финни!";
+            LblTransferHint.TextColor = Color.FromArgb("#520978");
+
+            LblTransferBtn1.Text = "+20 монет";
+            LblTransferBtn2.Text = "+50 монет";
+            LblTransferBtn3.Text = "+100 монет";
+        }
+        else
+        {
+            BtnTransferModeWallet.BackgroundColor = Color.FromArgb("#520978");
+            LblTransferModeWallet.TextColor = Colors.White;
+            LblTransferModeWallet.FontFamily = "MontserratBold";
+
+            BtnTransferModeSavings.BackgroundColor = Colors.Transparent;
+            LblTransferModeSavings.TextColor = Color.FromArgb("#6B7280");
+            LblTransferModeSavings.FontFamily = "MontserratMedium";
+
+            LblTransferHint.Text = "Снятие из копилки в кошелёк для неотложных трат.";
+            LblTransferHint.TextColor = Color.FromArgb("#B91C1C");
+
+            LblTransferBtn1.Text = "-20 монет";
+            LblTransferBtn2.Text = "-50 монет";
+            LblTransferBtn3.Text = "-100 монет";
+        }
+    }
+
+    private async void OnTransferBtn1Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await ExecuteTransfer(20);
+    }
+
+    private async void OnTransferBtn2Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await ExecuteTransfer(50);
+    }
+
+    private async void OnTransferBtn3Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await ExecuteTransfer(100);
+    }
+
+    private async Task ExecuteTransfer(int amount)
+    {
+        var p = _engine.Profile;
+        if (_isTransferToSavings)
+        {
+            if (p.Balance < amount)
+            {
+                BorderTransferAlert.IsVisible = true;
+                LblTransferAlert.Text = $"Недостаточно средств в кошельке! Доступно: {p.Balance} монет.";
+                return;
+            }
+            p.Balance -= amount;
+            p.Savings += amount;
+            BorderTransferAlert.IsVisible = false;
+            PetView.SetSpeechText($"Звон монеток! +{amount} монет отправлены в копилку!");
+        }
+        else
+        {
+            if (p.Savings < amount)
+            {
+                BorderTransferAlert.IsVisible = true;
+                LblTransferAlert.Text = $"В копилке недостаточно средств! Накоплено: {p.Savings} монет.";
+                return;
+            }
+            p.Savings -= amount;
+            p.Balance += amount;
+            BorderTransferAlert.IsVisible = false;
+            PetView.SetSpeechText($"Сняли из копилки {amount} монет в кошелёк.");
+        }
+
+        RefreshUI();
+        await _engine.SaveAsync();
+        UpdateTransferUI();
+    }
+
     // =========================================================================
     // 7. МОДАЛКА: СЛОВАРЬ И РОСТ
     // =========================================================================
@@ -882,11 +1172,58 @@ public partial class MainPage : ContentPage
                 $"Накоплено в копилке: {p.Savings} монет\n" +
                 $"Заданий выполнено: {p.CompletedTasksCount}\n" +
                 $"Текущий баланс: {p.Balance} монет";
+
+            UpdateParentStageButtons();
         }
         else
         {
             PetView.SetSpeechText("Неверный ответ! Вход только для родителей.");
         }
+    }
+
+    private void UpdateParentStageButtons()
+    {
+        if (_engine == null) return;
+        var stage = _engine.Profile.Stage;
+        if (BtnParentStageBaby != null)
+        {
+            BtnParentStageBaby.BackgroundColor = stage == GrowthStage.Baby ? Color.FromArgb("#520978") : Color.FromArgb("#EBE9F8");
+            LblParentStageBaby.TextColor = stage == GrowthStage.Baby ? Colors.White : Color.FromArgb("#520978");
+            BtnParentStageTeen.BackgroundColor = stage == GrowthStage.Teen ? Color.FromArgb("#520978") : Color.FromArgb("#EBE9F8");
+            LblParentStageTeen.TextColor = stage == GrowthStage.Teen ? Colors.White : Color.FromArgb("#520978");
+            BtnParentStageMaster.BackgroundColor = stage == GrowthStage.Master ? Color.FromArgb("#520978") : Color.FromArgb("#EBE9F8");
+            LblParentStageMaster.TextColor = stage == GrowthStage.Master ? Colors.White : Color.FromArgb("#520978");
+        }
+    }
+
+    private async void OnParentStageBabyClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _engine.Profile.Stage = GrowthStage.Baby;
+        RefreshUI();
+        await _engine.SaveAsync();
+        UpdateParentStageButtons();
+        PetView.SetSpeechText("Установлена стадия: Финни-Малыш (1–2 период)!");
+    }
+
+    private async void OnParentStageTeenClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _engine.Profile.Stage = GrowthStage.Teen;
+        RefreshUI();
+        await _engine.SaveAsync();
+        UpdateParentStageButtons();
+        PetView.SetSpeechText("Установлена стадия: Финни-Юниор (3–4 период)!");
+    }
+
+    private async void OnParentStageMasterClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _engine.Profile.Stage = GrowthStage.Master;
+        RefreshUI();
+        await _engine.SaveAsync();
+        UpdateParentStageButtons();
+        PetView.SetSpeechText("Установлена стадия: Финни-Мастер (5+ периодов)!");
     }
 
     private async void OnParentDemoModeToggled(object? sender, ToggledEventArgs e)

@@ -32,9 +32,9 @@ public class FinancialTask
 
     public string TopicDisplayName => Topic switch
     {
-        TaskTopic.BudgetPlanning => "📊 Планирование бюджета",
-        TaskTopic.SavingsAndReserve => "🏦 Сбережения и подушка",
-        TaskTopic.PaymentsAndSecurity => "🛡️ Платежи и безопасность",
+        TaskTopic.BudgetPlanning => "Планирование бюджета",
+        TaskTopic.SavingsAndReserve => "Сбережения и подушка",
+        TaskTopic.PaymentsAndSecurity => "Платежи и безопасность",
         _ => "Финансы"
     };
 }

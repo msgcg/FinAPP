@@ -12,16 +12,25 @@ namespace FinAPP.Views.Components;
 
 public partial class FinnyPetView : ContentView
 {
-    // Короткие советы на 1 предложение, не выходящие за рамки бабла
+    // Живые, увлекательные и практичные советы Финни для детей
     private readonly string[] _finnyQuotes = new[]
     {
-        "Планируй сначала обязательные траты, а потом желания!",
-        "Копилка растёт по монетке — так рождается капитал!",
-        "Никому не сообщай коды из СМС — Финни за безопасность!",
-        "Сложный процент умножает твои сбережения со временем!",
-        "Муррр! Спасибо за заботу и твою внимательность!",
-        "Правило 50/30/20 помогает копить легко и без стресса!",
-        "Запиши сегодняшние расходы, чтобы видеть свой прогресс!"
+        "Муррр! Знаешь секрет? Если не купить ненужную жвачку 10 раз — вот тебе и новая крутая игра!",
+        "Кошачий лайфхак: сначала кормим обязательные конверты, а вкусняшки — на десерт!",
+        "Монетки в копилке не спят, они приближают твою заветную мечту! Проверь прогресс цели!",
+        "Никому и никогда не говори секретные коды из СМС — даже если пишут от имени котика!",
+        "Правило умного кота: перед покупкой игрушки посчитай до 10. Если всё ещё хочется — бери!",
+        "Сложный процент — это как снежный ком из монет: катится по времени и становится огромным!",
+        "Составляй список перед походом в магазин — так монетки не разбегутся на случайные сладости!",
+        "Мяу! Сэкономленный рубль — это заработанный рубль! Ты отлично справляешься!",
+        "Погладь меня ещё разок! А потом загляни в магазин заботы — там есть лакомства!",
+        "Копилка — это твой личный сундук с сокровищами. Заглядывай в неё чаще!",
+        "Карманные деньги любят счёт и порядок. Попробуй записать сегодняшние траты!",
+        "У каждого великого миллионера всё начиналось с маленькой детской копилки!",
+        "Если потерял карту — сразу скажи родителям, они заблокируют её за пару секунд!",
+        "Игрушка надоест через пару дней, а достигнутая цель останется с тобой надолго!",
+        "Мур-мяу! Финансовая грамотность — это суперсила, которая останется с тобой навсегда!",
+        "Хочешь накопить быстрее? Решай финансовые задания и получай монетные награды!"
     };
     private int _quoteIndex = 0;
     private string _currentStagePrefix = "finny_baby";
@@ -30,6 +39,9 @@ public partial class FinnyPetView : ContentView
     private double _baseScale = 1.0;
     private bool _isReacting = false;
     private CancellationTokenSource? _waveCts;
+
+    // Делегат для обновления текста в облачке мыслей на главном экране
+    public Action<string>? SpeechTextChanged { get; set; }
 
     // Потокобезопасный кэш HTML с Base64 данными анимаций для мгновенного переключения без лагов
     private static readonly ConcurrentDictionary<string, string> s_htmlCache = new();
@@ -43,15 +55,15 @@ public partial class FinnyPetView : ContentView
 
     private void OnPetWebViewHandlerChanged(object? sender, EventArgs e)
     {
-        ConfigurePlatformWebView();
+        ConfigurePlatformWebView(PetWebView);
     }
 
-    private void ConfigurePlatformWebView()
+    public static void ConfigurePlatformWebView(WebView webView)
     {
 #if ANDROID
         try
         {
-            if (PetWebView.Handler?.PlatformView is Android.Webkit.WebView nativeWebView)
+            if (webView.Handler?.PlatformView is Android.Webkit.WebView nativeWebView)
             {
                 nativeWebView.SetBackgroundColor(Android.Graphics.Color.Transparent);
                 nativeWebView.VerticalScrollBarEnabled = false;
@@ -76,7 +88,7 @@ public partial class FinnyPetView : ContentView
 #if IOS || MACCATALYST
         try
         {
-            if (PetWebView.Handler?.PlatformView is WebKit.WKWebView wkWeb)
+            if (webView.Handler?.PlatformView is WebKit.WKWebView wkWeb)
             {
                 wkWeb.Opaque = false;
                 wkWeb.BackgroundColor = UIKit.UIColor.Clear;
@@ -95,7 +107,7 @@ public partial class FinnyPetView : ContentView
 #if WINDOWS
         try
         {
-            if (PetWebView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 winWebView)
+            if (webView.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.WebView2 winWebView)
             {
                 winWebView.DefaultBackgroundColor = Windows.UI.Color.FromArgb(0, 0, 0, 0);
             }
@@ -109,7 +121,7 @@ public partial class FinnyPetView : ContentView
 
     private void OnLoaded(object? sender, EventArgs e)
     {
-        ConfigurePlatformWebView();
+        ConfigurePlatformWebView(PetWebView);
         ApplyAnimation(_currentEmotionGif, force: true);
 
         // В фоне прогреваем кэш остальных анимаций текущей стадии для мгновенного переключения
@@ -188,25 +200,25 @@ public partial class FinnyPetView : ContentView
         switch (profile.Stage)
         {
             case GrowthStage.Baby:
-                _baseScale = 0.95;
-                LblStageBadge.Text = "Финни-Малыш (1 ст.)";
+                _baseScale = 0.96;
+                LblStageBadge.Text = "Малыш (1 ст.)";
                 MasterAura.IsVisible = false;
                 break;
             case GrowthStage.Teen:
                 _baseScale = 1.0;
-                LblStageBadge.Text = "Финни-Юниор (2 ст.)";
+                LblStageBadge.Text = "Юниор (2 ст.)";
                 MasterAura.IsVisible = false;
                 break;
             case GrowthStage.Master:
-                _baseScale = 1.06;
-                LblStageBadge.Text = "Финни-Мастер (3 ст.)";
+                _baseScale = 1.05;
+                LblStageBadge.Text = "Мастер (3 ст.)";
                 MasterAura.IsVisible = true;
                 break;
         }
 
         if (!_isReacting)
         {
-            PetFrameCard.Scale = _baseScale;
+            PetContainer.Scale = _baseScale;
         }
     }
 
@@ -231,7 +243,7 @@ public partial class FinnyPetView : ContentView
                     PetWebView.Source = new HtmlWebViewSource { Html = html };
                     PetWebView.IsVisible = true;
                     ImgPetFallback.IsVisible = false;
-                    ConfigurePlatformWebView();
+                    ConfigurePlatformWebView(PetWebView);
                 }
                 else
                 {
@@ -254,7 +266,7 @@ public partial class FinnyPetView : ContentView
         }
     }
 
-    private static async Task<string> GetOrLoadHtmlAsync(string gifName)
+    public static async Task<string> GetOrLoadHtmlAsync(string gifName)
     {
         if (s_htmlCache.TryGetValue(gifName, out var cachedHtml))
         {
@@ -268,6 +280,8 @@ public partial class FinnyPetView : ContentView
             await stream.CopyToAsync(ms);
             var base64 = Convert.ToBase64String(ms.ToArray());
 
+            // Важно: justify-content: flex-start прижимает Финни к левому краю кадра,
+            // благодаря чему левый срез хвоста идеально совпадает с границей экрана и выглядит естественно!
             var html = $@"<!DOCTYPE html>
 <html>
 <head>
@@ -290,7 +304,7 @@ public partial class FinnyPetView : ContentView
             background: transparent !important;
             background-color: transparent !important;
             display: flex;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             user-select: none;
             -webkit-user-select: none;
@@ -302,6 +316,7 @@ public partial class FinnyPetView : ContentView
             height: auto;
             object-fit: contain;
             display: block;
+            margin-left: 0;
             pointer-events: none;
         }}
     </style>
@@ -323,17 +338,18 @@ public partial class FinnyPetView : ContentView
 
     public void SetSpeechText(string text)
     {
-        LblSpeech.Text = text;
+        SpeechTextChanged?.Invoke(text);
     }
 
-    private async Task AnimateBubbleBounce()
+    public void NextQuote()
     {
-        try
-        {
-            await SpeechBubble.ScaleToAsync(1.06, 90, Easing.CubicOut);
-            await SpeechBubble.ScaleToAsync(1.0, 90, Easing.CubicIn);
-        }
-        catch { }
+        _quoteIndex = (_quoteIndex + 1) % _finnyQuotes.Length;
+        SetSpeechText(_finnyQuotes[_quoteIndex]);
+    }
+
+    public void TapPet()
+    {
+        OnPetTapped(this, EventArgs.Empty);
     }
 
     private async void OnPetTapped(object? sender, EventArgs e)
@@ -350,10 +366,9 @@ public partial class FinnyPetView : ContentView
             }
             catch { }
 
-            // 2. Смена цитаты и анимация облачка
+            // 2. Смена цитаты Финни
             _quoteIndex = (_quoteIndex + 1) % _finnyQuotes.Length;
             SetSpeechText(_finnyQuotes[_quoteIndex]);
-            _ = AnimateBubbleBounce();
 
             // 3. Отменяем предыдущий таймер возврата, если был
             _waveCts?.Cancel();
@@ -364,9 +379,9 @@ public partial class FinnyPetView : ContentView
             // 4. Переключаем на анимацию приветствия текущей стадии
             ApplyAnimation($"{_currentStagePrefix}_wave.gif", force: true);
 
-            // 5. Пружинистый подскок карточки персонажа
-            await PetFrameCard.ScaleToAsync(_baseScale * 1.05, 120, Easing.CubicOut);
-            await PetFrameCard.ScaleToAsync(_baseScale, 120, Easing.CubicIn);
+            // 5. Пружинистый подскок персонажа
+            await PetContainer.ScaleToAsync(_baseScale * 1.05, 120, Easing.CubicOut);
+            await PetContainer.ScaleToAsync(_baseScale, 120, Easing.CubicIn);
 
             // 6. Даем помахать 1.8 секунды, затем возвращаем базовую эмоцию
             await Task.Delay(1800, ct);

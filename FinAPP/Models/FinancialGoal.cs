@@ -5,7 +5,7 @@ public class FinancialGoal
     public string Id { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public int TargetAmount { get; set; }
-    public string IconEmoji { get; set; } = "🎯";
+    public string IconEmoji { get; set; } = string.Empty;
     public string Icon => IconEmoji;
     public string IconImage { get; set; } = "ic_goal_scooter.png";
     public string Description { get; set; } = string.Empty;
