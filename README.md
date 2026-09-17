@@ -52,7 +52,7 @@
    ```powershell
    pwsh -File .\scripts\build_apk.ps1
    ```
-   Готовый файл: `dist/FinAPP.apk` (83.04 МБ, подписан ключом RSA 2048-bit `dist/finapp_release.keystore`, SHA-256: `B3A10E134F6436E574E6EFB0B955BA8CBEB4D0713C7B604C57ADDE92559ABB42`).
+   Готовый файл: `dist/FinAPP.apk` (83.18 МБ, подписан ключом RSA 2048-bit `dist/finapp_release.keystore`, SHA-256: `721FBBFACEEAE32D0543C41557BCD835545B7E9558586C3A1C58A68CF5C67EAB`).
 
 ---
 

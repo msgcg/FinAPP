@@ -40,6 +40,10 @@ if (-not (Test-Path $KeystorePath)) {
         -dname "CN=FinAPP, OU=LCT2026, O=MoscowFinance, L=Moscow, ST=Moscow, C=RU"
 }
 
+Write-Host "Очистка кэша resizetizer в $env:TEMP\FinAPP..." -ForegroundColor Cyan
+Remove-Item -Path "$env:TEMP\FinAPP\obj\$Configuration" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:TEMP\FinAPP\bin\$Configuration" -Recurse -Force -ErrorAction SilentlyContinue
+
 Write-Host "Запуск компиляции и сборки релизного APK ($Configuration)..." -ForegroundColor Cyan
 
 # 3. Публикация и подпись APK через dotnet publish
