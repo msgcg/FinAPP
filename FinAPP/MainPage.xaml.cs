@@ -296,6 +296,198 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
+    // 1.5. СТИЛИЗОВАННЫЕ ВНУТРИИГРОВЫЕ ДИАЛОГИ (ALERT, CONFIRM, PROMPT, ACTIONSHEET)
+    // =========================================================================
+    private TaskCompletionSource<bool>? _dialogAlertTcs;
+    private TaskCompletionSource<string?>? _dialogPromptTcs;
+    private TaskCompletionSource<string?>? _dialogActionSheetTcs;
+
+    private async Task ShowStyledAlertAsync(string title, string message, string icon = "ic_stat_balance.png", string buttonText = "Понятно")
+    {
+        _dialogAlertTcs?.TrySetCanceled();
+        _dialogAlertTcs = new TaskCompletionSource<bool>();
+
+        StylizedDialogTitle.Text = title;
+        StylizedDialogMessage.Text = message;
+        StylizedDialogIcon.Source = icon;
+
+        StylizedDialogInputContainer.IsVisible = false;
+        StylizedDialogOptionsScroll.IsVisible = false;
+
+        StylizedDialogButtonsGrid.IsVisible = true;
+        StylizedDialogBtnCancel.IsVisible = false;
+
+        Grid.SetColumn(StylizedDialogBtnConfirm, 0);
+        Grid.SetColumnSpan(StylizedDialogBtnConfirm, 2);
+        StylizedDialogBtnConfirm.IsVisible = true;
+        StylizedDialogBtnConfirm.BackgroundColor = Color.FromArgb("#520978");
+        StylizedDialogLblConfirm.Text = buttonText;
+
+        await AnimateShowStyledDialog();
+        try { await _dialogAlertTcs.Task; } catch { }
+        await AnimateHideStyledDialog();
+    }
+
+    private async Task<bool> ShowStyledConfirmAsync(string title, string message, string icon = "ic_stat_balance.png", string confirmText = "Да", string cancelText = "Отмена", bool isDestructive = false)
+    {
+        _dialogAlertTcs?.TrySetCanceled();
+        _dialogAlertTcs = new TaskCompletionSource<bool>();
+
+        StylizedDialogTitle.Text = title;
+        StylizedDialogMessage.Text = message;
+        StylizedDialogIcon.Source = icon;
+
+        StylizedDialogInputContainer.IsVisible = false;
+        StylizedDialogOptionsScroll.IsVisible = false;
+
+        StylizedDialogButtonsGrid.IsVisible = true;
+        StylizedDialogBtnCancel.IsVisible = true;
+        Grid.SetColumn(StylizedDialogBtnCancel, 0);
+        Grid.SetColumnSpan(StylizedDialogBtnCancel, 1);
+        StylizedDialogLblCancel.Text = cancelText;
+
+        Grid.SetColumn(StylizedDialogBtnConfirm, 1);
+        Grid.SetColumnSpan(StylizedDialogBtnConfirm, 1);
+        StylizedDialogBtnConfirm.IsVisible = true;
+        StylizedDialogBtnConfirm.BackgroundColor = isDestructive ? Color.FromArgb("#DC2626") : Color.FromArgb("#520978");
+        StylizedDialogLblConfirm.Text = confirmText;
+
+        await AnimateShowStyledDialog();
+        bool result = false;
+        try { result = await _dialogAlertTcs.Task; } catch { }
+        await AnimateHideStyledDialog();
+        return result;
+    }
+
+    private async Task<string?> ShowStyledPromptAsync(string title, string message, string icon = "ic_stat_balance.png", string acceptText = "ОК", string cancelText = "Отмена", string placeholder = "", Keyboard? keyboard = null, int maxLength = 40)
+    {
+        _dialogPromptTcs?.TrySetCanceled();
+        _dialogPromptTcs = new TaskCompletionSource<string?>();
+
+        StylizedDialogTitle.Text = title;
+        StylizedDialogMessage.Text = message;
+        StylizedDialogIcon.Source = icon;
+
+        StylizedDialogEntry.Text = string.Empty;
+        StylizedDialogEntry.Placeholder = placeholder;
+        StylizedDialogEntry.Keyboard = keyboard ?? Keyboard.Default;
+        StylizedDialogEntry.MaxLength = maxLength;
+        StylizedDialogInputContainer.IsVisible = true;
+        StylizedDialogOptionsScroll.IsVisible = false;
+
+        StylizedDialogButtonsGrid.IsVisible = true;
+        StylizedDialogBtnCancel.IsVisible = true;
+        Grid.SetColumn(StylizedDialogBtnCancel, 0);
+        Grid.SetColumnSpan(StylizedDialogBtnCancel, 1);
+        StylizedDialogLblCancel.Text = cancelText;
+
+        Grid.SetColumn(StylizedDialogBtnConfirm, 1);
+        Grid.SetColumnSpan(StylizedDialogBtnConfirm, 1);
+        StylizedDialogBtnConfirm.IsVisible = true;
+        StylizedDialogBtnConfirm.BackgroundColor = Color.FromArgb("#520978");
+        StylizedDialogLblConfirm.Text = acceptText;
+
+        await AnimateShowStyledDialog();
+        StylizedDialogEntry.Focus();
+        string? result = null;
+        try { result = await _dialogPromptTcs.Task; } catch { }
+        await AnimateHideStyledDialog();
+        return result;
+    }
+
+    private async Task<string?> ShowStyledActionSheetAsync(string title, string message, string icon = "ic_stat_balance.png", string cancelText = "Отмена", params string[] options)
+    {
+        _dialogActionSheetTcs?.TrySetCanceled();
+        _dialogActionSheetTcs = new TaskCompletionSource<string?>();
+
+        StylizedDialogTitle.Text = title;
+        StylizedDialogMessage.Text = message;
+        StylizedDialogIcon.Source = icon;
+
+        StylizedDialogInputContainer.IsVisible = false;
+        StylizedDialogOptionsContainer.Children.Clear();
+
+        foreach (var opt in options)
+        {
+            var optCard = new Border
+            {
+                BackgroundColor = Color.FromArgb("#F8F7FD"),
+                Stroke = Color.FromArgb("#8A83D1"),
+                StrokeThickness = 1,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
+                Padding = new Thickness(14, 10),
+                InputTransparent = false
+            };
+            var optLabel = new Label
+            {
+                Text = opt,
+                FontFamily = "MontserratBold",
+                FontSize = 13,
+                TextColor = Color.FromArgb("#520978"),
+                HorizontalOptions = LayoutOptions.Center,
+                VerticalOptions = LayoutOptions.Center
+            };
+            optCard.Content = optLabel;
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += async (s, e) =>
+            {
+                await AnimateTap(optCard);
+                _dialogActionSheetTcs?.TrySetResult(opt);
+            };
+            optCard.GestureRecognizers.Add(tap);
+            StylizedDialogOptionsContainer.Children.Add(optCard);
+        }
+
+        StylizedDialogOptionsScroll.IsVisible = true;
+
+        StylizedDialogButtonsGrid.IsVisible = true;
+        StylizedDialogBtnCancel.IsVisible = true;
+        Grid.SetColumn(StylizedDialogBtnCancel, 0);
+        Grid.SetColumnSpan(StylizedDialogBtnCancel, 2);
+        StylizedDialogLblCancel.Text = cancelText;
+        StylizedDialogBtnConfirm.IsVisible = false;
+
+        await AnimateShowStyledDialog();
+        string? result = null;
+        try { result = await _dialogActionSheetTcs.Task; } catch { }
+        await AnimateHideStyledDialog();
+        return result;
+    }
+
+    private async Task AnimateShowStyledDialog()
+    {
+        StylizedDialogOverlay.Opacity = 0;
+        StylizedDialogOverlay.IsVisible = true;
+        StylizedDialogCard.Scale = 0.9;
+        var f = StylizedDialogOverlay.FadeToAsync(1.0, 150, Easing.CubicOut);
+        var s = StylizedDialogCard.ScaleToAsync(1.0, 150, Easing.CubicOut);
+        await Task.WhenAll(f, s);
+    }
+
+    private async Task AnimateHideStyledDialog()
+    {
+        var f = StylizedDialogOverlay.FadeToAsync(0.0, 120, Easing.CubicIn);
+        var s = StylizedDialogCard.ScaleToAsync(0.9, 120, Easing.CubicIn);
+        await Task.WhenAll(f, s);
+        StylizedDialogOverlay.IsVisible = false;
+    }
+
+    private async void OnStylizedDialogCancelClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _dialogAlertTcs?.TrySetResult(false);
+        _dialogPromptTcs?.TrySetResult(null);
+        _dialogActionSheetTcs?.TrySetResult(StylizedDialogLblCancel.Text);
+    }
+
+    private async void OnStylizedDialogConfirmClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _dialogAlertTcs?.TrySetResult(true);
+        _dialogPromptTcs?.TrySetResult(StylizedDialogEntry.Text?.Trim() ?? string.Empty);
+    }
+
+    // =========================================================================
     // 2. МОДАЛКА: КАСТОМИЗАЦИЯ ПОДИУМОВ, РАБОЧИХ СТОЛОВ И ИМЕНИ
     // =========================================================================
     private async void OnCustomizerClicked(object? sender, EventArgs e)
@@ -402,18 +594,25 @@ public partial class MainPage : ContentPage
             badge.IsVisible = true;
             if (isActive)
             {
-                lbl.Text = "Активно";
+                lbl.Text = "Активно ✓";
+                lbl.TextColor = Colors.White;
                 badge.BackgroundColor = Color.FromArgb("#10B981");
+                badge.StrokeThickness = 0;
             }
             else if (isUnlocked)
             {
                 lbl.Text = "Выбрать";
-                badge.BackgroundColor = Color.FromArgb("#6B7280");
+                lbl.TextColor = Colors.White;
+                badge.BackgroundColor = Color.FromArgb("#10B981");
+                badge.StrokeThickness = 0;
             }
             else
             {
-                lbl.Text = $"🔒 {price} м.";
-                badge.BackgroundColor = Color.FromArgb("#DC2626");
+                bool canAfford = _engine.Profile.Balance >= price;
+                lbl.Text = canAfford ? $"🔓 {price} м." : $"🔒 {price} м.";
+                lbl.TextColor = Colors.White;
+                badge.BackgroundColor = canAfford ? Color.FromArgb("#10B981") : Color.FromArgb("#EF4444");
+                badge.StrokeThickness = 0;
             }
         }
     }
@@ -446,14 +645,22 @@ public partial class MainPage : ContentPage
         if (!p.IsPlatformUnlocked(platform))
         {
             int price = GetPlatformPrice(platform);
-            string choice = await DisplayActionSheet($"Подиум «{GetPlatformName(platform)}» закрыт ({price} монет)", "Отмена", null,
+            string? choice = await ShowStyledActionSheetAsync(
+                $"Подиум «{GetPlatformName(platform)}»",
+                $"Этот подиум закрыт. Стоимость: {price} монет.",
+                "ic_customizer.png",
+                "Отмена",
                 $"Купить за {price} монет", "Поставить целью накопления 🎯");
             if (choice == $"Купить за {price} монет")
             {
                 if (p.Balance < price)
                 {
                     AudioService.Instance.PlaySfx("sfx_error");
-                    await DisplayAlert("Не хватает монет", $"У вас {p.Balance} монет, а требуется {price} монет.\nПополните баланс за счёт заданий или снимите часть из копилки.", "Понятно");
+                    await ShowStyledAlertAsync(
+                        "Не хватает монет",
+                        $"У тебя {p.Balance} монет, а требуется {price} монет.\nПополни баланс за счёт заданий или сними часть из копилки.",
+                        "ic_stat_balance.png",
+                        "Понятно");
                     return;
                 }
                 p.Balance -= price;
@@ -468,23 +675,23 @@ public partial class MainPage : ContentPage
                 await _engine.SaveAsync();
                 UpdateCustomizerPlatformBadges(platform);
                 PetView.SetSpeechText($"Ура! Подиум «{GetPlatformName(platform)}» куплен и установлен!");
-                return;
+                PetView.PlayAction("proud");
             }
             else if (choice == "Поставить целью накопления 🎯")
             {
                 SetPlatformAsGoal(platform);
-                return;
             }
             return;
         }
 
         p.Platform = platform;
-        UpdateCustomizerPlatformBadges(platform);
+        AudioService.Instance.PlaySfx("sfx_tap");
         PetView.UpdatePlatform(platform);
-        PetView.PlayAction("proud");
         RefreshUI();
         await _engine.SaveAsync();
+        UpdateCustomizerPlatformBadges(platform);
         PetView.SetSpeechText(speech);
+        PetView.PlayAction("wave");
     }
 
     private void SetPlatformAsGoal(PetPlatformType platform)
@@ -548,19 +755,19 @@ public partial class MainPage : ContentPage
     private async void OnPlatformFlowersClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        await SelectPlatformAsync(PetPlatformType.Flowers, "Цветочная полянка! Лапкам тепло и пахнет весенней свежестью!");
+        await SelectPlatformAsync(PetPlatformType.Flowers, "Зелёная полянка с ромашками! Свежий воздух вдохновляет расти!");
     }
 
     private async void OnPlatformStarsClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        await SelectPlatformAsync(PetPlatformType.Stars, "Звёздная дорожка! Настоящий золотой пьедестал финансового успеха!");
+        await SelectPlatformAsync(PetPlatformType.Stars, "Золотой звёздный подиум! Сверкает за каждую сохранённую монетку!");
     }
 
     private async void OnPlatformEmeraldClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        await SelectPlatformAsync(PetPlatformType.Emerald, "Изумрудный кристалл! Неоновая энергия накоплений заряжает копилку!");
+        await SelectPlatformAsync(PetPlatformType.Emerald, "Изумрудный кристалл! Символ финансовой стабильности и процветания!");
     }
 
     private async void OnPlatformCosmicClicked(object? sender, EventArgs e)
@@ -581,14 +788,22 @@ public partial class MainPage : ContentPage
         if (!p.IsDeskUnlocked(desk))
         {
             int price = GetDeskPrice(desk);
-            string choice = await DisplayActionSheet($"Стол «{GetDeskName(desk)}» закрыт ({price} монет)", "Отмена", null,
+            string? choice = await ShowStyledActionSheetAsync(
+                $"Стол «{GetDeskName(desk)}»",
+                $"Этот рабочий стол закрыт. Стоимость: {price} монет.",
+                "ic_customizer.png",
+                "Отмена",
                 $"Купить за {price} монет", "Поставить целью накопления 🎯");
             if (choice == $"Купить за {price} монет")
             {
                 if (p.Balance < price)
                 {
                     AudioService.Instance.PlaySfx("sfx_error");
-                    await DisplayAlert("Не хватает монет", $"У вас {p.Balance} монет, а требуется {price} монет.\nПополните баланс за счёт заданий или снимите часть из копилки.", "Понятно");
+                    await ShowStyledAlertAsync(
+                        "Не хватает монет",
+                        $"У тебя {p.Balance} монет, а требуется {price} монет.\nПополни баланс за счёт заданий или сними часть из копилки.",
+                        "ic_stat_balance.png",
+                        "Понятно");
                     return;
                 }
                 p.Balance -= price;
@@ -603,6 +818,7 @@ public partial class MainPage : ContentPage
                 await _engine.SaveAsync();
                 UpdateCustomizerDeskBadges(desk);
                 PetView.SetSpeechText($"Ура! Рабочий стол «{GetDeskName(desk)}» куплен!");
+                PetView.PlayAction("proud");
                 return;
             }
             else if (choice == "Поставить целью накопления 🎯")
@@ -1223,7 +1439,7 @@ public partial class MainPage : ContentPage
                 };
                 activeBadge.Content = new Label
                 {
-                    Text = isActive ? "Активно" : "Выбрать",
+                    Text = isActive ? "Активно ✓" : "Выбрать",
                     TextColor = Colors.White,
                     FontFamily = "MontserratBold",
                     FontSize = 11,
@@ -1273,16 +1489,24 @@ public partial class MainPage : ContentPage
                 actionLayout.Children.Add(goalBtn);
 
                 // Кнопка покупки
+                bool canAfford = p.Balance >= item.Price;
                 var buyBtn = new Border
                 {
-                    BackgroundColor = Color.FromArgb("#10B981"),
+                    BackgroundColor = canAfford ? Color.FromArgb("#10B981") : Color.FromArgb("#EF4444"),
                     StrokeThickness = 0,
                     StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
                     Padding = new Thickness(10, 6),
                     InputTransparent = false,
                     VerticalOptions = LayoutOptions.Center
                 };
-                buyBtn.Content = new Label { Text = $"{item.Price} м.", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+                buyBtn.Content = new Label
+                {
+                    Text = canAfford ? $"{item.Price} м." : $"🔒 {item.Price} м.",
+                    TextColor = Colors.White,
+                    FontFamily = "MontserratBold",
+                    FontSize = 12,
+                    HorizontalOptions = LayoutOptions.Center
+                };
                 var tapBuy = new TapGestureRecognizer();
                 tapBuy.Tapped += async (s, e) =>
                 {
@@ -1338,26 +1562,22 @@ public partial class MainPage : ContentPage
                 double targetX = Math.Cos(angle) * distance;
                 double targetY = Math.Sin(angle) * distance + rnd.Next(30, 90);
                 double targetRot = rnd.Next(-360, 360);
-                double targetScale = rnd.NextDouble() * 0.5 + 0.8;
-                uint duration = (uint)rnd.Next(650, 1000);
 
-                var moveTask = Task.Run(async () =>
-                {
-                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                var moveTask = Task.WhenAll(
+                    particle.TranslateToAsync(targetX, targetY, (uint)rnd.Next(650, 950), Easing.CubicOut),
+                    particle.RotateToAsync(targetRot, (uint)rnd.Next(650, 950), Easing.CubicOut),
+                    particle.ScaleToAsync(rnd.NextDouble() * 0.5 + 0.7, (uint)rnd.Next(650, 950), Easing.CubicOut),
+                    Task.Run(async () =>
                     {
-                        var trans = particle.TranslateToAsync(targetX, targetY, duration, Easing.CubicOut);
-                        var rot = particle.RotateToAsync(targetRot, duration);
-                        var sc = particle.ScaleToAsync(targetScale, duration, Easing.CubicOut);
-                        await Task.WhenAll(trans, rot, sc);
-                        await particle.FadeToAsync(0, 250, Easing.CubicIn);
-                    });
-                });
+                        await Task.Delay(rnd.Next(350, 500));
+                        await particle.FadeToAsync(0.0, 350, Easing.CubicIn);
+                    })
+                );
                 tasks.Add(moveTask);
             }
 
-            _ = Task.Run(async () =>
+            _ = Task.WhenAll(tasks).ContinueWith(_ =>
             {
-                await Task.WhenAll(tasks);
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     foreach (var p in particles)
@@ -1367,9 +1587,9 @@ public partial class MainPage : ContentPage
                 });
             });
         }
-        catch (Exception ex)
+        catch
         {
-            System.Diagnostics.Debug.WriteLine($"[ParticleBurst] error: {ex.Message}");
+            // Игнорируем исключения при прерывании анимации частиц
         }
     }
 
@@ -1442,6 +1662,11 @@ public partial class MainPage : ContentPage
         if (p.Balance < item.Price)
         {
             AudioService.Instance.PlaySfx("sfx_error");
+            await ShowStyledAlertAsync(
+                "Не хватает монет",
+                $"У тебя {p.Balance} монет, а требуется {item.Price} монет.\nПополни баланс за счёт заданий или забери монетки из копилки.",
+                "ic_stat_balance.png",
+                "Понятно");
             PetView.SetSpeechText("Недостаточно монет! Выполни задание или спланируй бюджет.");
             return;
         }
@@ -1508,6 +1733,7 @@ public partial class MainPage : ContentPage
         ImgModalCurrentGoal.Source = currentGoal.IconImage;
         LblModalGoalProgress.Text = $"Накоплено: {p.Savings} / {currentGoal.TargetAmount} монет ({percent}%)";
         BarModalGoal.Progress = percent / 100.0;
+        UpdateGoalDepositWithdrawButtons();
 
         GoalsListContainer.Children.Clear();
         foreach (var goal in goals)
@@ -1687,7 +1913,12 @@ public partial class MainPage : ContentPage
             PetDeskType.Botanical
         };
         var options = desks.Select(d => $"{GetDeskName(d)} ({GetDeskPrice(d)} монет)").ToArray();
-        string choice = await DisplayActionSheet("Выбери рабочий стол для накопления:", "Отмена", null, options);
+        string? choice = await ShowStyledActionSheetAsync(
+            "Цель: Рабочий стол",
+            "Выбери рабочий стол для накопления:",
+            "ic_customizer.png",
+            "Отмена",
+            options);
         if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
         {
             int idx = Array.IndexOf(options, choice);
@@ -1708,7 +1939,12 @@ public partial class MainPage : ContentPage
             PetPlatformType.Cosmic
         };
         var options = platforms.Select(p => $"{GetPlatformName(p)} ({GetPlatformPrice(p)} монет)").ToArray();
-        string choice = await DisplayActionSheet("Выбери подиум для накопления:", "Отмена", null, options);
+        string? choice = await ShowStyledActionSheetAsync(
+            "Цель: Подиум",
+            "Выбери подиум для накопления:",
+            "ic_customizer.png",
+            "Отмена",
+            options);
         if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
         {
             int idx = Array.IndexOf(options, choice);
@@ -1723,7 +1959,12 @@ public partial class MainPage : ContentPage
     {
         var toys = ContentRepository.GetShopItems().Where(i => i.Category == ExpenseCategory.Discretionary).ToList();
         var options = toys.Select(t => $"{t.Name} ({t.Price} монет)").ToArray();
-        string choice = await DisplayActionSheet("Выбери игрушку для накопления:", "Отмена", null, options);
+        string? choice = await ShowStyledActionSheetAsync(
+            "Цель: Игрушка",
+            "Выбери игрушку для накопления:",
+            "ic_stat_mood.png",
+            "Отмена",
+            options);
         if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
         {
             int idx = Array.IndexOf(options, choice);
@@ -1737,7 +1978,11 @@ public partial class MainPage : ContentPage
     private async void OnAddCustomGoalClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        string choice = await DisplayActionSheet("Поставить новую цель накопления", "Отмена", null,
+        string? choice = await ShowStyledActionSheetAsync(
+            "Новая цель накопления 🎯",
+            "Как ты хочешь выбрать цель?",
+            "ic_stat_savings.png",
+            "Отмена",
             "Ввести свою мечту и сумму вручную",
             "Выбрать рабочий столик Финни",
             "Выбрать подиум под лапки",
@@ -1745,10 +1990,25 @@ public partial class MainPage : ContentPage
 
         if (choice == "Ввести свою мечту и сумму вручную")
         {
-            string name = await DisplayPromptAsync("Новая цель", "На что ты хочешь накопить?", "Далее", "Отмена", "Например: Роликовые коньки", maxLength: 35);
+            string? name = await ShowStyledPromptAsync(
+                "Новая цель",
+                "На что ты хочешь накопить?",
+                "ic_stat_savings.png",
+                "Далее",
+                "Отмена",
+                placeholder: "Например: Роликовые коньки",
+                maxLength: 35);
             if (string.IsNullOrWhiteSpace(name)) return;
 
-            string amountStr = await DisplayPromptAsync("Стоимость цели", $"Сколько монет стоит «{name.Trim()}»?", "Создать", "Отмена", "Например: 500", keyboard: Keyboard.Numeric);
+            string? amountStr = await ShowStyledPromptAsync(
+                "Стоимость цели",
+                $"Сколько монет стоит «{name.Trim()}»?",
+                "ic_stat_balance.png",
+                "Создать",
+                "Отмена",
+                placeholder: "Например: 500",
+                keyboard: Keyboard.Numeric,
+                maxLength: 6);
             if (int.TryParse(amountStr, out int targetAmount) && targetAmount > 0)
             {
                 var newGoal = new FinancialGoal
@@ -1782,12 +2042,66 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private void UpdateGoalDepositWithdrawButtons()
+    {
+        var p = _engine.Profile;
+
+        // Пополнение (+20, +50, +100) из кошелька
+        SetDepositButtonState(BtnGoalDeposit20, LblGoalDeposit20, p.Balance >= 20, "+20 монет");
+        SetDepositButtonState(BtnGoalDeposit50, LblGoalDeposit50, p.Balance >= 50, "+50 монет");
+        SetDepositButtonState(BtnGoalDeposit100, LblGoalDeposit100, p.Balance >= 100, "+100 монет");
+
+        // Снятие (-20, -50, -100) из сбережений
+        SetWithdrawButtonState(BtnGoalWithdraw20, LblGoalWithdraw20, p.Savings >= 20, "-20 монет");
+        SetWithdrawButtonState(BtnGoalWithdraw50, LblGoalWithdraw50, p.Savings >= 50, "-50 монет");
+        SetWithdrawButtonState(BtnGoalWithdraw100, LblGoalWithdraw100, p.Savings >= 100, "-100 монет");
+    }
+
+    private void SetDepositButtonState(Border btn, Label lbl, bool canAfford, string text)
+    {
+        lbl.Text = text;
+        if (canAfford)
+        {
+            btn.BackgroundColor = Color.FromArgb("#DCFCE7");
+            btn.Stroke = Color.FromArgb("#10B981");
+            lbl.TextColor = Color.FromArgb("#166534");
+        }
+        else
+        {
+            btn.BackgroundColor = Color.FromArgb("#FEE2E2");
+            btn.Stroke = Color.FromArgb("#EF4444");
+            lbl.TextColor = Color.FromArgb("#991B1B");
+        }
+    }
+
+    private void SetWithdrawButtonState(Border btn, Label lbl, bool canWithdraw, string text)
+    {
+        lbl.Text = text;
+        if (canWithdraw)
+        {
+            btn.BackgroundColor = Color.FromArgb("#EBE9F8");
+            btn.Stroke = Color.FromArgb("#8A83D1");
+            lbl.TextColor = Color.FromArgb("#520978");
+        }
+        else
+        {
+            btn.BackgroundColor = Color.FromArgb("#FEE2E2");
+            btn.Stroke = Color.FromArgb("#EF4444");
+            lbl.TextColor = Color.FromArgb("#991B1B");
+        }
+    }
+
     private async Task DepositToSavings(int amount)
     {
         var p = _engine.Profile;
         if (p.Balance < amount)
         {
             AudioService.Instance.PlaySfx("sfx_error");
+            await ShowStyledAlertAsync(
+                "Не хватает монет",
+                $"В кошельке только {p.Balance} монет, а нужно {amount} монет для пополнения копилки!",
+                "ic_stat_balance.png",
+                "Понятно");
             PetView.SetSpeechText($"Не хватает {amount} монет на балансе для пополнения копилки!");
             return;
         }
@@ -1824,6 +2138,11 @@ public partial class MainPage : ContentPage
         if (p.Savings < amount)
         {
             AudioService.Instance.PlaySfx("sfx_error");
+            await ShowStyledAlertAsync(
+                "Не хватает монет",
+                $"В копилке только {p.Savings} монет, нельзя снять {amount} монет!",
+                "ic_stat_savings.png",
+                "Понятно");
             PetView.SetSpeechText($"В копилке только {p.Savings} монет, нельзя снять {amount}!");
             return;
         }
@@ -1898,10 +2217,6 @@ public partial class MainPage : ContentPage
 
             LblTransferHint.Text = "Пополнение копилки приближает цель и радует Финни!";
             LblTransferHint.TextColor = Color.FromArgb("#520978");
-
-            LblTransferBtn1.Text = "+20 монет";
-            LblTransferBtn2.Text = "+50 монет";
-            LblTransferBtn3.Text = "+100 монет";
         }
         else
         {
@@ -1915,11 +2230,12 @@ public partial class MainPage : ContentPage
 
             LblTransferHint.Text = "Снятие из копилки в кошелёк для неотложных трат.";
             LblTransferHint.TextColor = Color.FromArgb("#B91C1C");
-
-            LblTransferBtn1.Text = "-20 монет";
-            LblTransferBtn2.Text = "-50 монет";
-            LblTransferBtn3.Text = "-100 монет";
         }
+
+        int sourceAvailable = _isTransferToSavings ? p.Balance : p.Savings;
+        SetDepositButtonState(BtnTransfer1, LblTransferBtn1, sourceAvailable >= 20, _isTransferToSavings ? "+20 монет" : "-20 монет");
+        SetDepositButtonState(BtnTransfer2, LblTransferBtn2, sourceAvailable >= 50, _isTransferToSavings ? "+50 монет" : "-50 монет");
+        SetDepositButtonState(BtnTransfer3, LblTransferBtn3, sourceAvailable >= 100, _isTransferToSavings ? "+100 монет" : "-100 монет");
     }
 
     private async void OnTransferBtn1Clicked(object? sender, EventArgs e)
@@ -2132,8 +2448,10 @@ public partial class MainPage : ContentPage
     private async void OnParentChangePinClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
-        string result = await DisplayPromptAsync("PIN-код родителей",
+        string? result = await ShowStyledPromptAsync(
+            "PIN-код родителей",
             "Задайте 4-значный цифровой PIN для входа (или оставьте пустым для входа по арифметическому примеру):",
+            "ic_action_parent.png",
             "Сохранить", "Отмена", placeholder: "4 цифры", maxLength: 4, keyboard: Keyboard.Numeric);
 
         if (result != null)
@@ -2259,7 +2577,12 @@ public partial class MainPage : ContentPage
     private async void OnParentResetDataClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        bool confirm = await DisplayAlertAsync("Сброс данных приложения", "Вы действительно хотите сбросить все данные приложения к начальному состоянию?", "Сбросить", "Отмена");
+        bool confirm = await ShowStyledConfirmAsync(
+            "Сброс данных приложения",
+            "Вы действительно хотите сбросить все данные приложения к начальному состоянию? Весь накопленный прогресс будет удалён.",
+            "ic_action_parent.png",
+            "Сбросить", "Отмена",
+            isDestructive: true);
         if (!confirm) return;
         _engine.ResetData();
         RefreshUI();

@@ -908,8 +908,8 @@
                                     <!-- Строка 1: Обязательные -->
                                     <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                            <BoxView Color="#10B981" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
-                                            <Label Text="Обязательные:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
+                                            <BoxView Grid.Column="0" Color="#10B981" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="Обязательные:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
                                             <Label x:Name="LblPlanFactOblig" Grid.Column="2" Text="250 / 120 м." FontFamily="MontserratBold" FontSize="11" TextColor="#166534" VerticalOptions="Center"/>
                                         </Grid>
                                     </Border>
@@ -917,8 +917,8 @@
                                     <!-- Строка 2: Желания -->
                                     <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                            <BoxView Color="#8B5CF6" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
-                                            <Label Text="Желания:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
+                                            <BoxView Grid.Column="0" Color="#8B5CF6" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="Желания:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
                                             <Label x:Name="LblPlanFactDisc" Grid.Column="2" Text="150 / 80 м." FontFamily="MontserratBold" FontSize="11" TextColor="#9D174D" VerticalOptions="Center"/>
                                         </Grid>
                                     </Border>
@@ -926,8 +926,8 @@
                                     <!-- Строка 3: Копилка -->
                                     <Border BackgroundColor="White" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="8,6">
                                         <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" VerticalOptions="Center">
-                                            <BoxView Color="#F59E0B" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
-                                            <Label Text="В копилку:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
+                                            <BoxView Grid.Column="0" Color="#F59E0B" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Grid.Column="1" Text="В копилку:" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151" VerticalOptions="Center"/>
                                             <Label x:Name="LblPlanFactSav" Grid.Column="2" Text="100 / 100 м." FontFamily="MontserratBold" FontSize="11" TextColor="#1E40AF" VerticalOptions="Center"/>
                                         </Grid>
                                     </Border>
@@ -1033,20 +1033,20 @@
                             <!-- Двустороннее перемещение средств: пополнение и снятие -->
                             <Label Text="Перемещение денег между балансом и копилкой:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
                             
-                            <!-- В копилку -->
+                             <!-- В копилку -->
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="Положить в копилку (из кошелька):" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
                                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                    <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                        <Label Text="+20 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border x:Name="BtnGoalDeposit20" BackgroundColor="#EBE9F8" StrokeThickness="1" Stroke="#8A83D1" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label x:Name="LblGoalDeposit20" Text="+20 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit20Clicked"/></Border.GestureRecognizers>
                                     </Border>
-                                    <Border Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                        <Label Text="+50 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border x:Name="BtnGoalDeposit50" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="1" Stroke="#8A83D1" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label x:Name="LblGoalDeposit50" Text="+50 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit50Clicked"/></Border.GestureRecognizers>
                                     </Border>
-                                    <Border Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                        <Label Text="+100 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border x:Name="BtnGoalDeposit100" Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="1" Stroke="#8A83D1" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label x:Name="LblGoalDeposit100" Text="+100 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit100Clicked"/></Border.GestureRecognizers>
                                     </Border>
                                 </Grid>
@@ -1056,16 +1056,16 @@
                             <VerticalStackLayout Spacing="4">
                                 <Label Text="Снять в кошелёк (на текущие расходы):" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
                                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                    <Border BackgroundColor="#FEE2E2" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                        <Label Text="-20 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border x:Name="BtnGoalWithdraw20" BackgroundColor="#FEE2E2" StrokeThickness="1" Stroke="#EF4444" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label x:Name="LblGoalWithdraw20" Text="-20 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnWithdraw20Clicked"/></Border.GestureRecognizers>
                                     </Border>
-                                    <Border Grid.Column="1" BackgroundColor="#FEE2E2" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                        <Label Text="-50 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border x:Name="BtnGoalWithdraw50" Grid.Column="1" BackgroundColor="#FEE2E2" StrokeThickness="1" Stroke="#EF4444" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label x:Name="LblGoalWithdraw50" Text="-50 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnWithdraw50Clicked"/></Border.GestureRecognizers>
                                     </Border>
-                                    <Border Grid.Column="2" BackgroundColor="#FEE2E2" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                        <Label Text="-100 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border x:Name="BtnGoalWithdraw100" Grid.Column="2" BackgroundColor="#FEE2E2" StrokeThickness="1" Stroke="#EF4444" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                        <Label x:Name="LblGoalWithdraw100" Text="-100 монет" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnWithdraw100Clicked"/></Border.GestureRecognizers>
                                     </Border>
                                 </Grid>
@@ -1359,15 +1359,15 @@
 
                             <!-- Фиксированные кнопки перевода -->
                             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
+                                <Border x:Name="BtnTransfer1" BackgroundColor="#EBE9F8" StrokeThickness="1" Stroke="#8A83D1" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
                                     <Label x:Name="LblTransferBtn1" Text="+20 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferBtn1Clicked"/></Border.GestureRecognizers>
                                 </Border>
-                                <Border Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
+                                <Border x:Name="BtnTransfer2" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="1" Stroke="#8A83D1" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
                                     <Label x:Name="LblTransferBtn2" Text="+50 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferBtn2Clicked"/></Border.GestureRecognizers>
                                 </Border>
-                                <Border Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
+                                <Border x:Name="BtnTransfer3" Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="1" Stroke="#8A83D1" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
                                     <Label x:Name="LblTransferBtn3" Text="+100 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTransferBtn3Clicked"/></Border.GestureRecognizers>
                                 </Border>
@@ -1952,6 +1952,135 @@
                         </Border>
                     </Grid>
                 </VerticalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+
+    <!-- ================================================================= -->
+    <!-- СТИЛИЗОВАННЫЙ ДИАЛОГОВЫЙ ОВЕРЛЕЙ (ALERT, CONFIRM, PROMPT, ACTIONSHEET) -->
+    <!-- ================================================================= -->
+    <Grid x:Name="StylizedDialogOverlay"
+          BackgroundColor="#99000000"
+          IsVisible="False"
+          Opacity="0"
+          ZIndex="9500"
+          InputTransparent="False">
+        <Border x:Name="StylizedDialogCard"
+                BackgroundColor="White"
+                Stroke="#8A83D1"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 24"
+                VerticalOptions="Center"
+                HorizontalOptions="Center"
+                MaximumWidthRequest="350"
+                Margin="24"
+                Padding="20,18">
+            <Border.Shadow>
+                <Shadow Brush="#520978" Offset="0,6" Radius="20" Opacity="0.25"/>
+            </Border.Shadow>
+
+            <VerticalStackLayout Spacing="14">
+                <!-- Заголовок и иконка -->
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" VerticalOptions="Center">
+                    <Border x:Name="StylizedDialogIconContainer"
+                            BackgroundColor="#EDE9FE"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            VerticalOptions="Center">
+                        <Image x:Name="StylizedDialogIcon"
+                               Source="ic_stat_balance.png"
+                               WidthRequest="24"
+                               HeightRequest="24"
+                               VerticalOptions="Center"
+                               HorizontalOptions="Center"/>
+                    </Border>
+                    <Label x:Name="StylizedDialogTitle"
+                           Grid.Column="1"
+                           Text="Заголовок"
+                           FontFamily="MontserratBold"
+                           FontSize="15"
+                           TextColor="#1F2937"
+                           VerticalOptions="Center"
+                           LineBreakMode="WordWrap"/>
+                </Grid>
+
+                <!-- Сообщение -->
+                <Label x:Name="StylizedDialogMessage"
+                       Text="Описание диалога"
+                       FontFamily="MontserratMedium"
+                       FontSize="13"
+                       TextColor="#4B5563"
+                       LineBreakMode="WordWrap"/>
+
+                <!-- Поле ввода для Prompt -->
+                <Border x:Name="StylizedDialogInputContainer"
+                        IsVisible="False"
+                        BackgroundColor="#F9FAFB"
+                        Stroke="#8A83D1"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="12,4">
+                    <Entry x:Name="StylizedDialogEntry"
+                           FontFamily="MontserratBold"
+                           FontSize="14"
+                           TextColor="#1F2937"
+                           PlaceholderColor="#9CA3AF"
+                           BackgroundColor="Transparent"/>
+                </Border>
+
+                <!-- Список вариантов для ActionSheet -->
+                <ScrollView x:Name="StylizedDialogOptionsScroll"
+                            IsVisible="False"
+                            MaximumHeightRequest="260"
+                            Orientation="Vertical">
+                    <VerticalStackLayout x:Name="StylizedDialogOptionsContainer" Spacing="8"/>
+                </ScrollView>
+
+                <!-- Кнопки действий (Alert / Confirm / Prompt) -->
+                <Grid x:Name="StylizedDialogButtonsGrid"
+                      ColumnDefinitions="*,*"
+                      ColumnSpacing="10">
+                    <!-- Отмена -->
+                    <Border x:Name="StylizedDialogBtnCancel"
+                            BackgroundColor="#F3F4F6"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            HeightRequest="44"
+                            InputTransparent="False">
+                        <Label x:Name="StylizedDialogLblCancel"
+                               Text="Отмена"
+                               TextColor="#4B5563"
+                               FontFamily="MontserratBold"
+                               FontSize="13"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnStylizedDialogCancelClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Подтверждение / ОК -->
+                    <Border x:Name="StylizedDialogBtnConfirm"
+                            Grid.Column="1"
+                            BackgroundColor="#520978"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            HeightRequest="44"
+                            InputTransparent="False">
+                        <Label x:Name="StylizedDialogLblConfirm"
+                               Text="ОК"
+                               TextColor="White"
+                               FontFamily="MontserratBold"
+                               FontSize="13"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnStylizedDialogConfirmClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                </Grid>
             </VerticalStackLayout>
         </Border>
     </Grid>
