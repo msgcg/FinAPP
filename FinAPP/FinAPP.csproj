@@ -23,7 +23,7 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name for App Drawer / Launcher -->
-		<ApplicationTitle>Питомец Финни</ApplicationTitle>
+		<ApplicationTitle>FinAPP</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.finapp.finny</ApplicationId>

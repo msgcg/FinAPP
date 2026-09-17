@@ -8,7 +8,7 @@
 		android:icon="@mipmap/appicon" 
 		android:roundIcon="@mipmap/appicon_round" 
 		android:supportsRtl="true"
-		android:label="Питомец Финни"
+		android:label="FinAPP"
 		android:theme="@style/Maui.SplashTheme">
 	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

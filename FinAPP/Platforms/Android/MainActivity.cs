@@ -6,7 +6,7 @@ namespace FinAPP
 {
     [Activity(
         Theme = "@style/Maui.SplashTheme",
-        Label = "Питомец Финни",
+        Label = "FinAPP",
         MainLauncher = true,
         ScreenOrientation = ScreenOrientation.Portrait,
         LaunchMode = LaunchMode.SingleTop,
