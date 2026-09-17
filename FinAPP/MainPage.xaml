@@ -32,20 +32,20 @@
                     </Border>
                 </HorizontalStackLayout>
 
-                <!-- Верхние кнопки: Онбординг, Аналитика, Кастомизация -->
-                <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                <!-- Верхние кнопки: Онбординг, Аналитика, Кастомизация, Звук -->
+                <HorizontalStackLayout Grid.Column="2" Spacing="6" VerticalOptions="Center">
                     <!-- Кнопка интерактивного обучения -->
                     <Border x:Name="BtnOnboarding"
                             BackgroundColor="#FEF3C7"
                             Stroke="#F59E0B"
                             StrokeThickness="1.5"
-                            HeightRequest="42"
-                            WidthRequest="42"
-                            StrokeShape="RoundRectangle 21"
+                            HeightRequest="38"
+                            WidthRequest="38"
+                            StrokeShape="RoundRectangle 19"
                             InputTransparent="False">
                         <Image Source="ic_speech_bubble.png"
-                               WidthRequest="20"
-                               HeightRequest="20"
+                               WidthRequest="18"
+                               HeightRequest="18"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
                         <Border.GestureRecognizers>
@@ -58,13 +58,13 @@
                             BackgroundColor="#059669"
                             Stroke="#047857"
                             StrokeThickness="1.5"
-                            HeightRequest="42"
-                            WidthRequest="42"
-                            StrokeShape="RoundRectangle 21"
+                            HeightRequest="38"
+                            WidthRequest="38"
+                            StrokeShape="RoundRectangle 19"
                             InputTransparent="False">
                         <Image Source="ic_stat_balance.png"
-                               WidthRequest="20"
-                               HeightRequest="20"
+                               WidthRequest="18"
+                               HeightRequest="18"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
                         <Border.GestureRecognizers>
@@ -77,17 +77,37 @@
                             BackgroundColor="#7C3AED"
                             Stroke="#6D28D9"
                             StrokeThickness="1.5"
-                            HeightRequest="42"
-                            WidthRequest="42"
-                            StrokeShape="RoundRectangle 21"
+                            HeightRequest="38"
+                            WidthRequest="38"
+                            StrokeShape="RoundRectangle 19"
                             InputTransparent="False">
                         <Image Source="ic_gift.png"
-                               WidthRequest="20"
-                               HeightRequest="20"
+                               WidthRequest="18"
+                               HeightRequest="18"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnCustomizerClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Кнопка управления звуком и музыкой -->
+                    <Border x:Name="BtnAudioQuick"
+                            BackgroundColor="#EBE9F8"
+                            Stroke="#8A83D1"
+                            StrokeThickness="1.5"
+                            HeightRequest="38"
+                            WidthRequest="38"
+                            StrokeShape="RoundRectangle 19"
+                            InputTransparent="False">
+                        <Image x:Name="ImgAudioQuick"
+                               Source="ic_sound_on.png"
+                               WidthRequest="18"
+                               HeightRequest="18"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAudioQuickClicked"/>
                         </Border.GestureRecognizers>
                     </Border>
                 </HorizontalStackLayout>
@@ -1083,7 +1103,7 @@
                                 <VerticalStackLayout x:Name="ParentMathContainer" Spacing="8">
                                     <Label Text="Решите пример, чтобы подтвердить, что вы взрослый:" FontFamily="MontserratMedium" FontSize="12" TextColor="#6B7280"/>
                                     <Label x:Name="LblParentMathQuestion" Text="7 × 8 = ?" FontFamily="MontserratBold" FontSize="18" TextColor="#520978" HorizontalOptions="Center"/>
-                                    <Entry x:Name="EntryParentMathAnswer" Placeholder="Ответ" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="16" FontFamily="MontserratBold"/>
+                                    <Entry x:Name="EntryParentMathAnswer" Placeholder="Ответ" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="16" FontFamily="MontserratBold" TextColor="#1F2937" PlaceholderColor="#9CA3AF"/>
                                     <Border BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
                                         <Label Text="Войти в кабинет" TextColor="White" FontFamily="MontserratBold" FontSize="13" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentUnlockClicked"/></Border.GestureRecognizers>
@@ -1143,6 +1163,46 @@
                                         <Label Text="Выдать карманные деньги (+100 монет)" TextColor="White" FontFamily="MontserratBold" FontSize="13" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentGiveBonusClicked"/></Border.GestureRecognizers>
+                                </Border>
+
+                                <!-- Настройки звука и музыки -->
+                                <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="12,10">
+                                    <VerticalStackLayout Spacing="8">
+                                        <Label Text="Настройки звука и музыки:" FontFamily="MontserratBold" FontSize="13" TextColor="#520978"/>
+
+                                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                                <Image Source="ic_sound_on.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"/>
+                                                <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                                    <Label Text="Звуковые эффекты (SFX)" FontFamily="MontserratBold" FontSize="12" TextColor="#1F2937"/>
+                                                    <Label Text="Звон монет, реакции котика, сигналы" FontFamily="MontserratMedium" FontSize="10" TextColor="#6B7280"/>
+                                                </VerticalStackLayout>
+                                            </HorizontalStackLayout>
+                                            <Switch x:Name="SwitchParentSfx" Grid.Column="1" Toggled="OnSfxToggled" OnColor="#520978" VerticalOptions="Center"/>
+                                        </Grid>
+
+                                        <BoxView HeightRequest="1" Color="#E5E7EB" Margin="0,2"/>
+
+                                        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                            <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                                <Image Source="ic_music_on.png" WidthRequest="20" HeightRequest="20" VerticalOptions="Center"/>
+                                                <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                                    <Label Text="Фоновая музыка" FontFamily="MontserratBold" FontSize="12" TextColor="#1F2937"/>
+                                                    <Label Text="Спокойная мелодия игрового процесса" FontFamily="MontserratMedium" FontSize="10" TextColor="#6B7280"/>
+                                                </VerticalStackLayout>
+                                            </HorizontalStackLayout>
+                                            <Switch x:Name="SwitchParentMusic" Grid.Column="1" Toggled="OnMusicToggled" OnColor="#520978" VerticalOptions="Center"/>
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!-- Лицензии сторонних ресурсов -->
+                                <Border BackgroundColor="#F3F0FA" Stroke="#D8D2E8" StrokeThickness="1" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
+                                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Image Source="ic_stat_balance.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                        <Label Text="Лицензии сторонних ресурсов (ГОСТ/ТЗ)" TextColor="#520978" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShowLicensesClicked"/></Border.GestureRecognizers>
                                 </Border>
 
                                 <!-- Управление PIN-кодом взрослого -->
@@ -1461,7 +1521,7 @@
 
                             <Label Text="Имя питомца:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937" Margin="0,4,0,0"/>
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <Entry x:Name="EntryPetName" Placeholder="Имя котика" FontSize="14" FontFamily="MontserratMedium"/>
+                                <Entry x:Name="EntryPetName" Placeholder="Имя котика" FontSize="14" FontFamily="MontserratMedium" TextColor="#1F2937" PlaceholderColor="#9CA3AF"/>
                                 <Border Grid.Column="1" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" Padding="14,0" HeightRequest="42" InputTransparent="False">
                                     <Label Text="OK" TextColor="White" FontFamily="MontserratBold" FontSize="13" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSavePetNameClicked"/></Border.GestureRecognizers>
@@ -1496,6 +1556,111 @@
                             <Label Text="История завершенных периодов:" FontFamily="MontserratBold" FontSize="12" TextColor="#1F2937"/>
                             <ScrollView MaximumHeightRequest="180">
                                 <VerticalStackLayout x:Name="StackHistoryList" Spacing="8"/>
+                            </ScrollView>
+                        </VerticalStackLayout>
+
+                        <!-- J. МОДАЛКА: БЫСТРЫЙ ДОСТУП К НАСТРОЙКАМ ЗВУКА И МУЗЫКИ -->
+                        <VerticalStackLayout x:Name="PanelAudioSettings" Spacing="14" IsVisible="False">
+                            <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1.5" StrokeShape="RoundRectangle 16" Padding="14">
+                                <VerticalStackLayout Spacing="12">
+                                    <Label Text="Звуковые эффекты и мелодии" FontFamily="MontserratBold" FontSize="13" TextColor="#520978"/>
+
+                                    <!-- Тумблер звуков SFX -->
+                                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                            <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                                                <Image x:Name="ImgIconSfx" Source="ic_sound_on.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Border>
+                                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                                <Label Text="Звуки игры (SFX)" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
+                                                <Label Text="Звон монет, мяуканье, клики" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
+                                            </VerticalStackLayout>
+                                        </HorizontalStackLayout>
+                                        <Switch x:Name="SwitchQuickSfx" Grid.Column="1" Toggled="OnSfxToggled" OnColor="#520978" VerticalOptions="Center"/>
+                                    </Grid>
+
+                                    <BoxView HeightRequest="1" Color="#E5E7EB"/>
+
+                                    <!-- Тумблер музыки BGM -->
+                                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                        <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+                                            <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 10" WidthRequest="36" HeightRequest="36" VerticalOptions="Center">
+                                                <Image x:Name="ImgIconMusic" Source="ic_music_on.png" WidthRequest="20" HeightRequest="20" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            </Border>
+                                            <VerticalStackLayout Spacing="1" VerticalOptions="Center">
+                                                <Label Text="Фоновая музыка" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
+                                                <Label Text="Спокойная мелодия игрового процесса" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
+                                            </VerticalStackLayout>
+                                        </HorizontalStackLayout>
+                                        <Switch x:Name="SwitchQuickMusic" Grid.Column="1" Toggled="OnMusicToggled" OnColor="#520978" VerticalOptions="Center"/>
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!-- Кнопка перехода к просмотру лицензий -->
+                            <Border BackgroundColor="#F3F0FA" Stroke="#D8D2E8" StrokeThickness="1" StrokeShape="RoundRectangle 14" HeightRequest="48" InputTransparent="False">
+                                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image Source="ic_stat_balance.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                    <Label Text="Лицензии сторонних ресурсов (ГОСТ/ТЗ)" TextColor="#520978" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                </HorizontalStackLayout>
+                                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShowLicensesClicked"/></Border.GestureRecognizers>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!-- K. МОДАЛКА: ВЕДОМОСТЬ ЛИЦЕНЗИЙ И СТОРОННИХ РЕСУРСОВ (ГОСТ 7.32/54593) -->
+                        <VerticalStackLayout x:Name="PanelLicenses" Spacing="10" IsVisible="False">
+                            <Label Text="Ведомость покупных изделий и открытых лицензий по ГОСТ 7.32-2017 / ГОСТ Р 54593-2011"
+                                   FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280" LineBreakMode="WordWrap"/>
+
+                            <ScrollView MaximumHeightRequest="360">
+                                <VerticalStackLayout Spacing="10">
+                                    <!-- 1. ЗвукиПро -->
+                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="1. Звуковые эффекты и музыка (ЗвукиПро)" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
+                                            <Label Text="Лицензия: Royalty-Free Free License with Attribution" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
+                                            <Label Text="Источник: zvukipro.com (звуки покупок, оплаты, реакций маскота и фоновая музыка)." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
+                                            <Label Text="Файлы: sfx_money, sfx_success, sfx_error, sfx_meow, sfx_purr, bgm_idle." FontFamily="MontserratMedium" FontSize="10" TextColor="#6B7280"/>
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- 2. Montserrat -->
+                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="2. Шрифт Montserrat" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
+                                            <Label Text="Лицензия: SIL Open Font License, Version 1.1 (OFL-1.1)" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
+                                            <Label Text="Авторы: Julieta Ulanovsky, Sol Matas, Juan Pablo del Peral. Свободное использование и встраивание." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- 3. Open Sans -->
+                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="3. Шрифт Open Sans" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
+                                            <Label Text="Лицензия: Apache License, Version 2.0" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
+                                            <Label Text="Автор: Steve Matteson. Текстовый шрифт интерфейса." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- 4. .NET MAUI & AndroidX -->
+                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="4. Фреймворк и системные библиотеки" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
+                                            <Label Text="Microsoft .NET MAUI: MIT License (.NET Foundation)" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
+                                            <Label Text="AndroidX Support Libraries: Apache License 2.0 (Google LLC)" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
+                                            <Label Text="xUnit.net Testing Framework: Apache License 2.0" FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
+                                        </VerticalStackLayout>
+                                    </Border>
+
+                                    <!-- 5. Маскот Финни -->
+                                    <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="5. Маскот Финни и графические материалы" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
+                                            <Label Text="Оригинальные скетчи художницы команды + Google Generative AI" FontFamily="MontserratBold" FontSize="11" TextColor="#059669"/>
+                                            <Label Text="Исключительные авторские права принадлежат команде FinAPP. Сторонние эмодзи исключены." FontFamily="MontserratMedium" FontSize="11" TextColor="#374151"/>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </VerticalStackLayout>
                             </ScrollView>
                         </VerticalStackLayout>
 
@@ -1590,11 +1755,13 @@
                                 <Label x:Name="LblTaskResultExplanationHeader"
                                        Text="Мудрость Финни:"
                                        FontFamily="MontserratBold"
-                                       FontSize="12"/>
+                                       FontSize="12"
+                                       TextColor="#059669"/>
                                 <Label x:Name="LblTaskResultExplanation"
                                        Text="Объяснение..."
                                        FontFamily="MontserratMedium"
                                        FontSize="12"
+                                       TextColor="#065F46"
                                        LineBreakMode="WordWrap"/>
                             </VerticalStackLayout>
                         </Border>

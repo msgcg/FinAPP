@@ -90,6 +90,7 @@ public partial class MainPage : ContentPage
         _tasks = _engine.GetTasksForCurrentAge();
         StartPetLifeTimer();
         RefreshUI();
+        SyncAudioSwitches();
 
         if (!_engine.Profile.IsOnboardingCompleted)
         {
@@ -671,6 +672,7 @@ public partial class MainPage : ContentPage
 
         if (success)
         {
+            AudioService.Instance.PlaySfx("sfx_success");
             // Праздничный стиль (изумрудно-зеленый шейдер-градиент)
             HeaderTaskResult.Background = new LinearGradientBrush
             {
@@ -693,6 +695,7 @@ public partial class MainPage : ContentPage
             LblTaskResultExplanationHeader.Text = "Мудрость Финни:";
             LblTaskResultExplanationHeader.TextColor = Color.FromArgb("#059669");
             LblTaskResultExplanation.Text = option.Explanation;
+            LblTaskResultExplanation.TextColor = Color.FromArgb("#065F46");
             BorderTaskResultExplanation.BackgroundColor = Color.FromArgb("#F0FDF4");
             BorderTaskResultExplanation.Stroke = Color.FromArgb("#86EFAC");
 
@@ -704,6 +707,7 @@ public partial class MainPage : ContentPage
         }
         else
         {
+            AudioService.Instance.PlaySfx("sfx_error");
             // Поучительный/поддерживающий стиль (розово-коралловый шейдер-градиент)
             HeaderTaskResult.Background = new LinearGradientBrush
             {
@@ -725,6 +729,7 @@ public partial class MainPage : ContentPage
             LblTaskResultExplanationHeader.Text = "Совет от Финни:";
             LblTaskResultExplanationHeader.TextColor = Color.FromArgb("#BE123C");
             LblTaskResultExplanation.Text = option.Explanation;
+            LblTaskResultExplanation.TextColor = Color.FromArgb("#881337");
             BorderTaskResultExplanation.BackgroundColor = Color.FromArgb("#FFF1F2");
             BorderTaskResultExplanation.Stroke = Color.FromArgb("#FECDD3");
 
@@ -948,6 +953,7 @@ public partial class MainPage : ContentPage
         var p = _engine.Profile;
         if (p.Balance < item.Price)
         {
+            AudioService.Instance.PlaySfx("sfx_error");
             PetView.SetSpeechText("Недостаточно монет! Выполни задание или спланируй бюджет.");
             return;
         }
@@ -962,6 +968,13 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderShopCategoryUI();
+
+        // Озвучивание покупки и урчания довольного котика
+        AudioService.Instance.PlaySfx("sfx_money");
+        if (item.HungerBoost > 0 || item.MoodBoost > 15)
+        {
+            AudioService.Instance.PlaySfx("sfx_purr");
+        }
 
         // Визуальный бейдж обратной связи над персонажем (ТЗ п. 2.5.6)
         _ = ShowPurchaseToastAsync(item);
@@ -1113,6 +1126,7 @@ public partial class MainPage : ContentPage
         var p = _engine.Profile;
         if (p.Balance < amount)
         {
+            AudioService.Instance.PlaySfx("sfx_error");
             PetView.SetSpeechText($"Не хватает {amount} монет на балансе для пополнения копилки!");
             return;
         }
@@ -1122,6 +1136,7 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderGoalsUI();
+        AudioService.Instance.PlaySfx("sfx_money");
         PetView.SetSpeechText($"Звон монетки! +{amount} монет отправлены в копилку!");
         PetView.PlayAction("proud");
     }
@@ -1147,6 +1162,7 @@ public partial class MainPage : ContentPage
         var p = _engine.Profile;
         if (p.Savings < amount)
         {
+            AudioService.Instance.PlaySfx("sfx_error");
             PetView.SetSpeechText($"В копилке только {p.Savings} монет, нельзя снять {amount}!");
             return;
         }
@@ -1156,6 +1172,7 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderGoalsUI();
+        AudioService.Instance.PlaySfx("sfx_money");
         PetView.SetSpeechText($"Взяли из копилки {amount} монет в кошелёк. Не забывай пополнять снова!");
         PetView.PlayAction("wave");
     }
@@ -1269,6 +1286,7 @@ public partial class MainPage : ContentPage
         {
             if (p.Balance < amount)
             {
+                AudioService.Instance.PlaySfx("sfx_error");
                 BorderTransferAlert.IsVisible = true;
                 LblTransferAlert.Text = $"Недостаточно средств в кошельке! Доступно: {p.Balance} монет.";
                 return;
@@ -1277,6 +1295,7 @@ public partial class MainPage : ContentPage
             p.Savings += amount;
             p.ActualSavings += amount;
             BorderTransferAlert.IsVisible = false;
+            AudioService.Instance.PlaySfx("sfx_money");
             PetView.SetSpeechText($"Звон монеток! +{amount} монет отправлены в копилку!");
             PetView.PlayAction("proud");
         }
@@ -1284,6 +1303,7 @@ public partial class MainPage : ContentPage
         {
             if (p.Savings < amount)
             {
+                AudioService.Instance.PlaySfx("sfx_error");
                 BorderTransferAlert.IsVisible = true;
                 LblTransferAlert.Text = $"В копилке недостаточно средств! Накоплено: {p.Savings} монет.";
                 return;
@@ -1292,6 +1312,7 @@ public partial class MainPage : ContentPage
             p.Balance += amount;
             p.ActualSavings = Math.Max(0, p.ActualSavings - amount);
             BorderTransferAlert.IsVisible = false;
+            AudioService.Instance.PlaySfx("sfx_money");
             PetView.SetSpeechText($"Сняли из копилки {amount} монет в кошелёк.");
             PetView.PlayAction("wave");
         }
@@ -1417,10 +1438,12 @@ public partial class MainPage : ContentPage
     {
         if (_currentPinInput == _engine.Profile.ParentPin)
         {
+            AudioService.Instance.PlaySfx("sfx_success");
             UnlockParentCabinet();
         }
         else
         {
+            AudioService.Instance.PlaySfx("sfx_error");
             LblParentPinDisplay.TextColor = Color.FromArgb("#EF4444");
             await Task.Delay(350);
             _currentPinInput = "";
@@ -1479,10 +1502,12 @@ public partial class MainPage : ContentPage
         await AnimateTap(sender as VisualElement);
         if (int.TryParse(EntryParentMathAnswer.Text, out int ans) && ans == _parentMathA * _parentMathB)
         {
+            AudioService.Instance.PlaySfx("sfx_success");
             UnlockParentCabinet();
         }
         else
         {
+            AudioService.Instance.PlaySfx("sfx_error");
             PetView.SetSpeechText("Неверный ответ! Вход только для родителей.");
         }
     }
@@ -1565,6 +1590,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Balance += 100;
         RefreshUI();
         await _engine.SaveAsync();
+        AudioService.Instance.PlaySfx("sfx_money");
         PetView.SetSpeechText("Родители выдали карманные деньги: +100 монет!");
         await CloseModal();
     }
@@ -1579,6 +1605,53 @@ public partial class MainPage : ContentPage
         await _engine.SaveAsync();
         PetView.SetSpeechText("Данные сброшены! Начинаем финансовый путь заново!");
         await CloseModal();
+    }
+
+    // =========================================================================
+    // 8.5. УПРАВЛЕНИЕ ЗВУКОМ, МУЗЫКОЙ И ЛИЦЕНЗИЯМИ (ТЗ / ГОСТ)
+    // =========================================================================
+    private async void OnAudioQuickClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        SyncAudioSwitches();
+        await ShowModal("Звук, музыка и лицензии", PanelAudioSettings);
+    }
+
+    private async void OnShowLicensesClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await ShowModal("Лицензии сторонних ресурсов", PanelLicenses);
+    }
+
+    private void OnSfxToggled(object? sender, ToggledEventArgs e)
+    {
+        AudioService.Instance.IsSfxEnabled = e.Value;
+        SyncAudioSwitches();
+        if (e.Value)
+        {
+            AudioService.Instance.PlaySfx("sfx_money");
+        }
+    }
+
+    private void OnMusicToggled(object? sender, ToggledEventArgs e)
+    {
+        AudioService.Instance.IsMusicEnabled = e.Value;
+        SyncAudioSwitches();
+    }
+
+    private void SyncAudioSwitches()
+    {
+        bool sfx = AudioService.Instance.IsSfxEnabled;
+        bool music = AudioService.Instance.IsMusicEnabled;
+
+        if (SwitchQuickSfx != null) SwitchQuickSfx.IsToggled = sfx;
+        if (SwitchParentSfx != null) SwitchParentSfx.IsToggled = sfx;
+        if (SwitchQuickMusic != null) SwitchQuickMusic.IsToggled = music;
+        if (SwitchParentMusic != null) SwitchParentMusic.IsToggled = music;
+
+        if (ImgIconSfx != null) ImgIconSfx.Source = sfx ? "ic_sound_on.png" : "ic_sound_off.png";
+        if (ImgIconMusic != null) ImgIconMusic.Source = music ? "ic_music_on.png" : "ic_music_off.png";
+        if (ImgAudioQuick != null) ImgAudioQuick.Source = (sfx || music) ? "ic_sound_on.png" : "ic_sound_off.png";
     }
 
     // =========================================================================

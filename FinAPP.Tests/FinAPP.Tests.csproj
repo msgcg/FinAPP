@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <Compile Include="..\FinAPP\Models\**\*.cs" Link="Models\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Compile Include="..\FinAPP\Services\**\*.cs" Exclude="..\FinAPP\Services\*Drawable.cs" Link="Services\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\FinAPP\Services\**\*.cs" Exclude="..\FinAPP\Services\*Drawable.cs;..\FinAPP\Services\*Audio*.cs" Link="Services\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

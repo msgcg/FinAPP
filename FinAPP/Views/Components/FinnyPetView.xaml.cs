@@ -424,10 +424,11 @@ public partial class FinnyPetView : ContentView
 
         try
         {
-            // 1. Тактильный отклик (вибрация клика)
+            // 1. Тактильный отклик и мяуканье
             try
             {
                 HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+                AudioService.Instance.PlaySfx("sfx_meow");
             }
             catch { }
 
