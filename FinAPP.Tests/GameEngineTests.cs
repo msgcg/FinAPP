@@ -208,4 +208,32 @@ public class GameEngineTests
         var glossary = ContentRepository.GetGlossaryTerms();
         Assert.True(glossary.Count >= 6);
     }
+
+    [Fact]
+    public void AgeGroup_Switching_ShouldFilterTasksAppropriately()
+    {
+        // Проверяем 7–8 лет (Junior)
+        _engine.SetAgeGroup(AgeGroup.Junior7_8);
+        Assert.Equal(AgeGroup.Junior7_8, _engine.Profile.AgeGroup);
+        var juniorTasks = _engine.GetTasksForCurrentAge();
+        Assert.Equal(6, juniorTasks.Count);
+        Assert.All(juniorTasks, t => Assert.Equal(AgeGroup.Junior7_8, t.TargetAge));
+        Assert.Contains(juniorTasks, t => t.Topic == TaskTopic.BudgetPlanning);
+        Assert.Contains(juniorTasks, t => t.Topic == TaskTopic.SavingsAndReserve);
+        Assert.Contains(juniorTasks, t => t.Topic == TaskTopic.PaymentsAndSecurity);
+
+        // Проверяем 9–11 лет (Senior)
+        _engine.SetAgeGroup(AgeGroup.Senior9_11);
+        Assert.Equal(AgeGroup.Senior9_11, _engine.Profile.AgeGroup);
+        var seniorTasks = _engine.GetTasksForCurrentAge();
+        Assert.Equal(6, seniorTasks.Count);
+        Assert.All(seniorTasks, t => Assert.Equal(AgeGroup.Senior9_11, t.TargetAge));
+        Assert.Contains(seniorTasks, t => t.Topic == TaskTopic.BudgetPlanning);
+        Assert.Contains(seniorTasks, t => t.Topic == TaskTopic.SavingsAndReserve);
+        Assert.Contains(seniorTasks, t => t.Topic == TaskTopic.PaymentsAndSecurity);
+
+        // Всего заданий 12
+        var allTasks = ContentRepository.GetFinancialTasks();
+        Assert.Equal(12, allTasks.Count);
+    }
 }

@@ -9,61 +9,73 @@ namespace FinAPP.Views.Components;
 
 public partial class FinnyPetView : ContentView
 {
-    private CancellationTokenSource? _animCts;
+    // Короткие советы на 1 предложение, не выходящие за рамки бабла
     private readonly string[] _finnyQuotes = new[]
     {
-        "Мяу! Сначала планируем обязательные траты, а потом желания! 🍗",
-        "Копилка наполняется по монетке — так растут большие сбережения! 🏦",
-        "Никогда не сообщай коды из СМС незнакомцам! Финни за безопасность! 🛡️",
-        "Сложный процент — это магия: деньги работают на тебя! ✨",
-        "Муррр! Спасибо за заботу и вкусный обед! 🐾",
-        "Правило 50/30/20 помогает копить легко и без стресса! 📊"
+        "Планируй сначала обязательные траты, а потом желания! 🍗",
+        "Копилка растёт по монетке — так рождается капитал! 🏦",
+        "Никому не сообщай коды из СМС — Финни за безопасность! 🛡️",
+        "Сложный процент умножает твои сбережения! ✨",
+        "Муррр! Спасибо за заботу и твою внимательность! 🐾",
+        "Правило 50/30/20 помогает копить легко и без стресса! 📊",
+        "Запиши сегодняшние расходы, чтобы видеть свой прогресс! 📝"
     };
     private int _quoteIndex = 0;
+    private string _currentStagePrefix = "finny_baby";
+    private string _currentEmotionGif = "finny_baby_idle.gif";
+    private string _activeGif = string.Empty;
+    private double _baseScale = 1.0;
+    private bool _isReacting = false;
+    private CancellationTokenSource? _waveCts;
 
     public FinnyPetView()
     {
         InitializeComponent();
         Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
+        ImgPet.HandlerChanged += OnImgPetHandlerChanged;
+    }
+
+    private void OnImgPetHandlerChanged(object? sender, EventArgs e)
+    {
+        if (!string.IsNullOrEmpty(_activeGif))
+        {
+            ApplyNativeAnimation(_activeGif);
+        }
     }
 
     private void OnLoaded(object? sender, EventArgs e)
     {
-        StartIdleAnimation();
-    }
-
-    private void OnUnloaded(object? sender, EventArgs e)
-    {
-        StopIdleAnimation();
+        ApplyAnimation(_currentEmotionGif, force: true);
     }
 
     public void UpdatePet(PetProfile profile, string emotion)
     {
-        // 1. Определение цвета куртки (суффикс для тела и лапки)
-        string colorSuffix = profile.Outfit switch
+        // 1. Выбор префикса стадии эволюции котика (Малыш, Юниор, Мастер)
+        _currentStagePrefix = profile.Stage switch
         {
-            OutfitType.RoyalBlue => "_blue",
-            OutfitType.RubyRed => "_ruby",
-            _ => ""
+            GrowthStage.Baby => "finny_baby",
+            GrowthStage.Teen => "finny_teen",
+            _ => "finny_master"
         };
 
-        // 2. Обновление спрайтов слоев
-        ImgTail.Source = "finny_tail.png";
-        ImgBody.Source = $"finny_body{colorSuffix}.png";
-        ImgArmWave.Source = $"finny_arm_wave{colorSuffix}.png";
-
-        // Выбор эмоции головы (happy, proud, sad, surprised)
-        string validEmotion = emotion.ToLowerInvariant() switch
+        // 2. Выбор действия/эмоции
+        string action = emotion.ToLowerInvariant() switch
         {
             "proud" => "proud",
             "sad" => "sad",
-            "surprised" => "surprised",
-            _ => "happy"
+            "wave" or "surprised" => "wave",
+            _ => "idle"
         };
-        ImgHead.Source = $"finny_head_{validEmotion}.png";
 
-        // 3. Определение слоя аксессуара
+        _currentEmotionGif = $"{_currentStagePrefix}_{action}.gif";
+
+        // Если сейчас не воспроизводится временная реакция на тап, обновляем анимацию
+        if (!_isReacting)
+        {
+            ApplyAnimation(_currentEmotionGif);
+        }
+
+        // 3. Накладные аксессуары поверх котика
         switch (profile.Accessory)
         {
             case AccessoryType.Sunglasses:
@@ -83,35 +95,97 @@ public partial class FinnyPetView : ContentView
                 break;
         }
 
-        // 4. Стадия развития (масштаб и бейдж)
+        // 4. Эволюционные стадии роста (ТЗ п. 2.5.10)
         switch (profile.Stage)
         {
             case GrowthStage.Baby:
-                PetContainer.Scale = 0.88;
-                LblStageBadge.Text = "🐾 Малыш (1 ст.)";
+                _baseScale = 0.95;
+                LblStageBadge.Text = "🐾 Финни-Малыш (1 ст.)";
                 MasterAura.IsVisible = false;
                 break;
             case GrowthStage.Teen:
-                PetContainer.Scale = 0.98;
-                LblStageBadge.Text = "🚀 Подросток (2 ст.)";
+                _baseScale = 1.0;
+                LblStageBadge.Text = "⚡ Финни-Юниор (2 ст.)";
                 MasterAura.IsVisible = false;
                 break;
             case GrowthStage.Master:
-                PetContainer.Scale = 1.08;
+                _baseScale = 1.06;
                 LblStageBadge.Text = "🌟 Финни-Мастер (3 ст.)";
                 MasterAura.IsVisible = true;
                 break;
         }
 
-        if (!profile.AnimationsEnabled)
+        if (!_isReacting)
         {
-            StopIdleAnimation();
-            ResetBonesToDefault();
+            PetFrameCard.Scale = _baseScale;
         }
-        else if (_animCts == null || _animCts.IsCancellationRequested)
+    }
+
+    private void ApplyAnimation(string gifName, bool force = false)
+    {
+        if (!force && _activeGif == gifName) return;
+        _activeGif = gifName;
+
+        // Базовое назначение для MAUI (гарантирует видимость на всех платформах)
+        if (ImgPet != null)
         {
-            StartIdleAnimation();
+            ImgPet.Source = gifName;
+            ImgPet.IsAnimationPlaying = true;
         }
+
+        ApplyNativeAnimation(gifName);
+    }
+
+    private void ApplyNativeAnimation(string gifName)
+    {
+#if ANDROID
+        try
+        {
+            if (ImgPet?.Handler?.PlatformView is Android.Widget.ImageView nativeImageView)
+            {
+                nativeImageView.Post(() =>
+                {
+                    try
+                    {
+                        nativeImageView.SetBackgroundColor(Android.Graphics.Color.Transparent);
+                        if (OperatingSystem.IsAndroidVersionAtLeast(28))
+                        {
+                            var context = Android.App.Application.Context;
+                            using var stream = context?.Assets?.Open(gifName);
+                            if (stream != null)
+                            {
+                                using var ms = new System.IO.MemoryStream();
+                                stream.CopyTo(ms);
+                                var byteBuffer = Java.Nio.ByteBuffer.Wrap(ms.ToArray());
+                                var source = Android.Graphics.ImageDecoder.CreateSource(byteBuffer);
+                                var drawable = Android.Graphics.ImageDecoder.DecodeDrawable(source);
+                                
+                                nativeImageView.SetImageDrawable(drawable);
+                                
+                                if (drawable is Android.Graphics.Drawables.AnimatedImageDrawable animDrawable)
+                                {
+                                    animDrawable.RepeatCount = Android.Graphics.Drawables.AnimatedImageDrawable.RepeatInfinite;
+                                    animDrawable.Start();
+                                }
+                                else if (drawable is Android.Graphics.Drawables.IAnimatable anim)
+                                {
+                                    anim.Start();
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error in nativeImageView.Post: {ex.Message}");
+                    }
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error loading Android AnimatedImageDrawable: {ex.Message}");
+        }
+#endif
     }
 
     public void SetSpeechText(string text)
@@ -119,162 +193,64 @@ public partial class FinnyPetView : ContentView
         LblSpeech.Text = text;
     }
 
-    private void ResetBonesToDefault()
-    {
-        ImgArmWave.Rotation = 0;
-        ImgTail.Rotation = 0;
-        ImgHead.Rotation = 0;
-        ImgHead.TranslationY = 0;
-        ImgAccessory.Rotation = 0;
-        ImgAccessory.TranslationY = 0;
-        ImgBody.ScaleX = 1.0;
-        ImgBody.ScaleY = 1.0;
-        PetContainer.TranslationY = 0;
-    }
-
-    private void StartIdleAnimation()
-    {
-        StopIdleAnimation();
-        _animCts = new CancellationTokenSource();
-        var ct = _animCts.Token;
-
-        // Запуск 3 независимых несинхронных циклов для живой скелетной анимации
-        _ = RunArmWaveLoop(ct);
-        _ = RunTailWagLoop(ct);
-        _ = RunBreathingHeadBobLoop(ct);
-    }
-
-    private async Task RunArmWaveLoop(CancellationToken ct)
+    private async Task AnimateBubbleBounce()
     {
         try
         {
-            while (!ct.IsCancellationRequested)
-            {
-                // Плавный взмах лапкой в плечевом суставе
-                await ImgArmWave.RotateToAsync(20, 850, Easing.SinInOut);
-                if (ct.IsCancellationRequested) break;
-                await ImgArmWave.RotateToAsync(-8, 850, Easing.SinInOut);
-                if (ct.IsCancellationRequested) break;
-            }
+            await SpeechBubble.ScaleToAsync(1.06, 90, Easing.CubicOut);
+            await SpeechBubble.ScaleToAsync(1.0, 90, Easing.CubicIn);
         }
-        catch (TaskCanceledException) { }
         catch { }
-    }
-
-    private async Task RunTailWagLoop(CancellationToken ct)
-    {
-        try
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                // Плавное виляние хвостиком у основания
-                await ImgTail.RotateToAsync(15, 1100, Easing.SinInOut);
-                if (ct.IsCancellationRequested) break;
-                await ImgTail.RotateToAsync(-12, 1100, Easing.SinInOut);
-                if (ct.IsCancellationRequested) break;
-            }
-        }
-        catch (TaskCanceledException) { }
-        catch { }
-    }
-
-    private async Task RunBreathingHeadBobLoop(CancellationToken ct)
-    {
-        try
-        {
-            while (!ct.IsCancellationRequested)
-            {
-                // Фаза вдоха: туловище расширяется, голова слегка приподнимается и наклоняется
-                var bIn1 = ImgBody.ScaleYToAsync(1.025, 1600, Easing.SinInOut);
-                var bIn2 = ImgBody.ScaleXToAsync(0.99, 1600, Easing.SinInOut);
-                var hIn1 = ImgHead.RotateToAsync(2.5, 1600, Easing.SinInOut);
-                var hIn2 = ImgHead.TranslateToAsync(0, -2, 1600, Easing.SinInOut);
-                if (ImgAccessory.IsVisible)
-                {
-                    _ = ImgAccessory.RotateToAsync(2.5, 1600, Easing.SinInOut);
-                    _ = ImgAccessory.TranslateToAsync(0, -2, 1600, Easing.SinInOut);
-                }
-                await Task.WhenAll(bIn1, bIn2, hIn1, hIn2);
-                if (ct.IsCancellationRequested) break;
-
-                // Фаза выдоха: опускание туловища и возврат
-                var bOut1 = ImgBody.ScaleYToAsync(1.0, 1600, Easing.SinInOut);
-                var bOut2 = ImgBody.ScaleXToAsync(1.0, 1600, Easing.SinInOut);
-                var hOut1 = ImgHead.RotateToAsync(-2.5, 1600, Easing.SinInOut);
-                var hOut2 = ImgHead.TranslateToAsync(0, 0, 1600, Easing.SinInOut);
-                if (ImgAccessory.IsVisible)
-                {
-                    _ = ImgAccessory.RotateToAsync(-2.5, 1600, Easing.SinInOut);
-                    _ = ImgAccessory.TranslateToAsync(0, 0, 1600, Easing.SinInOut);
-                }
-                await Task.WhenAll(bOut1, bOut2, hOut1, hOut2);
-                if (ct.IsCancellationRequested) break;
-            }
-        }
-        catch (TaskCanceledException) { }
-        catch { }
-    }
-
-    private void StopIdleAnimation()
-    {
-        _animCts?.Cancel();
-        _animCts?.Dispose();
-        _animCts = null;
     }
 
     private async void OnPetTapped(object? sender, EventArgs e)
     {
-        // Тактильный отклик (вибрация клика)
+        if (_isReacting) return;
+        _isReacting = true;
+
         try
         {
-            HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+            // 1. Тактильный отклик (вибрация клика)
+            try
+            {
+                HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+            }
+            catch { }
+
+            // 2. Смена цитаты и анимация облачка
+            _quoteIndex = (_quoteIndex + 1) % _finnyQuotes.Length;
+            SetSpeechText(_finnyQuotes[_quoteIndex]);
+            _ = AnimateBubbleBounce();
+
+            // 3. Отменяем предыдущий таймер возврата, если был
+            _waveCts?.Cancel();
+            _waveCts?.Dispose();
+            _waveCts = new CancellationTokenSource();
+            var ct = _waveCts.Token;
+
+            // 4. Переключаем на анимацию приветствия текущей стадии
+            ApplyAnimation($"{_currentStagePrefix}_wave.gif", force: true);
+
+            // 5. Пружинистый подскок карточки персонажа
+            await PetFrameCard.ScaleToAsync(_baseScale * 1.05, 120, Easing.CubicOut);
+            await PetFrameCard.ScaleToAsync(_baseScale, 120, Easing.CubicIn);
+
+            // 6. Даем помахать 1.8 секунды, затем возвращаем базовую эмоцию
+            await Task.Delay(1800, ct);
+
+            if (!ct.IsCancellationRequested)
+            {
+                ApplyAnimation(_currentEmotionGif, force: true);
+            }
         }
-        catch { }
-
-        // Смена цитаты и анимация облачка
-        _quoteIndex = (_quoteIndex + 1) % _finnyQuotes.Length;
-        SetSpeechText(_finnyQuotes[_quoteIndex]);
-
-        _ = SpeechBubble.ScaleToAsync(1.08, 120, Easing.CubicOut)
-            .ContinueWith(_ => MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await SpeechBubble.ScaleToAsync(1.0, 120, Easing.CubicIn);
-            }));
-
-        // Профессиональная интерактивная реакция:
-        // 1. Радостное ускоренное махание лапкой (3 взмаха с высокой амплитудой)
-        // 2. Кивок головой
-        // 3. Энергичное виляние хвостом
-        var armTask = Task.Run(async () =>
+        catch (TaskCanceledException) { }
+        catch (Exception ex)
         {
-            for (int i = 0; i < 3; i++)
-            {
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await ImgArmWave.RotateToAsync(32, 140, Easing.CubicOut);
-                    await ImgArmWave.RotateToAsync(-12, 140, Easing.CubicIn);
-                });
-            }
-        });
-
-        var tailTask = Task.Run(async () =>
+            System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error in OnPetTapped: {ex.Message}");
+        }
+        finally
         {
-            for (int i = 0; i < 3; i++)
-            {
-                await MainThread.InvokeOnMainThreadAsync(async () =>
-                {
-                    await ImgTail.RotateToAsync(22, 140, Easing.CubicOut);
-                    await ImgTail.RotateToAsync(-16, 140, Easing.CubicIn);
-                });
-            }
-        });
-
-        var headNodTask = MainThread.InvokeOnMainThreadAsync(async () =>
-        {
-            await ImgHead.TranslateToAsync(0, -6, 130, Easing.CubicOut);
-            await ImgHead.TranslateToAsync(0, 0, 180, Easing.BounceOut);
-        });
-
-        await Task.WhenAll(armTask, tailTask, headNodTask);
+            _isReacting = false;
+        }
     }
 }

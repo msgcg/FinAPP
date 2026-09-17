@@ -11,122 +11,101 @@
                 Stroke="#8A83D1"
                 StrokeThickness="2"
                 Padding="12,8"
+                Margin="16,0"
                 HorizontalOptions="Center"
-                StrokeShape="RoundRectangle 16">
+                MaximumWidthRequest="320"
+                StrokeShape="RoundRectangle 18">
             <Border.Shadow>
-                <Shadow Brush="#8A83D1" Offset="0,3" Radius="8" Opacity="0.25"/>
+                <Shadow Brush="#8A83D1" Offset="0,3" Radius="8" Opacity="0.22"/>
             </Border.Shadow>
-            <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
-                <Label Text="💬" FontSize="16" VerticalOptions="Center"/>
-                <Label x:Name="LblSpeech"
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
+                <Label Grid.Column="0"
+                       Text="💬"
+                       FontSize="16"
+                       VerticalOptions="Center"/>
+                <Label Grid.Column="1"
+                       x:Name="LblSpeech"
                        Text="Привет! Я котик Финни! Нажми на меня 🐾"
-                       FontSize="14"
+                       FontSize="13"
                        FontFamily="MontserratMedium"
                        TextColor="#310F53"
-                       MaxLines="2"
-                       LineBreakMode="WordWrap"/>
-            </HorizontalStackLayout>
+                       LineBreakMode="WordWrap"
+                       MaxLines="3"
+                       VerticalOptions="Center"/>
+            </Grid>
         </Border>
 
-        <!-- Контейнер персонажа со слоями и скелетной анимацией -->
-        <Grid x:Name="PetContainer"
-              HeightRequest="270"
-              WidthRequest="230"
-              HorizontalOptions="Center"
-              VerticalOptions="Center">
+        <!-- Карточка-рамка персонажа (стильная скруглённая рамка, скрывающая срезы видео) -->
+        <Border x:Name="PetFrameCard"
+                Stroke="#8A83D1"
+                StrokeThickness="2.5"
+                StrokeShape="RoundRectangle 28"
+                BackgroundColor="#F8F7FD"
+                WidthRequest="240"
+                HeightRequest="280"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+            <Border.Shadow>
+                <Shadow Brush="#8A83D1" Offset="0,4" Radius="12" Opacity="0.18"/>
+            </Border.Shadow>
 
-            <!-- Золотое свечение для стадии Мастер -->
-            <BoxView x:Name="MasterAura"
-                     Color="#F59E0B"
-                     CornerRadius="115"
-                     Opacity="0.25"
-                     IsVisible="False"
-                     HeightRequest="230"
-                     WidthRequest="230"
-                     HorizontalOptions="Center"
-                     VerticalOptions="Center"/>
+            <Grid x:Name="PetContainer"
+                  HorizontalOptions="Fill"
+                  VerticalOptions="Fill">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPetTapped"/>
+                </Grid.GestureRecognizers>
 
-            <!-- СЛОЙ 0: Хвостик (ZIndex 0, позади туловища, опорная точка у основания) -->
-            <Image x:Name="ImgTail"
-                   Source="finny_tail.png"
-                   Aspect="AspectFit"
-                   WidthRequest="75"
-                   HeightRequest="95"
-                   AnchorX="0.85"
-                   AnchorY="0.85"
-                   HorizontalOptions="Start"
-                   VerticalOptions="Center"
-                   Margin="12, 60, 0, 0"/>
+                <!-- Золотое свечение для стадии Мастер -->
+                <Border x:Name="MasterAura"
+                        BackgroundColor="#F59E0B"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 120"
+                        Opacity="0.25"
+                        IsVisible="False"
+                        HeightRequest="240"
+                        WidthRequest="240"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
 
-            <!-- СЛОЙ 1: Туловище с ножками и правой лапкой на поясе (ZIndex 1) -->
-            <Image x:Name="ImgBody"
-                   Source="finny_body.png"
-                   Aspect="AspectFit"
-                   WidthRequest="165"
-                   HeightRequest="195"
-                   AnchorX="0.5"
-                   AnchorY="1.0"
-                   HorizontalOptions="Center"
-                   VerticalOptions="End"
-                   Margin="0, 0, 10, 0"/>
+                <!-- Персонаж Финни с аппаратным проигрыванием GIF -->
+                <Image x:Name="ImgPet"
+                       Source="finny_baby_idle.gif"
+                       IsAnimationPlaying="True"
+                       Aspect="AspectFit"
+                       HorizontalOptions="Fill"
+                       VerticalOptions="Fill"/>
 
-            <!-- СЛОЙ 2: Машущая лапка (ZIndex 2, опорная точка в плечевом суставе) -->
-            <Image x:Name="ImgArmWave"
-                   Source="finny_arm_wave.png"
-                   Aspect="AspectFit"
-                   WidthRequest="95"
-                   HeightRequest="75"
-                   AnchorX="0.15"
-                   AnchorY="0.85"
-                   HorizontalOptions="End"
-                   VerticalOptions="Center"
-                   Margin="0, 0, 6, 48"/>
+                <!-- Накладной аксессуар (очки, шапочка, корона) поверх котика -->
+                <Image x:Name="ImgAccessory"
+                       Source="acc_sunglasses.png"
+                       Aspect="AspectFit"
+                       WidthRequest="110"
+                       HeightRequest="60"
+                       AnchorX="0.5"
+                       AnchorY="0.95"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Start"
+                       Margin="0, 20, 0, 0"
+                       IsVisible="False"/>
 
-            <!-- СЛОЙ 3: Голова с ушками и мордочкой (ZIndex 3, опорная точка у шеи) -->
-            <Image x:Name="ImgHead"
-                   Source="finny_head_happy.png"
-                   Aspect="AspectFit"
-                   WidthRequest="145"
-                   HeightRequest="135"
-                   AnchorX="0.5"
-                   AnchorY="0.95"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Start"
-                   Margin="0, 0, 10, 0"/>
-
-            <!-- СЛОЙ 4: Накладной аксессуар (очки, шапочка, корона) -->
-            <Image x:Name="ImgAccessory"
-                   Source="acc_sunglasses.png"
-                   Aspect="AspectFit"
-                   WidthRequest="110"
-                   HeightRequest="60"
-                   AnchorX="0.5"
-                   AnchorY="0.95"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Start"
-                   Margin="0, 18, 10, 0"
-                   IsVisible="False"/>
-
-            <!-- Бейдж стадии роста в левом верхнем углу -->
-            <Border BackgroundColor="#520978"
-                    Stroke="#FF0053"
-                    StrokeThickness="1.5"
-                    StrokeShape="RoundRectangle 12"
-                    Padding="6,3"
-                    HorizontalOptions="Start"
-                    VerticalOptions="Start">
-                <Label x:Name="LblStageBadge"
-                       Text="🐾 Малыш"
-                       FontSize="11"
-                       FontFamily="MontserratBold"
-                       TextColor="White"/>
-            </Border>
-
-            <!-- Жест нажатия на питомца для интерактива -->
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnPetTapped"/>
-            </Grid.GestureRecognizers>
-        </Grid>
+                <!-- Бейдж стадии роста в левом верхнем углу рамки -->
+                <Border BackgroundColor="#520978"
+                        Stroke="#FF0053"
+                        StrokeThickness="1.5"
+                        StrokeShape="RoundRectangle 12"
+                        Padding="8,4"
+                        Margin="10,10,0,0"
+                        HorizontalOptions="Start"
+                        VerticalOptions="Start">
+                    <Label x:Name="LblStageBadge"
+                           Text="🐾 Малыш"
+                           FontSize="11"
+                           FontFamily="MontserratBold"
+                           TextColor="White"/>
+                </Border>
+            </Grid>
+        </Border>
         
     </VerticalStackLayout>
 

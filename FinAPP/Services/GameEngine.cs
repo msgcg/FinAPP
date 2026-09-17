@@ -192,6 +192,24 @@ public class GameEngine
         _ = SaveAsync();
     }
 
+    // Переключение возрастной группы (ТЗ п. 2.2: возрастная уместность)
+    public void SetAgeGroup(AgeGroup ageGroup)
+    {
+        Profile.AgeGroup = ageGroup;
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+    }
+
+    public List<FinancialTask> GetTasksForCurrentAge()
+    {
+        return ContentRepository.GetFinancialTasks(Profile.AgeGroup);
+    }
+
+    public List<GlossaryTerm> GetGlossaryForCurrentAge()
+    {
+        return ContentRepository.GetGlossaryTerms(Profile.AgeGroup);
+    }
+
     // Переход к следующему периоду (ТЗ п. 2.5.10, 2.6: не менее 5 периодов в демо-режиме)
     public string AdvanceToNextPeriod()
     {
@@ -271,7 +289,7 @@ public class GameEngine
     {
         bool obligOk = Profile.ActualObligatory <= (Profile.PlannedObligatory > 0 ? Profile.PlannedObligatory : 250);
         bool discOk = Profile.ActualDiscretionary <= (Profile.PlannedDiscretionary > 0 ? Profile.PlannedDiscretionary : 150);
-        return $"План/Факт: Обязательные {Profile.ActualObligatory}/{Profile.PlannedObligatory} ₽ ({(obligOk ? "В норме ✅" : "Превышение ⚠️")}), " +
-               $"Желания {Profile.ActualDiscretionary}/{Profile.PlannedDiscretionary} ₽ ({(discOk ? "В норме ✅" : "Превышение ⚠️")}).";
+        return $"План/Факт: Обязательные {Profile.ActualObligatory}/{Profile.PlannedObligatory} монет ({(obligOk ? "В норме ✅" : "Превышение ⚠️")}), " +
+               $"Желания {Profile.ActualDiscretionary}/{Profile.PlannedDiscretionary} монет ({(discOk ? "В норме ✅" : "Превышение ⚠️")}).";
     }
 }

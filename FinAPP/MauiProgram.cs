@@ -19,6 +19,7 @@ namespace FinAPP
                     fonts.AddFont("Montserrat-Bold.ttf", "MontserratBold");
                 });
 
+
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif

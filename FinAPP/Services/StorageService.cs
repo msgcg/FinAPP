@@ -52,7 +52,16 @@ public class StorageService
             {
                 var json = await File.ReadAllTextAsync(_filePath);
                 var profile = JsonSerializer.Deserialize<PetProfile>(json, JsonOptions);
-                if (profile != null) return profile;
+                if (profile != null)
+                {
+                    if (!profile.HasMigratedDemoDefault)
+                    {
+                        profile.IsDemoMode = false;
+                        profile.HasMigratedDemoDefault = true;
+                        _ = SaveProfileAsync(profile);
+                    }
+                    return profile;
+                }
             }
         }
         catch (Exception)
@@ -108,7 +117,8 @@ public class StorageService
             Savings = 100,
             SelectedGoalId = "goal_scooter",
             CurrentPeriod = 1,
-            IsDemoMode = true,
+            IsDemoMode = false,
+            HasMigratedDemoDefault = true,
             IsOnboardingCompleted = true,
             PlannedObligatory = 150,
             PlannedDiscretionary = 100,

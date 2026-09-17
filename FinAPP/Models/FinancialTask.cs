@@ -20,6 +20,7 @@ public class TaskOption
 public class FinancialTask
 {
     public string Id { get; set; } = string.Empty;
+    public AgeGroup TargetAge { get; set; } = AgeGroup.Junior7_8;
     public TaskTopic Topic { get; set; }
     public string Title { get; set; } = string.Empty;
     

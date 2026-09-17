@@ -17,7 +17,9 @@
                            FontSize="22"
                            TextColor="#520978"
                            VerticalOptions="Center"/>
-                    <Border BackgroundColor="#FF0053"
+                    <Border x:Name="BadgeDemo"
+                            IsVisible="False"
+                            BackgroundColor="#FF0053"
                             StrokeThickness="0"
                             Padding="8,2"
                             StrokeShape="RoundRectangle 10"
@@ -65,6 +67,61 @@
                     </Border>
                 </HorizontalStackLayout>
             </Grid>
+
+            <!-- ТУМБЛЕР ВОЗРАСТА (7–8 ЛЕТ / 9–11 ЛЕТ) -->
+            <Border BackgroundColor="#F3F0FA"
+                    Stroke="#D8D2E8"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 16"
+                    Padding="3"
+                    HorizontalOptions="Center"
+                    Margin="0, 0, 0, 4">
+                <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="4">
+                    <!-- 7–8 лет -->
+                    <Border x:Name="BtnAgeJunior"
+                            Grid.Column="0"
+                            BackgroundColor="#520978"
+                            StrokeThickness="0"
+                            Padding="14,6"
+                            StrokeShape="RoundRectangle 12"
+                            InputTransparent="False">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Text="🧒" FontSize="14" VerticalOptions="Center"/>
+                            <Label x:Name="LblAgeJunior"
+                                   Text="7–8 лет"
+                                   TextColor="White"
+                                   FontFamily="MontserratBold"
+                                   FontSize="12"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAgeJuniorClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- 9–11 лет -->
+                    <Border x:Name="BtnAgeSenior"
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            StrokeThickness="0"
+                            Padding="14,6"
+                            StrokeShape="RoundRectangle 12"
+                            InputTransparent="False">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Text="🧑" FontSize="14" VerticalOptions="Center"/>
+                            <Label x:Name="LblAgeSenior"
+                                   Text="9–11 лет"
+                                   TextColor="#6B7280"
+                                   FontFamily="MontserratMedium"
+                                   FontSize="12"
+                                   VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAgeSeniorClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                </Grid>
+            </Border>
 
             <!-- КАРТОЧКА ПИТОМЦА И ЕГО СОСТОЯНИЯ -->
             <Border BackgroundColor="White"
@@ -389,7 +446,9 @@
                 </Border>
 
                 <!-- 7. ДЕМО: Следующий период -->
-                <Border Grid.Row="3" Grid.ColumnSpan="2"
+                <Border x:Name="CardDemoNextPeriod"
+                        IsVisible="False"
+                        Grid.Row="3" Grid.ColumnSpan="2"
                         BackgroundColor="#310F53"
                         StrokeThickness="0"
                         StrokeShape="RoundRectangle 16"
@@ -492,8 +551,8 @@
                         <VerticalStackLayout x:Name="PanelBudget" Spacing="12" IsVisible="False">
                             <Border BackgroundColor="#F3E8FF" StrokeThickness="0" StrokeShape="RoundRectangle 14" Padding="12,8">
                                 <Grid ColumnDefinitions="*,Auto">
-                                    <Label x:Name="LblBudgetIncome" Text="💰 Доход: 500 ₽" FontFamily="MontserratBold" FontSize="13" TextColor="#520978"/>
-                                    <Label x:Name="LblBudgetRemaining" Grid.Column="1" Text="Осталось: 0 ₽" FontFamily="MontserratBold" FontSize="13" TextColor="#FF0053"/>
+                                    <Label x:Name="LblBudgetIncome" Text="💰 Доход: 500 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978"/>
+                                    <Label x:Name="LblBudgetRemaining" Grid.Column="1" Text="Осталось: 0 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#FF0053"/>
                                 </Grid>
                             </Border>
 
@@ -506,7 +565,7 @@
                                             <Label Text="-10" FontFamily="MontserratBold" FontSize="13" TextColor="#166534" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBudgetObligMinus"/></Border.GestureRecognizers>
                                         </Border>
-                                        <Label x:Name="LblBudgetObligVal" Grid.Column="1" Text="250 ₽" FontFamily="MontserratBold" FontSize="18" TextColor="#166534" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Label x:Name="LblBudgetObligVal" Grid.Column="1" Text="250 монет" FontFamily="MontserratBold" FontSize="18" TextColor="#166534" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border Grid.Column="2" BackgroundColor="#DCFCE7" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 18" InputTransparent="False">
                                             <Label Text="+10" FontFamily="MontserratBold" FontSize="13" TextColor="#166534" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBudgetObligPlus"/></Border.GestureRecognizers>
@@ -524,7 +583,7 @@
                                             <Label Text="-10" FontFamily="MontserratBold" FontSize="13" TextColor="#9D174D" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBudgetDiscMinus"/></Border.GestureRecognizers>
                                         </Border>
-                                        <Label x:Name="LblBudgetDiscVal" Grid.Column="1" Text="150 ₽" FontFamily="MontserratBold" FontSize="18" TextColor="#9D174D" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Label x:Name="LblBudgetDiscVal" Grid.Column="1" Text="150 монет" FontFamily="MontserratBold" FontSize="18" TextColor="#9D174D" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border Grid.Column="2" BackgroundColor="#FCE7F3" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 18" InputTransparent="False">
                                             <Label Text="+10" FontFamily="MontserratBold" FontSize="13" TextColor="#9D174D" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBudgetDiscPlus"/></Border.GestureRecognizers>
@@ -542,7 +601,7 @@
                                             <Label Text="-10" FontFamily="MontserratBold" FontSize="13" TextColor="#1E40AF" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBudgetSavMinus"/></Border.GestureRecognizers>
                                         </Border>
-                                        <Label x:Name="LblBudgetSavVal" Grid.Column="1" Text="100 ₽" FontFamily="MontserratBold" FontSize="18" TextColor="#1E40AF" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Label x:Name="LblBudgetSavVal" Grid.Column="1" Text="100 монет" FontFamily="MontserratBold" FontSize="18" TextColor="#1E40AF" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         <Border Grid.Column="2" BackgroundColor="#DBEAFE" HeightRequest="36" WidthRequest="36" StrokeShape="RoundRectangle 18" InputTransparent="False">
                                             <Label Text="+10" FontFamily="MontserratBold" FontSize="13" TextColor="#1E40AF" HorizontalOptions="Center" VerticalOptions="Center"/>
                                             <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnBudgetSavPlus"/></Border.GestureRecognizers>
@@ -595,7 +654,7 @@
 
                         <!-- C. МОДАЛКА: МАГАЗИН ЗАБОТЫ -->
                         <VerticalStackLayout x:Name="PanelShop" Spacing="10" IsVisible="False">
-                            <Label x:Name="LblShopBalance" Text="💰 Доступно: 400 ₽" FontFamily="MontserratBold" FontSize="14" TextColor="#520978"/>
+                            <Label x:Name="LblShopBalance" Text="💰 Доступно: 400 монет" FontFamily="MontserratBold" FontSize="14" TextColor="#520978"/>
 
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                                 <Border x:Name="BtnShopTabOblig" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
@@ -618,7 +677,7 @@
                             <Border BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 16" Padding="14,12">
                                 <VerticalStackLayout Spacing="6">
                                     <Label x:Name="LblModalGoalTitle" Text="🎯 Трюковой самокат" TextColor="White" FontFamily="MontserratBold" FontSize="15"/>
-                                    <Label x:Name="LblModalGoalProgress" Text="Накоплено: 100 / 350 ₽ (28%)" TextColor="#FFD6E4" FontFamily="MontserratMedium" FontSize="12"/>
+                                    <Label x:Name="LblModalGoalProgress" Text="Накоплено: 100 / 350 монет (28%)" TextColor="#FFD6E4" FontFamily="MontserratMedium" FontSize="12"/>
                                     <ProgressBar x:Name="BarModalGoal" Progress="0.28" ProgressColor="#FF0053" HeightRequest="8"/>
                                 </VerticalStackLayout>
                             </Border>
@@ -627,15 +686,15 @@
                             
                             <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                                 <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="42" InputTransparent="False">
-                                    <Label Text="+20 ₽" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label Text="+20 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit20Clicked"/></Border.GestureRecognizers>
                                 </Border>
                                 <Border Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="42" InputTransparent="False">
-                                    <Label Text="+50 ₽" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label Text="+50 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit50Clicked"/></Border.GestureRecognizers>
                                 </Border>
                                 <Border Grid.Column="2" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="42" InputTransparent="False">
-                                    <Label Text="+100 ₽" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label Text="+100 монет" FontFamily="MontserratBold" FontSize="13" TextColor="#520978" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeposit100Clicked"/></Border.GestureRecognizers>
                                 </Border>
                             </Grid>
@@ -674,9 +733,31 @@
                             <VerticalStackLayout x:Name="ParentContent" Spacing="10" IsVisible="False">
                                 <Label Text="📊 Аналитика успехов ребенка" FontFamily="MontserratBold" FontSize="14" TextColor="#1F2937"/>
                                 <Label x:Name="LblParentStats" Text="Сыграно периодов: 1..." FontFamily="MontserratMedium" FontSize="12" TextColor="#4B5563"/>
+
+                                <Label Text="Возрастная программа обучения:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937" Margin="0,4,0,0"/>
+                                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                    <Border x:Name="BtnParentAgeJunior" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="38" InputTransparent="False">
+                                        <Label x:Name="LblParentAgeJunior" Text="🧒 7–8 лет (1–2 кл)" TextColor="White" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAgeJuniorClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Border x:Name="BtnParentAgeSenior" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="38" InputTransparent="False">
+                                        <Label x:Name="LblParentAgeSenior" Text="🧑 9–11 лет (3–5 кл)" TextColor="#520978" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAgeSeniorClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                </Grid>
+                                
+                                <Border BackgroundColor="#F3E8FF" Stroke="#D8B4FE" StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="12,10" Margin="0,4">
+                                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                                        <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                                            <Label Text="🎮 Демо-режим симуляции" FontFamily="MontserratBold" FontSize="13" TextColor="#520978"/>
+                                            <Label Text="Ускоренный цикл смены периодов и симуляция" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280"/>
+                                        </VerticalStackLayout>
+                                        <Switch x:Name="SwitchParentDemoMode" Grid.Column="1" Toggled="OnParentDemoModeToggled" OnColor="#520978" VerticalOptions="Center"/>
+                                    </Grid>
+                                </Border>
                                 
                                 <Border BackgroundColor="#10B981" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="46" InputTransparent="False">
-                                    <Label Text="🎁 Выдать карманные деньги (+100 ₽)" TextColor="White" FontFamily="MontserratBold" FontSize="13" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Label Text="🎁 Выдать карманные деньги (+100 монет)" TextColor="White" FontFamily="MontserratBold" FontSize="13" HorizontalOptions="Center" VerticalOptions="Center"/>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentGiveBonusClicked"/></Border.GestureRecognizers>
                                 </Border>
 

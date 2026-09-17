@@ -24,6 +24,12 @@ public enum GrowthStage
     Master = 3    // Финни-Мастер (период 5+)
 }
 
+public enum AgeGroup
+{
+    Junior7_8 = 0,  // 7–8 лет (1–2 класс)
+    Senior9_11 = 1  // 9–11 лет (3–5 класс)
+}
+
 public class PeriodSummary
 {
     public int PeriodNumber { get; set; }
@@ -42,6 +48,7 @@ public class PetProfile
     public string KidName { get; set; } = "Юный финансист";
     public string PetName { get; set; } = "Финни";
     
+    public AgeGroup AgeGroup { get; set; } = AgeGroup.Junior7_8;
     public OutfitType Outfit { get; set; } = OutfitType.ClassicGreen;
     public AccessoryType Accessory { get; set; } = AccessoryType.None;
     public GrowthStage Stage { get; set; } = GrowthStage.Baby;
@@ -57,7 +64,8 @@ public class PetProfile
 
     // Игровой цикл и периоды (по ТЗ: не менее 5 периодов в демо-режиме)
     public int CurrentPeriod { get; set; } = 1;
-    public bool IsDemoMode { get; set; } = true;
+    public bool IsDemoMode { get; set; } = false;
+    public bool HasMigratedDemoDefault { get; set; } = false;
     public bool IsOnboardingCompleted { get; set; } = true;
 
     // Настройки доступности (ТЗ п. 3.6)

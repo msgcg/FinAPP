@@ -6,4 +6,5 @@ public class GlossaryTerm
     public string Definition { get; set; } = string.Empty;
     public string KidFriendlyExample { get; set; } = string.Empty;
     public string IconEmoji { get; set; } = "📖";
+    public AgeGroup? TargetAge { get; set; } = null; // null = для всех возрастов
 }

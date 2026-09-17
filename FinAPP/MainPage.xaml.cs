@@ -45,7 +45,7 @@ public partial class MainPage : ContentPage
     private async void OnPageLoaded(object? sender, EventArgs e)
     {
         await _engine.InitializeAsync();
-        _tasks = ContentRepository.GetFinancialTasks();
+        _tasks = _engine.GetTasksForCurrentAge();
         StartPetLifeTimer();
         RefreshUI();
     }
@@ -71,6 +71,10 @@ public partial class MainPage : ContentPage
         var currentGoal = ContentRepository.GetPresetGoals()
             .FirstOrDefault(g => g.Id == p.SelectedGoalId) 
             ?? ContentRepository.GetPresetGoals().First();
+
+        // 0. Демо-режим (по ТЗ управляется из Кабинета родителей)
+        BadgeDemo.IsVisible = p.IsDemoMode;
+        CardDemoNextPeriod.IsVisible = p.IsDemoMode;
 
         // 1. Питомец и эмоция
         string emotion = _engine.CurrentEmotion;
@@ -99,22 +103,60 @@ public partial class MainPage : ContentPage
         };
 
         // 3. Финансовый дашборд
-        LblBalance.Text = $"{p.Balance} ₽";
-        LblSavings.Text = $"{p.Savings} ₽";
+        LblBalance.Text = $"{p.Balance} монет";
+        LblSavings.Text = $"{p.Savings} монет";
 
         // 4. Прогресс цели
         int percent = currentGoal.GetProgressPercent(p.Savings);
         LblGoalTitle.Text = $"🎯 {currentGoal.Title}";
-        LblGoalProgressText.Text = $"{p.Savings} / {currentGoal.TargetAmount} ₽ ({percent}%)";
+        LblGoalProgressText.Text = $"{p.Savings} / {currentGoal.TargetAmount} монет ({percent}%)";
         BarGoal.Progress = percent / 100.0;
 
         int remainingPeriods = currentGoal.EstimateRemainingPeriods(p.Savings, 50);
         LblGoalEstimatedTime.Text = p.Savings >= currentGoal.TargetAmount
             ? "🎉 Цель достигнута! Можно покупать!"
-            : $"⏱️ До цели осталось: ~{remainingPeriods} периодов (при сбережениях 50 ₽/период)";
+            : $"⏱️ До цели осталось: ~{remainingPeriods} периодов (при сбережениях 50 монет/период)";
 
         // 5. Иконка доступности
         LblAnimIcon.Text = p.AnimationsEnabled ? "🎬" : "⏸️";
+
+        // 6. Тумблер возраста (7–8 лет / 9–11 лет)
+        bool isJunior = p.AgeGroup == AgeGroup.Junior7_8;
+        BtnAgeJunior.BackgroundColor = isJunior ? Color.FromArgb("#520978") : Colors.Transparent;
+        LblAgeJunior.TextColor = isJunior ? Colors.White : Color.FromArgb("#6B7280");
+        LblAgeJunior.FontFamily = isJunior ? "MontserratBold" : "MontserratMedium";
+
+        BtnAgeSenior.BackgroundColor = !isJunior ? Color.FromArgb("#520978") : Colors.Transparent;
+        LblAgeSenior.TextColor = !isJunior ? Colors.White : Color.FromArgb("#6B7280");
+        LblAgeSenior.FontFamily = !isJunior ? "MontserratBold" : "MontserratMedium";
+
+        if (BtnParentAgeJunior != null)
+        {
+            BtnParentAgeJunior.BackgroundColor = isJunior ? Color.FromArgb("#520978") : Color.FromArgb("#EBE9F8");
+            LblParentAgeJunior.TextColor = isJunior ? Colors.White : Color.FromArgb("#520978");
+            BtnParentAgeSenior.BackgroundColor = !isJunior ? Color.FromArgb("#520978") : Color.FromArgb("#EBE9F8");
+            LblParentAgeSenior.TextColor = !isJunior ? Colors.White : Color.FromArgb("#520978");
+        }
+    }
+
+    private async void OnAgeJuniorClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _engine.SetAgeGroup(AgeGroup.Junior7_8);
+        _tasks = _engine.GetTasksForCurrentAge();
+        _currentTaskIndex = 0;
+        PetView.SetSpeechText("Установлена программа для 1–2 классов (7–8 лет)! 🧒🐾");
+        RefreshUI();
+    }
+
+    private async void OnAgeSeniorClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _engine.SetAgeGroup(AgeGroup.Senior9_11);
+        _tasks = _engine.GetTasksForCurrentAge();
+        _currentTaskIndex = 0;
+        PetView.SetSpeechText("Установлена программа для 3–5 классов (9–11 лет)! 🧑🎓");
+        RefreshUI();
     }
 
     // =========================================================================
@@ -194,7 +236,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Outfit = OutfitType.ClassicGreen;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Изумрудная куртка с ₽ — мой классический стиль! 🟢");
+        PetView.SetSpeechText("Изумрудная куртка с монет — мой классический стиль! 🟢");
     }
 
     private async void OnOutfitBlueClicked(object? sender, EventArgs e)
@@ -280,10 +322,10 @@ public partial class MainPage : ContentPage
 
     private void UpdateBudgetModalLabels()
     {
-        LblBudgetIncome.Text = $"💰 Доход: {PeriodIncome} ₽";
-        LblBudgetObligVal.Text = $"{_tempOblig} ₽";
-        LblBudgetDiscVal.Text = $"{_tempDisc} ₽";
-        LblBudgetSavVal.Text = $"{_tempSav} ₽";
+        LblBudgetIncome.Text = $"💰 Доход: {PeriodIncome} монет";
+        LblBudgetObligVal.Text = $"{_tempOblig} монет";
+        LblBudgetDiscVal.Text = $"{_tempDisc} монет";
+        LblBudgetSavVal.Text = $"{_tempSav} монет";
 
         int sum = _tempOblig + _tempDisc + _tempSav;
         int diff = PeriodIncome - sum;
@@ -294,12 +336,12 @@ public partial class MainPage : ContentPage
         }
         else if (diff > 0)
         {
-            LblBudgetRemaining.Text = $"Осталось: {diff} ₽";
+            LblBudgetRemaining.Text = $"Осталось: {diff} монет";
             LblBudgetRemaining.TextColor = Color.FromArgb("#FF0053");
         }
         else
         {
-            LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} ₽ ⚠️";
+            LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} монет ⚠️";
             LblBudgetRemaining.TextColor = Color.FromArgb("#EF4444");
         }
     }
@@ -357,9 +399,9 @@ public partial class MainPage : ContentPage
     {
         var p = _engine.Profile;
         string report = $"📊 Сравнение План vs Факт:\n\n" +
-            $"🍗 Обязательные: План {_tempOblig} ₽ | Факт {p.SpentObligatory} ₽\n" +
-            $"🎮 Желания: План {_tempDisc} ₽ | Факт {p.SpentDiscretionary} ₽\n" +
-            $"🏦 В копилку: План {_tempSav} ₽ | Накоплено {p.Savings} ₽";
+            $"🍗 Обязательные: План {_tempOblig} монет | Факт {p.SpentObligatory} монет\n" +
+            $"🎮 Желания: План {_tempDisc} монет | Факт {p.SpentDiscretionary} монет\n" +
+            $"🏦 В копилку: План {_tempSav} монет | Накоплено {p.Savings} монет";
         PetView.SetSpeechText(report);
     }
 
@@ -479,7 +521,7 @@ public partial class MainPage : ContentPage
 
     private void RenderShopCategoryUI()
     {
-        LblShopBalance.Text = $"💰 Доступно монет: {_engine.Profile.Balance} ₽";
+        LblShopBalance.Text = $"💰 Доступно монет: {_engine.Profile.Balance} монет";
 
         if (_isShopObligCategory)
         {
@@ -546,7 +588,7 @@ public partial class MainPage : ContentPage
                 VerticalOptions = LayoutOptions.Center
             };
             Grid.SetColumn(buyBtn, 2);
-            buyBtn.Content = new Label { Text = $"{item.Price} ₽", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+            buyBtn.Content = new Label { Text = $"{item.Price} монет", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
 
             var tap = new TapGestureRecognizer();
             tap.Tapped += async (s, e) =>
@@ -602,7 +644,7 @@ public partial class MainPage : ContentPage
 
         int percent = currentGoal.GetProgressPercent(p.Savings);
         LblModalGoalTitle.Text = $"{currentGoal.Icon} {currentGoal.Title}";
-        LblModalGoalProgress.Text = $"Накоплено: {p.Savings} / {currentGoal.TargetAmount} ₽ ({percent}%)";
+        LblModalGoalProgress.Text = $"Накоплено: {p.Savings} / {currentGoal.TargetAmount} монет ({percent}%)";
         BarModalGoal.Progress = percent / 100.0;
 
         GoalsListContainer.Children.Clear();
@@ -634,7 +676,7 @@ public partial class MainPage : ContentPage
             var info = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center };
             Grid.SetColumn(info, 1);
             info.Children.Add(new Label { Text = goal.Title, FontFamily = "MontserratBold", FontSize = 12, TextColor = Color.FromArgb("#1F2937") });
-            info.Children.Add(new Label { Text = $"Цель: {goal.TargetAmount} ₽", FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#6B7280") });
+            info.Children.Add(new Label { Text = $"Цель: {goal.TargetAmount} монет", FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#6B7280") });
             grid.Children.Add(info);
 
             if (isCurrent)
@@ -680,7 +722,7 @@ public partial class MainPage : ContentPage
         var p = _engine.Profile;
         if (p.Balance < amount)
         {
-            PetView.SetSpeechText($"Не хватает {amount} ₽ на балансе для пополнения копилки!");
+            PetView.SetSpeechText($"Не хватает {amount} монет на балансе для пополнения копилки!");
             return;
         }
 
@@ -689,7 +731,7 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderGoalsUI();
-        PetView.SetSpeechText($"Звон монетки! +{amount} ₽ отправились в копилку! 🏦");
+        PetView.SetSpeechText($"Звон монетки! +{amount} монет отправились в копилку! 🏦");
     }
 
     private async void OnDeposit20Clicked(object? sender, EventArgs e)
@@ -721,7 +763,7 @@ public partial class MainPage : ContentPage
     private void RenderGlossaryUI()
     {
         GlossaryTermsContainer.Children.Clear();
-        var terms = ContentRepository.GetGlossaryTerms();
+        var terms = _engine.GetGlossaryForCurrentAge();
 
         foreach (var t in terms)
         {
@@ -770,16 +812,28 @@ public partial class MainPage : ContentPage
             ParentContent.IsVisible = true;
 
             var p = _engine.Profile;
+            SwitchParentDemoMode.IsToggled = p.IsDemoMode;
             LblParentStats.Text = $"Ребенок: {p.KidName}\n" +
                 $"Периодов сыграно: {p.CurrentPeriod}\n" +
-                $"Накоплено в копилке: {p.Savings} ₽\n" +
+                $"Накоплено в копилке: {p.Savings} монет\n" +
                 $"Заданий выполнено: {p.CompletedTasksCount}\n" +
-                $"Текущий баланс: {p.Balance} ₽";
+                $"Текущий баланс: {p.Balance} монет";
         }
         else
         {
             PetView.SetSpeechText("Неверный ответ! Вход только для родителей 🔒");
         }
+    }
+
+    private async void OnParentDemoModeToggled(object? sender, ToggledEventArgs e)
+    {
+        if (_engine == null) return;
+        _engine.Profile.IsDemoMode = e.Value;
+        BadgeDemo.IsVisible = e.Value;
+        CardDemoNextPeriod.IsVisible = e.Value;
+        await _engine.SaveAsync();
+        string status = e.Value ? "включен 🎮" : "выключен 🔒";
+        PetView.SetSpeechText($"Демо-режим {status}!");
     }
 
     private async void OnParentGiveBonusClicked(object? sender, EventArgs e)
@@ -788,7 +842,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Balance += 100;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Родители выдали карманные деньги: +100 ₽! 🎉");
+        PetView.SetSpeechText("Родители выдали карманные деньги: +100 монет! 🎉");
         await CloseModal();
     }
 
@@ -824,6 +878,6 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
 
-        PetView.SetSpeechText($"Период #{p.CurrentPeriod} начался! Начислен доход +{PeriodIncome} ₽! 🚀\n{comparison}");
+        PetView.SetSpeechText($"Период #{p.CurrentPeriod} начался! Начислен доход +{PeriodIncome} монет! 🚀\n{comparison}");
     }
 }
