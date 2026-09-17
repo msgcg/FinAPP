@@ -61,6 +61,7 @@ public class PetProfile
     public int Balance { get; set; } = 450;
     public int Savings { get; set; } = 150;
     public string SelectedGoalId { get; set; } = "goal_gadget";
+    public List<FinancialGoal> CustomGoals { get; set; } = new();
 
     // Игровой цикл и периоды (по ТЗ: не менее 5 периодов в демо-режиме)
     public int CurrentPeriod { get; set; } = 1;

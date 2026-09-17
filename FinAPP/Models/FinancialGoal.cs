@@ -7,6 +7,7 @@ public class FinancialGoal
     public int TargetAmount { get; set; }
     public string IconEmoji { get; set; } = "🎯";
     public string Icon => IconEmoji;
+    public string IconImage { get; set; } = "ic_goal_scooter.png";
     public string Description { get; set; } = string.Empty;
     public bool IsCustom { get; set; } = false;
 

@@ -15,6 +15,8 @@ public class ShopItem
     public int HungerBoost { get; set; }
     public int MoodBoost { get; set; }
     public string IconEmoji { get; set; } = "📦";
+    public string IconImage { get; set; } = string.Empty;
+    public string ThanksText { get; set; } = string.Empty;
     public string Icon => IconEmoji;
     public string Description { get; set; } = string.Empty;
 

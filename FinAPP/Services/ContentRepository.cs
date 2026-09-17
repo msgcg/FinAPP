@@ -18,6 +18,8 @@ public static class ContentRepository
             HungerBoost = 35,
             MoodBoost = 10,
             IconEmoji = "🍗",
+            IconImage = "ic_shop_lunch.png",
+            ThanksText = "Муррр! Спасибо за питательный обед! Теперь я сыт и полон сил!",
             Description = "Полноценный обед с белками и витаминами. Необходим для поддержания сил питомца."
         },
         new ShopItem
@@ -29,6 +31,8 @@ public static class ContentRepository
             HungerBoost = 25,
             MoodBoost = 20,
             IconEmoji = "💊",
+            IconImage = "ic_shop_vitamins.png",
+            ThanksText = "Муррр! Спасибо за полезные витаминки! Моя шерстка сияет!",
             Description = "Обязательный уход за шерсткой и иммунитетом Финни."
         },
         new ShopItem
@@ -40,6 +44,8 @@ public static class ContentRepository
             HungerBoost = 15,
             MoodBoost = 25,
             IconEmoji = "🧼",
+            IconImage = "ic_shop_hygiene.png",
+            ThanksText = "Муррр! Спасибо за гигиенический набор и щётку! Я такой чистый!",
             Description = "Регулярный уход: чистота и здоровье котика каждый период."
         },
         new ShopItem
@@ -51,6 +57,8 @@ public static class ContentRepository
             HungerBoost = 20,
             MoodBoost = 35,
             IconEmoji = "🩺",
+            IconImage = "ic_shop_vet.png",
+            ThanksText = "Муррр! Спасибо за заботу и визит к ветеринару! Чувствую себя отлично!",
             Description = "Обязательная забота: предотвращает усталость и плохое самочувствие."
         },
 
@@ -64,6 +72,8 @@ public static class ContentRepository
             HungerBoost = 0,
             MoodBoost = 30,
             IconEmoji = "🎾",
+            IconImage = "ic_shop_ball.png",
+            ThanksText = "Муррр! Спасибо за весёлый мячик! Побежали играть!",
             Description = "Забавная игрушка для активных игр. Финни обожает гонять мячик!"
         },
         new ShopItem
@@ -75,6 +85,8 @@ public static class ContentRepository
             HungerBoost = 0,
             MoodBoost = 55,
             IconEmoji = "🔦",
+            IconImage = "ic_shop_laser.png",
+            ThanksText = "Муррр! Спасибо за лазерную указку! Я поймаю этот огонёк!",
             Description = "Крутое развлечение! Дарит море радости, но покупку можно отложить при нехватке средств."
         },
         new ShopItem
@@ -86,6 +98,8 @@ public static class ContentRepository
             HungerBoost = 0,
             MoodBoost = 75,
             IconEmoji = "🛋️",
+            IconImage = "ic_shop_bed.png",
+            ThanksText = "Муррр! Спасибо за мягкую лежанку! Буду сладко мурлыкать!",
             Description = "Уютное место для сна. Приятная покупка из категории «Желания»."
         },
         new ShopItem
@@ -97,6 +111,8 @@ public static class ContentRepository
             HungerBoost = 0,
             MoodBoost = 100,
             IconEmoji = "🚁",
+            IconImage = "ic_shop_drone.png",
+            ThanksText = "Муррр! Спасибо за крутой мини-коптер! Финни теперь пилот!",
             Description = "Супер-гаджет для Финни. Покупать стоит только при избытке карманных денег!"
         }
     };
@@ -117,7 +133,7 @@ public static class ContentRepository
                 Id = "junior_task_1",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Хочу или Надо? 🥪",
+                Title = "Хочу или Надо?",
                 CompetencyReference = "Единая рамка компетенций, п. 6.2: Различение необходимого и желаемого",
                 ScenarioDescription = "Финни проголодался, его полезный обед стоит 15 монет. А рядом продается блестящая наклейка за 15 монет. У тебя в кармане всего 20 монет. Что нужно купить?",
                 Options = new()
@@ -142,7 +158,7 @@ public static class ContentRepository
                 Id = "junior_task_2",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Три волшебных конверта ✉️",
+                Title = "Три волшебных конверта ️",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Назначение личного бюджета и распределение средств",
                 ScenarioDescription = "Мама дала тебе 30 карманных монет. Как лучше всего распределить их по конвертам?",
                 Options = new()
@@ -167,7 +183,7 @@ public static class ContentRepository
                 Id = "junior_task_3",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Копилка на мечту 🐷",
+                Title = "Копилка на мечту",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Формирование сбережений и достижение цели",
                 ScenarioDescription = "В витрине сидит заводной мышонок за 40 монет. У тебя есть 10 монет каждый день. Как быстрее всего купить игрушку?",
                 Options = new()
@@ -192,7 +208,7 @@ public static class ContentRepository
                 Id = "junior_task_4",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Монетка про запас 🐾",
+                Title = "Монетка про запас",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Резерв на непредвиденный случай",
                 ScenarioDescription = "Зачем Финни оставляет 5 монеток на дне копилки и не трогает их?",
                 Options = new()
@@ -217,7 +233,7 @@ public static class ContentRepository
                 Id = "junior_task_5",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Считаем сдачу в буфете 🪙",
+                Title = "Считаем сдачу в буфете",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Простые покупки и наличные расчеты",
                 ScenarioDescription = "Ты купил яблоко для Финни за 15 монет и дал продавцу монетку в 20 монет. Сколько сдачи продавец должен тебе вернуть?",
                 Options = new()
@@ -248,7 +264,7 @@ public static class ContentRepository
                 Id = "junior_task_6",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Секрет твоего кошелька 🤫",
+                Title = "Секрет твоего кошелька",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность и защита карманных денег",
                 ScenarioDescription = "Во дворе незнакомец говорит: «Покажи, сколько у тебя монеток в кошельке, я фокус покажу и удвою их!». Что ты сделаешь?",
                 Options = new()
@@ -279,7 +295,7 @@ public static class ContentRepository
                 Id = "senior_task_1",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Золотое правило 50 / 30 / 20 📊",
+                Title = "Золотое правило 50 / 30 / 20",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Назначение личного бюджета и соотношение доходов и расходов",
                 ScenarioDescription = "Тебе выделили 100 монет карманных денег на неделю. Как грамотнее всего распределить эти средства согласно финансовому правилу?",
                 Options = new()
@@ -310,7 +326,7 @@ public static class ContentRepository
                 Id = "senior_task_2",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Ловушка акции «Второй за полцены» 🏷️",
+                Title = "Ловушка акции «Второй за полцены» ️",
                 CompetencyReference = "Единая рамка компетенций, п. 6.2: Различение необходимого и желаемого, маркетинговые уловки",
                 ScenarioDescription = "Пачка корма стоит 60 монет. По акции вторую пачку предлагают за 30 монет. Но срок годности истекает завтра, а Финни успеет съесть только одну. Выгодно ли брать вторую?",
                 Options = new()
@@ -335,7 +351,7 @@ public static class ContentRepository
                 Id = "senior_task_3",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Подушка безопасности для семьи и питомца 🛡️",
+                Title = "Подушка безопасности для семьи и питомца ️",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Формирование сбережений и резерва на непредвиденный случай",
                 ScenarioDescription = "Зачем финансовые эксперты советуют каждому человеку и семье иметь «подушку безопасности»?",
                 Options = new()
@@ -360,7 +376,7 @@ public static class ContentRepository
                 Id = "senior_task_4",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Сравнение цены за грамм ⚖️",
+                Title = "Сравнение цены за грамм ️",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Принятие решений в условиях ограниченного бюджета",
                 ScenarioDescription = "В магазине две пачки корма: маленькая 200г за 60 монет (30 монет/100г) и большая 500г за 120 монет (24 монеты/100г). Какая покупка выгоднее при регулярном кормлении?",
                 Options = new()
@@ -385,7 +401,7 @@ public static class ContentRepository
                 Id = "senior_task_5",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Звонок от «Службы безопасности» 📞",
+                Title = "Звонок от «Службы безопасности»",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Защита от финансового мошенничества и кибергигиена",
                 ScenarioDescription = "Незнакомец звонит и тревожно говорит: «Ваш счет атакован! Срочно продиктуйте код из СМС, чтобы спасти баланс!». Что делать?",
                 Options = new()
@@ -410,7 +426,7 @@ public static class ContentRepository
                 Id = "senior_task_6",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Фишинг: бесплатные монеты в интернете 🌐",
+                Title = "Фишинг: бесплатные монеты в интернете",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность в цифровой среде и защита от мошенников",
                 ScenarioDescription = "На сайте предлагают ввести логин, пароль и номер карты родителей, чтобы получить «10 000 бесплатных монет в игре». Что делать?",
                 Options = new()
@@ -448,6 +464,7 @@ public static class ContentRepository
             Title = "Спортивный трюковой самокат",
             TargetAmount = 350,
             IconEmoji = "🛴",
+            IconImage = "ic_goal_scooter.png",
             Description = "Отличная краткосрочная цель для прогулок в парке."
         },
         new FinancialGoal
@@ -456,6 +473,7 @@ public static class ContentRepository
             Title = "Настольная экономическая игра",
             TargetAmount = 650,
             IconEmoji = "🎲",
+            IconImage = "ic_goal_game.png",
             Description = "Увлекательная игра для всей семьи, учит инвестициям и торговле."
         },
         new FinancialGoal
@@ -464,6 +482,7 @@ public static class ContentRepository
             Title = "Умные детские часы с GPS",
             TargetAmount = 1000,
             IconEmoji = "⌚",
+            IconImage = "ic_goal_gadget.png",
             Description = "Полезный гаджет для связи с родителями и шагомера."
         }
     };

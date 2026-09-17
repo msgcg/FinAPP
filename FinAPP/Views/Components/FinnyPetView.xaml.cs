@@ -12,13 +12,13 @@ public partial class FinnyPetView : ContentView
     // Короткие советы на 1 предложение, не выходящие за рамки бабла
     private readonly string[] _finnyQuotes = new[]
     {
-        "Планируй сначала обязательные траты, а потом желания! 🍗",
-        "Копилка растёт по монетке — так рождается капитал! 🏦",
-        "Никому не сообщай коды из СМС — Финни за безопасность! 🛡️",
-        "Сложный процент умножает твои сбережения! ✨",
-        "Муррр! Спасибо за заботу и твою внимательность! 🐾",
-        "Правило 50/30/20 помогает копить легко и без стресса! 📊",
-        "Запиши сегодняшние расходы, чтобы видеть свой прогресс! 📝"
+        "Планируй сначала обязательные траты, а потом желания!",
+        "Копилка растёт по монетке — так рождается капитал!",
+        "Никому не сообщай коды из СМС — Финни за безопасность!",
+        "Сложный процент умножает твои сбережения со временем!",
+        "Муррр! Спасибо за заботу и твою внимательность!",
+        "Правило 50/30/20 помогает копить легко и без стресса!",
+        "Запиши сегодняшние расходы, чтобы видеть свой прогресс!"
     };
     private int _quoteIndex = 0;
     private string _currentStagePrefix = "finny_baby";
@@ -100,17 +100,17 @@ public partial class FinnyPetView : ContentView
         {
             case GrowthStage.Baby:
                 _baseScale = 0.95;
-                LblStageBadge.Text = "🐾 Финни-Малыш (1 ст.)";
+                LblStageBadge.Text = "Финни-Малыш (1 ст.)";
                 MasterAura.IsVisible = false;
                 break;
             case GrowthStage.Teen:
                 _baseScale = 1.0;
-                LblStageBadge.Text = "⚡ Финни-Юниор (2 ст.)";
+                LblStageBadge.Text = "Финни-Юниор (2 ст.)";
                 MasterAura.IsVisible = false;
                 break;
             case GrowthStage.Master:
                 _baseScale = 1.06;
-                LblStageBadge.Text = "🌟 Финни-Мастер (3 ст.)";
+                LblStageBadge.Text = "Финни-Мастер (3 ст.)";
                 MasterAura.IsVisible = true;
                 break;
         }
@@ -126,12 +126,14 @@ public partial class FinnyPetView : ContentView
         if (!force && _activeGif == gifName) return;
         _activeGif = gifName;
 
-        // Базовое назначение для MAUI (гарантирует видимость на всех платформах)
+#if !ANDROID
+        // Базовое назначение для MAUI на Windows / iOS / MacCatalyst
         if (ImgPet != null)
         {
             ImgPet.Source = gifName;
             ImgPet.IsAnimationPlaying = true;
         }
+#endif
 
         ApplyNativeAnimation(gifName);
     }
@@ -151,25 +153,36 @@ public partial class FinnyPetView : ContentView
                         if (OperatingSystem.IsAndroidVersionAtLeast(28))
                         {
                             var context = Android.App.Application.Context;
-                            using var stream = context?.Assets?.Open(gifName);
-                            if (stream != null)
+                            if (context?.CacheDir != null)
                             {
-                                using var ms = new System.IO.MemoryStream();
-                                stream.CopyTo(ms);
-                                var byteBuffer = Java.Nio.ByteBuffer.Wrap(ms.ToArray());
-                                var source = Android.Graphics.ImageDecoder.CreateSource(byteBuffer);
-                                var drawable = Android.Graphics.ImageDecoder.DecodeDrawable(source);
-                                
-                                nativeImageView.SetImageDrawable(drawable);
-                                
-                                if (drawable is Android.Graphics.Drawables.AnimatedImageDrawable animDrawable)
+                                var cacheFilePath = System.IO.Path.Combine(context.CacheDir.AbsolutePath, gifName);
+                                if (!System.IO.File.Exists(cacheFilePath) || new System.IO.FileInfo(cacheFilePath).Length == 0)
                                 {
-                                    animDrawable.RepeatCount = Android.Graphics.Drawables.AnimatedImageDrawable.RepeatInfinite;
-                                    animDrawable.Start();
+                                    using var assetStream = context.Assets?.Open(gifName);
+                                    if (assetStream != null)
+                                    {
+                                        using var outStream = System.IO.File.Create(cacheFilePath);
+                                        assetStream.CopyTo(outStream);
+                                    }
                                 }
-                                else if (drawable is Android.Graphics.Drawables.IAnimatable anim)
+
+                                var cacheFile = new Java.IO.File(cacheFilePath);
+                                if (cacheFile.Exists() && cacheFile.Length() > 0)
                                 {
-                                    anim.Start();
+                                    var source = Android.Graphics.ImageDecoder.CreateSource(cacheFile);
+                                    var drawable = Android.Graphics.ImageDecoder.DecodeDrawable(source);
+                                    
+                                    nativeImageView.SetImageDrawable(drawable);
+                                    
+                                    if (drawable is Android.Graphics.Drawables.AnimatedImageDrawable animDrawable)
+                                    {
+                                        animDrawable.RepeatCount = Android.Graphics.Drawables.AnimatedImageDrawable.RepeatInfinite;
+                                        animDrawable.Start();
+                                    }
+                                    else if (drawable is Android.Graphics.Drawables.IAnimatable animatable)
+                                    {
+                                        animatable.Start();
+                                    }
                                 }
                             }
                         }

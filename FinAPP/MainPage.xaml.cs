@@ -65,12 +65,22 @@ public partial class MainPage : ContentPage
         _gameLoopTimer.Start();
     }
 
+    private List<FinancialGoal> GetAllGoals()
+    {
+        var list = new List<FinancialGoal>(ContentRepository.GetPresetGoals());
+        if (_engine.Profile.CustomGoals != null && _engine.Profile.CustomGoals.Count > 0)
+        {
+            list.AddRange(_engine.Profile.CustomGoals);
+        }
+        return list;
+    }
+
     private void RefreshUI()
     {
         var p = _engine.Profile;
-        var currentGoal = ContentRepository.GetPresetGoals()
-            .FirstOrDefault(g => g.Id == p.SelectedGoalId) 
-            ?? ContentRepository.GetPresetGoals().First();
+        var allGoals = GetAllGoals();
+        var currentGoal = allGoals.FirstOrDefault(g => g.Id == p.SelectedGoalId) 
+            ?? allGoals.First();
 
         // 0. Демо-режим (по ТЗ управляется из Кабинета родителей)
         BadgeDemo.IsVisible = p.IsDemoMode;
@@ -108,17 +118,18 @@ public partial class MainPage : ContentPage
 
         // 4. Прогресс цели
         int percent = currentGoal.GetProgressPercent(p.Savings);
-        LblGoalTitle.Text = $"🎯 {currentGoal.Title}";
+        LblGoalTitle.Text = $"Цель: {currentGoal.Title}";
+        ImgGoalCard.Source = currentGoal.IconImage;
         LblGoalProgressText.Text = $"{p.Savings} / {currentGoal.TargetAmount} монет ({percent}%)";
         BarGoal.Progress = percent / 100.0;
 
         int remainingPeriods = currentGoal.EstimateRemainingPeriods(p.Savings, 50);
         LblGoalEstimatedTime.Text = p.Savings >= currentGoal.TargetAmount
-            ? "🎉 Цель достигнута! Можно покупать!"
-            : $"⏱️ До цели осталось: ~{remainingPeriods} периодов (при сбережениях 50 монет/период)";
+            ? "Цель достигнута! Можно покупать!"
+            : $"До цели осталось ~{remainingPeriods} периодов (при +50 монет/период)";
 
-        // 5. Иконка доступности
-        LblAnimIcon.Text = p.AnimationsEnabled ? "🎬" : "⏸️";
+        // 5. Иконка доступности (анимации)
+        ImgAnimIcon.Opacity = p.AnimationsEnabled ? 1.0 : 0.4;
 
         // 6. Тумблер возраста (7–8 лет / 9–11 лет)
         bool isJunior = p.AgeGroup == AgeGroup.Junior7_8;
@@ -145,7 +156,7 @@ public partial class MainPage : ContentPage
         _engine.SetAgeGroup(AgeGroup.Junior7_8);
         _tasks = _engine.GetTasksForCurrentAge();
         _currentTaskIndex = 0;
-        PetView.SetSpeechText("Установлена программа для 1–2 классов (7–8 лет)! 🧒🐾");
+        PetView.SetSpeechText("Установлена программа для 1–2 классов (7–8 лет)!");
         RefreshUI();
     }
 
@@ -155,7 +166,7 @@ public partial class MainPage : ContentPage
         _engine.SetAgeGroup(AgeGroup.Senior9_11);
         _tasks = _engine.GetTasksForCurrentAge();
         _currentTaskIndex = 0;
-        PetView.SetSpeechText("Установлена программа для 3–5 классов (9–11 лет)! 🧑🎓");
+        PetView.SetSpeechText("Установлена программа для 3–5 классов (9–11 лет)!");
         RefreshUI();
     }
 
@@ -216,7 +227,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.AnimationsEnabled = !_engine.Profile.AnimationsEnabled;
         RefreshUI();
         await _engine.SaveAsync();
-        string status = _engine.Profile.AnimationsEnabled ? "включены 🎬" : "отключены ⏸️";
+        string status = _engine.Profile.AnimationsEnabled ? "включены" : "отключены";
         PetView.SetSpeechText($"Анимации {status}!");
     }
 
@@ -227,7 +238,7 @@ public partial class MainPage : ContentPage
     {
         await AnimateTap(sender as VisualElement);
         EntryPetName.Text = _engine.Profile.PetName;
-        await ShowModal("🎨 Гардероб и имя Финни", PanelCustomizer);
+        await ShowModal("Гардероб и имя Финни", PanelCustomizer);
     }
 
     private async void OnOutfitGreenClicked(object? sender, EventArgs e)
@@ -236,7 +247,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Outfit = OutfitType.ClassicGreen;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Изумрудная куртка с монет — мой классический стиль! 🟢");
+        PetView.SetSpeechText("Изумрудная куртка с монетами — классический стиль Финни!");
     }
 
     private async void OnOutfitBlueClicked(object? sender, EventArgs e)
@@ -245,7 +256,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Outfit = OutfitType.RoyalBlue;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Королевский синий цвет — выбор уверенного инвестора! 🔵");
+        PetView.SetSpeechText("Королевский синий цвет — выбор уверенного инвестора!");
     }
 
     private async void OnOutfitRubyClicked(object? sender, EventArgs e)
@@ -254,7 +265,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Outfit = OutfitType.RubyRed;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Рубиновый чемпионский цвет заряжает энергией! 🔴");
+        PetView.SetSpeechText("Рубиновый чемпионский цвет заряжает энергией!");
     }
 
     private async void OnAccNoneClicked(object? sender, EventArgs e)
@@ -271,7 +282,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Accessory = AccessoryType.Sunglasses;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Очки надел — к большим доходам готов! 😎");
+        PetView.SetSpeechText("Очки надел — к большим доходам готов!");
     }
 
     private async void OnAccAcademicClicked(object? sender, EventArgs e)
@@ -280,7 +291,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Accessory = AccessoryType.AcademicCap;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Шапочка юного экономиста! Теперь я профессор финансов! 🎓");
+        PetView.SetSpeechText("Шапочка экономиста! Теперь Финни — профессор финансов!");
     }
 
     private async void OnAccCrownClicked(object? sender, EventArgs e)
@@ -289,7 +300,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Accessory = AccessoryType.Crown;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Корона сбережений! Мы накопили королевский запас! 👑");
+        PetView.SetSpeechText("Корона сбережений! Мы накопили королевский запас!");
     }
 
     private async void OnSavePetNameClicked(object? sender, EventArgs e)
@@ -301,7 +312,7 @@ public partial class MainPage : ContentPage
             _engine.Profile.PetName = newName;
             RefreshUI();
             await _engine.SaveAsync();
-            PetView.SetSpeechText($"Ура! Теперь меня зовут {newName}! 🐾");
+            PetView.SetSpeechText($"Ура! Теперь меня зовут {newName}!");
             await CloseModal();
         }
     }
@@ -317,12 +328,12 @@ public partial class MainPage : ContentPage
         _tempDisc = p.PlannedDiscretionary > 0 ? p.PlannedDiscretionary : 150;
         _tempSav = p.PlannedSavings > 0 ? p.PlannedSavings : 100;
         UpdateBudgetModalLabels();
-        await ShowModal($"📊 Бюджет периода #{p.CurrentPeriod}", PanelBudget);
+        await ShowModal($"Бюджет периода #{p.CurrentPeriod}", PanelBudget);
     }
 
     private void UpdateBudgetModalLabels()
     {
-        LblBudgetIncome.Text = $"💰 Доход: {PeriodIncome} монет";
+        LblBudgetIncome.Text = $"Доход: {PeriodIncome} монет";
         LblBudgetObligVal.Text = $"{_tempOblig} монет";
         LblBudgetDiscVal.Text = $"{_tempDisc} монет";
         LblBudgetSavVal.Text = $"{_tempSav} монет";
@@ -331,7 +342,7 @@ public partial class MainPage : ContentPage
         int diff = PeriodIncome - sum;
         if (diff == 0)
         {
-            LblBudgetRemaining.Text = "Распределено 100% ✅";
+            LblBudgetRemaining.Text = "Распределено 100%";
             LblBudgetRemaining.TextColor = Color.FromArgb("#10B981");
         }
         else if (diff > 0)
@@ -341,7 +352,7 @@ public partial class MainPage : ContentPage
         }
         else
         {
-            LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} монет ⚠️";
+            LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} монет";
             LblBudgetRemaining.TextColor = Color.FromArgb("#EF4444");
         }
     }
@@ -379,7 +390,7 @@ public partial class MainPage : ContentPage
         int total = _tempOblig + _tempDisc + _tempSav;
         if (total > PeriodIncome)
         {
-            PetView.SetSpeechText("Мяу! План превышает доход! Уменьши одну из категорий 💡");
+            PetView.SetSpeechText("Мяу! План превышает доход! Уменьши одну из категорий.");
             return;
         }
 
@@ -391,17 +402,17 @@ public partial class MainPage : ContentPage
 
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Отличный план! Теперь совершай покупки согласно конвертам! 📋");
+        PetView.SetSpeechText("Отличный план! Теперь совершай покупки согласно конвертам.");
         await CloseModal();
     }
 
     private void OnShowPlanFactClicked(object? sender, EventArgs e)
     {
         var p = _engine.Profile;
-        string report = $"📊 Сравнение План vs Факт:\n\n" +
-            $"🍗 Обязательные: План {_tempOblig} монет | Факт {p.SpentObligatory} монет\n" +
-            $"🎮 Желания: План {_tempDisc} монет | Факт {p.SpentDiscretionary} монет\n" +
-            $"🏦 В копилку: План {_tempSav} монет | Накоплено {p.Savings} монет";
+        string report = $"Сравнение План vs Факт:\n\n" +
+            $"Обязательные: План {_tempOblig} монет | Факт {p.SpentObligatory} монет\n" +
+            $"Желания: План {_tempDisc} монет | Факт {p.SpentDiscretionary} монет\n" +
+            $"В копилку: План {_tempSav} монет | Накоплено {p.Savings} монет";
         PetView.SetSpeechText(report);
     }
 
@@ -412,7 +423,7 @@ public partial class MainPage : ContentPage
     {
         await AnimateTap(sender as VisualElement);
         RenderCurrentTask();
-        await ShowModal("📚 Финансовые задачи", PanelTasks);
+        await ShowModal("Финансовые задачи", PanelTasks);
     }
 
     private void RenderCurrentTask()
@@ -472,11 +483,11 @@ public partial class MainPage : ContentPage
             selectedBorder.Stroke = Color.FromArgb("#10B981");
             TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#F0FDF4");
             TaskFeedbackBorder.Stroke = Color.FromArgb("#86EFAC");
-            LblTaskFeedback.Text = $"🎉 {msg}";
+            LblTaskFeedback.Text = msg;
             LblTaskFeedback.TextColor = Color.FromArgb("#166534");
 
             RefreshUI();
-            PetView.SetSpeechText($"Ура! Ты блестяще решил задачу и заработал +{option.RewardCoins} монет! 🌟");
+            PetView.SetSpeechText($"Ура! Ты отлично решил задачу и заработал +{option.RewardCoins} монет!");
         }
         else
         {
@@ -486,7 +497,7 @@ public partial class MainPage : ContentPage
             TaskFeedbackBorder.Stroke = Color.FromArgb("#FCD34D");
             LblTaskFeedback.Text = msg;
             LblTaskFeedback.TextColor = Color.FromArgb("#92400E");
-            PetView.SetSpeechText("Ошибаться полезно — так мы учимся быть финансово грамотными! 🐾");
+            PetView.SetSpeechText("Ошибаться полезно — так мы учимся быть финансово грамотными!");
         }
     }
 
@@ -504,7 +515,7 @@ public partial class MainPage : ContentPage
         await AnimateTap(sender as VisualElement);
         _isShopObligCategory = true;
         RenderShopCategoryUI();
-        await ShowModal("🛒 Магазин заботы о Финни", PanelShop);
+        await ShowModal("Магазин заботы о Финни", PanelShop);
     }
 
     private void OnShopTabObligClicked(object? sender, EventArgs e)
@@ -521,7 +532,7 @@ public partial class MainPage : ContentPage
 
     private void RenderShopCategoryUI()
     {
-        LblShopBalance.Text = $"💰 Доступно монет: {_engine.Profile.Balance} монет";
+        LblShopBalance.Text = $"Доступно монет: {_engine.Profile.Balance} монет";
 
         if (_isShopObligCategory)
         {
@@ -565,9 +576,15 @@ public partial class MainPage : ContentPage
                 ColumnSpacing = 10
             };
 
-            // Иконка
-            var lblIcon = new Label { Text = item.Icon, FontSize = 24, VerticalOptions = LayoutOptions.Center };
-            grid.Children.Add(lblIcon);
+            // Иконка товара из презентации (никаких эмоджи!)
+            var imgIcon = new Image
+            {
+                Source = item.IconImage,
+                WidthRequest = 36,
+                HeightRequest = 36,
+                VerticalOptions = LayoutOptions.Center
+            };
+            grid.Children.Add(imgIcon);
 
             // Описание
             var vText = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
@@ -609,7 +626,7 @@ public partial class MainPage : ContentPage
         var p = _engine.Profile;
         if (p.Balance < item.Price)
         {
-            PetView.SetSpeechText("Недостаточно монет! Выполни задание или спланируй бюджет! 💡");
+            PetView.SetSpeechText("Недостаточно монет! Выполни задание или спланируй бюджет.");
             return;
         }
 
@@ -623,7 +640,8 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderShopCategoryUI();
-        PetView.SetSpeechText($"Муррр! Спасибо за {item.Name}! Теперь я доволен! 🐾");
+        // Грамотная благодарность на русском языке в винительном падеже
+        PetView.SetSpeechText(string.IsNullOrEmpty(item.ThanksText) ? "Муррр! Спасибо за заботу! Теперь я доволен!" : item.ThanksText);
     }
 
     // =========================================================================
@@ -633,17 +651,18 @@ public partial class MainPage : ContentPage
     {
         await AnimateTap(sender as VisualElement);
         RenderGoalsUI();
-        await ShowModal("🎯 Копилка и цели", PanelGoals);
+        await ShowModal("Копилка и цели", PanelGoals);
     }
 
     private void RenderGoalsUI()
     {
         var p = _engine.Profile;
-        var goals = ContentRepository.GetPresetGoals();
+        var goals = GetAllGoals();
         var currentGoal = goals.FirstOrDefault(g => g.Id == p.SelectedGoalId) ?? goals.First();
 
         int percent = currentGoal.GetProgressPercent(p.Savings);
-        LblModalGoalTitle.Text = $"{currentGoal.Icon} {currentGoal.Title}";
+        LblModalGoalTitle.Text = currentGoal.Title;
+        ImgModalCurrentGoal.Source = currentGoal.IconImage;
         LblModalGoalProgress.Text = $"Накоплено: {p.Savings} / {currentGoal.TargetAmount} монет ({percent}%)";
         BarModalGoal.Progress = percent / 100.0;
 
@@ -651,13 +670,14 @@ public partial class MainPage : ContentPage
         foreach (var goal in goals)
         {
             bool isCurrent = goal.Id == currentGoal.Id;
+            int gPercent = goal.GetProgressPercent(p.Savings);
             var goalCard = new Border
             {
                 BackgroundColor = isCurrent ? Color.FromArgb("#F3E8FF") : Color.FromArgb("#F9FAFB"),
                 Stroke = isCurrent ? Color.FromArgb("#8A83D1") : Color.FromArgb("#E5E7EB"),
                 StrokeThickness = 1.5,
-                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
-                Padding = new Thickness(12, 8),
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 },
+                Padding = new Thickness(12, 10),
                 InputTransparent = false
             };
 
@@ -669,30 +689,46 @@ public partial class MainPage : ContentPage
                     new ColumnDefinition(GridLength.Star),
                     new ColumnDefinition(GridLength.Auto)
                 },
-                ColumnSpacing = 8
+                ColumnSpacing = 10
             };
 
-            grid.Children.Add(new Label { Text = goal.Icon, FontSize = 20, VerticalOptions = LayoutOptions.Center });
-            var info = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center };
+            var imgGoal = new Image
+            {
+                Source = goal.IconImage,
+                WidthRequest = 34,
+                HeightRequest = 34,
+                VerticalOptions = LayoutOptions.Center
+            };
+            grid.Children.Add(imgGoal);
+
+            var info = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center, Spacing = 2 };
             Grid.SetColumn(info, 1);
-            info.Children.Add(new Label { Text = goal.Title, FontFamily = "MontserratBold", FontSize = 12, TextColor = Color.FromArgb("#1F2937") });
-            info.Children.Add(new Label { Text = $"Цель: {goal.TargetAmount} монет", FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#6B7280") });
+            info.Children.Add(new Label { Text = goal.Title, FontFamily = "MontserratBold", FontSize = 13, TextColor = Color.FromArgb("#1F2937") });
+            info.Children.Add(new Label { Text = $"Стоимость: {goal.TargetAmount} монет  •  {gPercent}%", FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#6B7280") });
             grid.Children.Add(info);
 
             if (isCurrent)
             {
-                var lblSel = new Label { Text = "Активна", FontFamily = "MontserratBold", FontSize = 11, TextColor = Color.FromArgb("#520978"), VerticalOptions = LayoutOptions.Center };
-                Grid.SetColumn(lblSel, 2);
-                grid.Children.Add(lblSel);
+                var currentBadge = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#520978"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                    Padding = new Thickness(10, 5),
+                    VerticalOptions = LayoutOptions.Center,
+                    Content = new Label { Text = "Активна", FontFamily = "MontserratBold", FontSize = 11, TextColor = Colors.White }
+                };
+                Grid.SetColumn(currentBadge, 2);
+                grid.Children.Add(currentBadge);
             }
             else
             {
                 var selectBtn = new Border
                 {
-                    BackgroundColor = Color.FromArgb("#520978"),
+                    BackgroundColor = Color.FromArgb("#FF0053"),
                     StrokeThickness = 0,
                     StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
-                    Padding = new Thickness(8, 4),
+                    Padding = new Thickness(10, 5),
                     InputTransparent = false,
                     VerticalOptions = LayoutOptions.Center
                 };
@@ -707,6 +743,7 @@ public partial class MainPage : ContentPage
                     RefreshUI();
                     await _engine.SaveAsync();
                     RenderGoalsUI();
+                    PetView.SetSpeechText($"Отличный выбор! Наша новая цель — «{goal.Title}»! Копим монетки!");
                 };
                 selectBtn.GestureRecognizers.Add(tap);
                 grid.Children.Add(selectBtn);
@@ -714,6 +751,33 @@ public partial class MainPage : ContentPage
 
             goalCard.Content = grid;
             GoalsListContainer.Children.Add(goalCard);
+        }
+    }
+
+    private async void OnAddCustomGoalClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        string name = await DisplayPromptAsync("Новая цель", "На что ты хочешь накопить?", "Далее", "Отмена", "Например: Роликовые коньки", maxLength: 35);
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        string amountStr = await DisplayPromptAsync("Стоимость цели", $"Сколько монет стоит «{name.Trim()}»?", "Создать", "Отмена", "Например: 500", keyboard: Keyboard.Numeric);
+        if (int.TryParse(amountStr, out int targetAmount) && targetAmount > 0)
+        {
+            var newGoal = new FinancialGoal
+            {
+                Id = $"goal_custom_{Guid.NewGuid():N}",
+                Title = name.Trim(),
+                TargetAmount = targetAmount,
+                IconImage = "ic_goal_custom.png",
+                Description = "Твоя личная мечта!",
+                IsCustom = true
+            };
+            _engine.Profile.CustomGoals.Add(newGoal);
+            _engine.Profile.SelectedGoalId = newGoal.Id;
+            RefreshUI();
+            await _engine.SaveAsync();
+            RenderGoalsUI();
+            PetView.SetSpeechText($"Ура! Мы поставили новую цель: «{name.Trim()}»! Накопим вместе!");
         }
     }
 
@@ -731,7 +795,7 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderGoalsUI();
-        PetView.SetSpeechText($"Звон монетки! +{amount} монет отправились в копилку! 🏦");
+        PetView.SetSpeechText($"Звон монетки! +{amount} монет отправлены в копилку!");
     }
 
     private async void OnDeposit20Clicked(object? sender, EventArgs e)
@@ -757,7 +821,7 @@ public partial class MainPage : ContentPage
     {
         await AnimateTap(sender as VisualElement);
         RenderGlossaryUI();
-        await ShowModal("📖 Словарь юного финансиста", PanelGlossary);
+        await ShowModal("Словарь юного финансиста", PanelGlossary);
     }
 
     private void RenderGlossaryUI()
@@ -800,7 +864,7 @@ public partial class MainPage : ContentPage
         ParentPinGate.IsVisible = true;
         ParentContent.IsVisible = false;
 
-        await ShowModal("🔒 Кабинет родителей", PanelParent);
+        await ShowModal("Кабинет родителей", PanelParent);
     }
 
     private async void OnParentUnlockClicked(object? sender, EventArgs e)
@@ -821,7 +885,7 @@ public partial class MainPage : ContentPage
         }
         else
         {
-            PetView.SetSpeechText("Неверный ответ! Вход только для родителей 🔒");
+            PetView.SetSpeechText("Неверный ответ! Вход только для родителей.");
         }
     }
 
@@ -832,7 +896,7 @@ public partial class MainPage : ContentPage
         BadgeDemo.IsVisible = e.Value;
         CardDemoNextPeriod.IsVisible = e.Value;
         await _engine.SaveAsync();
-        string status = e.Value ? "включен 🎮" : "выключен 🔒";
+        string status = e.Value ? "включен" : "выключен";
         PetView.SetSpeechText($"Демо-режим {status}!");
     }
 
@@ -842,7 +906,7 @@ public partial class MainPage : ContentPage
         _engine.Profile.Balance += 100;
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Родители выдали карманные деньги: +100 монет! 🎉");
+        PetView.SetSpeechText("Родители выдали карманные деньги: +100 монет!");
         await CloseModal();
     }
 
@@ -852,7 +916,7 @@ public partial class MainPage : ContentPage
         _engine.ResetData();
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Данные сброшены! Начинаем финансовый путь заново! 🚀");
+        PetView.SetSpeechText("Данные сброшены! Начинаем финансовый путь заново!");
         await CloseModal();
     }
 
@@ -878,6 +942,6 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
 
-        PetView.SetSpeechText($"Период #{p.CurrentPeriod} начался! Начислен доход +{PeriodIncome} монет! 🚀\n{comparison}");
+        PetView.SetSpeechText($"Период #{p.CurrentPeriod} начался! Начислен доход +{PeriodIncome} монет!\n{comparison}");
     }
 }
