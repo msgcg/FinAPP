@@ -1,0 +1,29 @@
+# Critical: user prompt requires sources/ to be in gitignore
+sources/
+
+# Python virtual environment
+.venv/
+__pycache__/
+*.pyc
+
+# Visual Studio & VS Code
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build artifacts
+[Bb]in/
+[Oo]bj/
+extracted_brandbook/
+dist/
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# OS files
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store

@@ -1,0 +1,267 @@
+using System;
+using System.Threading.Tasks;
+using FinAPP.Models;
+
+namespace FinAPP.Services;
+
+public class GameEngine
+{
+    private readonly StorageService _storageService;
+    public PetProfile Profile { get; private set; }
+
+    public event Action? OnStateChanged;
+
+    public GameEngine(StorageService storageService)
+    {
+        _storageService = storageService;
+        Profile = _storageService.CreateInitialProfile();
+    }
+
+    public async Task InitializeAsync()
+    {
+        Profile = await _storageService.LoadProfileAsync();
+        OnStateChanged?.Invoke();
+    }
+
+    public async Task SaveAsync()
+    {
+        await _storageService.SaveProfileAsync(Profile);
+    }
+
+    // Определение текущей эмоции Финни на основе показателей и контекста (ТЗ п. 2.5.10)
+    public string CurrentEmotion
+    {
+        get
+        {
+            if (Profile.Hunger <= 35 || Profile.Mood <= 35)
+                return "sad";
+            if (Profile.Hunger >= 75 && Profile.Mood >= 75 && Profile.IsPlanConfirmed)
+                return "proud";
+            return "happy";
+        }
+    }
+
+    // Текстовое объяснение состояния питомца (ТЗ п. 2.5.10)
+    public string EmotionStatusExplanation
+    {
+        get
+        {
+            if (Profile.Hunger <= 35)
+                return $"{Profile.PetName} проголодался (сытость {Profile.Hunger}%)! Нужен питательный обед из обязательных расходов.";
+            if (Profile.Mood <= 35)
+                return $"{Profile.PetName} заскучал (настроение {Profile.Mood}%)! Поиграйте или купите игрушку из желаний.";
+            if (Profile.Hunger >= 75 && Profile.Mood >= 75)
+                return $"{Profile.PetName} сыт, счастлив и гордится вашим грамотным бюджетом!";
+            return $"{Profile.PetName} в отличном настроении и готов к новым финансовым открытиям!";
+        }
+    }
+
+    // Совершение покупки (ТЗ п. 2.5.6)
+    public (bool Success, string Message) PurchaseItem(ShopItem item)
+    {
+        if (Profile.Balance < item.Price)
+        {
+            int deficit = item.Price - Profile.Balance;
+            return (false, $"Недостаточно монет ❌\nВам не хватает {deficit} монет.\n\nЧто можно сделать:\n1. Пройти обучающие финансовые кейсы и получить вознаграждение.\n2. Дождаться карманных денег в следующем периоде.\n3. Скорректировать необязательные траты.");
+        }
+
+        Profile.Balance -= item.Price;
+        Profile.Hunger = Math.Clamp(Profile.Hunger + item.HungerBoost, 0, 100);
+        Profile.Mood = Math.Clamp(Profile.Mood + item.MoodBoost, 0, 100);
+
+        if (item.Category == ExpenseCategory.Obligatory)
+        {
+            Profile.ActualObligatory += item.Price;
+        }
+        else
+        {
+            Profile.ActualDiscretionary += item.Price;
+        }
+
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+
+        return (true, $"Успешно куплено: «{item.Name}»! {item.EffectDescription}.\nСписано: {item.Price} монет.");
+    }
+
+    // Планирование бюджета на период (ТЗ п. 2.5.5)
+    public (bool Success, string Message) ConfirmBudgetPlan(int obligatory, int discretionary, int savings)
+    {
+        int totalPlan = obligatory + discretionary + savings;
+        if (totalPlan > Profile.Balance)
+        {
+            return (false, $"Сумма плана ({totalPlan} монет) превышает ваш доступный баланс ({Profile.Balance} монет)!\nУменьшите траты или сбережения, чтобы уложиться в бюджет.");
+        }
+
+        Profile.PlannedObligatory = obligatory;
+        Profile.PlannedDiscretionary = discretionary;
+        Profile.PlannedSavings = savings;
+        Profile.IsPlanConfirmed = true;
+
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+
+        int remainder = Profile.Balance - totalPlan;
+        return (true, $"Бюджет периода {Profile.CurrentPeriod} успешно утвержден! 📋\n" +
+                      $"• Обязательные расходы: {obligatory} монет\n" +
+                      $"• Желания: {discretionary} монет\n" +
+                      $"• Накопления: {savings} монет\n" +
+                      $"• Свободный остаток: {remainder} монет");
+    }
+
+    // Пополнение копилки / цели (ТЗ п. 2.5.7)
+    public (bool Success, string Message) DepositToSavings(int amount, FinancialGoal goal)
+    {
+        if (amount <= 0)
+            return (false, "Введите корректную сумму для пополнения.");
+
+        if (Profile.Balance < amount)
+            return (false, $"Недостаточно средств на балансе. У вас {Profile.Balance} монет, а требуется {amount}.");
+
+        Profile.Balance -= amount;
+        Profile.Savings += amount;
+        Profile.ActualSavings += amount;
+        Profile.Mood = Math.Min(100, Profile.Mood + 10); // радость от сбережений
+
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+
+        int percent = goal.GetProgressPercent(Profile.Savings);
+        int remainingPeriods = goal.EstimateRemainingPeriods(Profile.Savings, 50);
+
+        string goalAchievedMsg = Profile.Savings >= goal.TargetAmount 
+            ? $"\n\n🎉 УРА! ЦЕЛЬ «{goal.Title}» ДОСТИГНУТА! Вы накопили всю сумму!" 
+            : $"\nПрогресс цели: {percent}%. Осталось накопить: {goal.GetRemainingAmount(Profile.Savings)} монет (~{remainingPeriods} периодов).";
+
+        return (true, $"В копилку добавлено +{amount} монет! 🏦{goalAchievedMsg}");
+    }
+
+    // Снятие из копилки с предупреждением о последствиях (ТЗ п. 2.5.7)
+    public (bool Success, string Message) WithdrawFromSavings(int amount, FinancialGoal goal)
+    {
+        if (amount <= 0)
+            return (false, "Укажите сумму для снятия.");
+
+        if (Profile.Savings < amount)
+            return (false, $"В копилке всего {Profile.Savings} монет, нельзя снять {amount}.");
+
+        Profile.Savings -= amount;
+        Profile.Balance += amount;
+
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+
+        int newEstimatedPeriods = goal.EstimateRemainingPeriods(Profile.Savings, 50);
+        return (true, $"Снято {amount} монет из копилки.\n⚠️ Внимание: срок достижения цели «{goal.Title}» увеличился до ~{newEstimatedPeriods} периодов!");
+    }
+
+    // Выполнение обучающего финансового задания (ТЗ п. 2.5.8)
+    public (bool Success, string Message) CompleteTask(FinancialTask task, TaskOption option)
+    {
+        if (option.IsCorrect)
+        {
+            Profile.Balance += option.RewardCoins;
+            Profile.Mood = Math.Min(100, Profile.Mood + 15);
+            Profile.TestsPassedCount++;
+            if (!Profile.CompletedTaskIds.Contains(task.Id))
+                Profile.CompletedTaskIds.Add(task.Id);
+
+            OnStateChanged?.Invoke();
+            _ = SaveAsync();
+
+            return (true, $"Отлично! Ответ верный! 🎉\nВам начислено +{option.RewardCoins} монет.\n\nРазбор: {option.Explanation}");
+        }
+        else
+        {
+            // Обучение действием: ошибка — это учебный кейс без наказания
+            OnStateChanged?.Invoke();
+            return (false, $"Не совсем так 🤔\n\nРазбор эксперта: {option.Explanation}\n\nПопробуйте ещё раз или выберите другое задание!");
+        }
+    }
+
+    // Начисление карманных денег или бонуса от родителя (ТЗ п. 2.5.4, 2.5.12)
+    public void AddIncome(int amount, string source)
+    {
+        Profile.Balance += amount;
+        if (source.Contains("родител", StringComparison.OrdinalIgnoreCase))
+        {
+            Profile.BonusCoinsFromParent += amount;
+        }
+
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+    }
+
+    // Переход к следующему периоду (ТЗ п. 2.5.10, 2.6: не менее 5 периодов в демо-режиме)
+    public string AdvanceToNextPeriod()
+    {
+        int prevPeriod = Profile.CurrentPeriod;
+        
+        // Анализ соблюдения бюджета
+        bool isBudgetKept = Profile.ActualObligatory <= Profile.PlannedObligatory * 1.2 &&
+                            Profile.ActualDiscretionary <= Profile.PlannedDiscretionary * 1.2;
+
+        var summary = new PeriodSummary
+        {
+            PeriodNumber = prevPeriod,
+            PlannedObligatory = Profile.PlannedObligatory,
+            PlannedDiscretionary = Profile.PlannedDiscretionary,
+            PlannedSavings = Profile.PlannedSavings,
+            ActualObligatory = Profile.ActualObligatory,
+            ActualDiscretionary = Profile.ActualDiscretionary,
+            ActualSavings = Profile.ActualSavings,
+            IsBudgetSuccess = isBudgetKept,
+            SummaryNotes = isBudgetKept ? "Бюджет соблюден отлично!" : "Траты превысили запланированный план."
+        };
+        Profile.History.Add(summary);
+
+        // Переход периода
+        Profile.CurrentPeriod++;
+
+        // Развитие и рост питомца (3 стадии: Малыш -> Подросток -> Мастер)
+        if (Profile.CurrentPeriod >= 5)
+        {
+            Profile.Stage = GrowthStage.Master;
+        }
+        else if (Profile.CurrentPeriod >= 3)
+        {
+            Profile.Stage = GrowthStage.Teen;
+        }
+
+        // Начисление карманных денег за новый период (+150 монет)
+        const int pocketMoney = 150;
+        Profile.Balance += pocketMoney;
+
+        // Сброс трат периода
+        Profile.ActualObligatory = 0;
+        Profile.ActualDiscretionary = 0;
+        Profile.ActualSavings = 0;
+        Profile.IsPlanConfirmed = false;
+
+        // Небольшое уменьшение сытости/настроения в начале нового цикла
+        Profile.Hunger = Math.Max(40, Profile.Hunger - 25);
+        Profile.Mood = Math.Max(40, Profile.Mood - 20);
+
+        OnStateChanged?.Invoke();
+        _ = SaveAsync();
+
+        string growthMsg = Profile.Stage switch
+        {
+            GrowthStage.Master => "🌟 Финни достиг высшей стадии развития: «Финни-Мастер»!",
+            GrowthStage.Teen => "🚀 Финни повзрослел и стал подростком!",
+            _ => "🐾 Финни активно растет и развивается."
+        };
+
+        return $"Наступил Период #{Profile.CurrentPeriod}! 📅\n" +
+               $"• Начислено карманных денег: +{pocketMoney} монет.\n" +
+               $"• {growthMsg}\n" +
+               $"• Не забудьте составить план личного бюджета на новый период!";
+    }
+
+    // Сброс тестового профиля для экспертов хакатона (ТЗ п. 2.5.13)
+    public void ResetDemoProfile()
+    {
+        Profile = _storageService.ResetToDemoProfile();
+        OnStateChanged?.Invoke();
+    }
+}

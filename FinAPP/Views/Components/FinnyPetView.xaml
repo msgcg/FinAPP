@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="FinAPP.Views.Components.FinnyPetView">
+
+    <VerticalStackLayout HorizontalOptions="Center" Spacing="8">
+        
+        <!-- Облачко мыслей Финни (реплика / подсказка) -->
+        <Border x:Name="SpeechBubble"
+                BackgroundColor="White"
+                Stroke="#8A83D1"
+                StrokeThickness="2"
+                Padding="12,8"
+                HorizontalOptions="Center"
+                StrokeShape="RoundRectangle 16">
+            <Border.Shadow>
+                <Shadow Brush="#8A83D1" Offset="0,3" Radius="8" Opacity="0.25"/>
+            </Border.Shadow>
+            <HorizontalStackLayout Spacing="6" HorizontalOptions="Center">
+                <Label Text="💬" FontSize="16" VerticalOptions="Center"/>
+                <Label x:Name="LblSpeech"
+                       Text="Привет! Я котик Финни! Нажми на меня 🐾"
+                       FontSize="14"
+                       FontFamily="MontserratMedium"
+                       TextColor="#310F53"
+                       MaxLines="2"
+                       LineBreakMode="WordWrap"/>
+            </HorizontalStackLayout>
+        </Border>
+
+        <!-- Контейнер персонажа со слоями и анимацией -->
+        <Grid x:Name="PetContainer"
+              HeightRequest="260"
+              WidthRequest="220"
+              HorizontalOptions="Center"
+              VerticalOptions="Center">
+
+            <!-- Золотое свечение для стадии Мастер -->
+            <BoxView x:Name="MasterAura"
+                     Color="#F59E0B"
+                     CornerRadius="110"
+                     Opacity="0.2"
+                     IsVisible="False"
+                     HeightRequest="220"
+                     WidthRequest="220"
+                     HorizontalOptions="Center"
+                     VerticalOptions="Center"/>
+
+            <!-- Слой 1: Базовое тело и эмоция котика -->
+            <Image x:Name="ImgPetBody"
+                   Source="finny_happy.png"
+                   Aspect="AspectFit"
+                   HeightRequest="240"
+                   WidthRequest="200"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"/>
+
+            <!-- Слой 2: Накладной аксессуар (очки, шапочка, корона) -->
+            <Image x:Name="ImgPetAccessory"
+                   Source="acc_sunglasses.png"
+                   Aspect="AspectFit"
+                   HeightRequest="240"
+                   WidthRequest="200"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center"
+                   IsVisible="False"/>
+
+            <!-- Бейдж стадии роста в левом верхнем углу -->
+            <Border BackgroundColor="#520978"
+                    Stroke="#FF0053"
+                    StrokeThickness="1.5"
+                    StrokeShape="RoundRectangle 12"
+                    Padding="6,3"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Start">
+                <Label x:Name="LblStageBadge"
+                       Text="🐾 Малыш"
+                       FontSize="11"
+                       FontFamily="MontserratBold"
+                       TextColor="White"/>
+            </Border>
+
+            <!-- Жест нажатия на питомца для интерактива -->
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPetTapped"/>
+            </Grid.GestureRecognizers>
+        </Grid>
+        
+    </VerticalStackLayout>
+
+</ContentView>

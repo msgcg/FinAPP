@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:comp="clr-namespace:FinAPP.Views.Components"
+             x:Class="FinAPP.MainPage"
+             BackgroundColor="#F5F6FA"
+             Title="FinAPP">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,12" Spacing="14">
+
+            <!-- ВЕРХНЯЯ ПАНЕЛЬ: Брендинг, Демо-режим и доступность -->
+            <Grid ColumnDefinitions="Auto,*,Auto" VerticalOptions="Center">
+                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                    <Label Text="FinAPP"
+                           FontFamily="MontserratBold"
+                           FontSize="22"
+                           TextColor="#520978"
+                           VerticalOptions="Center"/>
+                    <Border BackgroundColor="#FF0053"
+                            StrokeThickness="0"
+                            Padding="8,2"
+                            StrokeShape="RoundRectangle 10"
+                            VerticalOptions="Center">
+                        <Label Text="ДЕМО"
+                               TextColor="White"
+                               FontFamily="MontserratBold"
+                               FontSize="11"/>
+                    </Border>
+                </HorizontalStackLayout>
+
+                <!-- Игровой период и доступность (анимации, звук) -->
+                <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                    <Button x:Name="BtnAnimToggle"
+                            Text="🎬"
+                            BackgroundColor="#EBE9F8"
+                            TextColor="#520978"
+                            Padding="8"
+                            HeightRequest="42"
+                            WidthRequest="42"
+                            CornerRadius="21"
+                            Clicked="OnAnimToggleClicked"/>
+
+                    <Button x:Name="BtnCustomizer"
+                            Text="🎨"
+                            BackgroundColor="#EBE9F8"
+                            TextColor="#520978"
+                            Padding="8"
+                            HeightRequest="42"
+                            WidthRequest="42"
+                            CornerRadius="21"
+                            Clicked="OnCustomizerClicked"/>
+                </HorizontalStackLayout>
+            </Grid>
+
+            <!-- КАРТОЧКА ПИТОМЦА И ЕГО СОСТОЯНИЯ -->
+            <Border BackgroundColor="White"
+                    Stroke="#E5E7EB"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 20"
+                    Padding="14,12">
+                <Border.Shadow>
+                    <Shadow Brush="#520978" Offset="0,4" Radius="12" Opacity="0.08"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="10">
+                    
+                    <!-- Заголовок карточки и индикатор периода -->
+                    <Grid ColumnDefinitions="*,Auto">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label Text="🐱" FontSize="16" VerticalOptions="Center"/>
+                            <Label x:Name="LblPetHeader"
+                                   Text="Питомец Финни"
+                                   FontFamily="MontserratBold"
+                                   FontSize="16"
+                                   TextColor="#1C1D22"/>
+                        </HorizontalStackLayout>
+                        <Border Grid.Column="1"
+                                BackgroundColor="#F3E8FF"
+                                Stroke="#8A83D1"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                Padding="8,3">
+                            <Label x:Name="LblPeriodHeader"
+                                   Text="Период #1"
+                                   FontFamily="MontserratBold"
+                                   FontSize="12"
+                                   TextColor="#520978"/>
+                        </Border>
+                    </Grid>
+
+                    <!-- Компонент котика со слоями и анимацией -->
+                    <comp:FinnyPetView x:Name="PetView" HorizontalOptions="Center"/>
+
+                    <!-- Индикаторы сытости и настроения (ТЗ п. 2.5.3) -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12" Margin="0,4,0,0">
+                        
+                        <!-- Сытость (зависит от обязательных расходов) -->
+                        <Border BackgroundColor="#F0FDF4"
+                                Stroke="#86EFAC"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="10,8">
+                            <VerticalStackLayout Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="🍗 Сытость"
+                                           FontFamily="MontserratBold"
+                                           FontSize="13"
+                                           TextColor="#166534"/>
+                                    <Label x:Name="LblHungerVal"
+                                           Grid.Column="1"
+                                           Text="90%"
+                                           FontFamily="MontserratBold"
+                                           FontSize="13"
+                                           TextColor="#166534"/>
+                                </Grid>
+                                <ProgressBar x:Name="BarHunger"
+                                             Progress="0.9"
+                                             ProgressColor="#10B981"
+                                             HeightRequest="8"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!-- Настроение (зависит от желаний и заданий) -->
+                        <Border BackgroundColor="#FDF2F8"
+                                Stroke="#FBCFE8"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="10,8">
+                            <VerticalStackLayout Spacing="4">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Text="💖 Настроение"
+                                           FontFamily="MontserratBold"
+                                           FontSize="13"
+                                           TextColor="#9D174D"/>
+                                    <Label x:Name="LblMoodVal"
+                                           Grid.Column="1"
+                                           Text="90%"
+                                           FontFamily="MontserratBold"
+                                           FontSize="13"
+                                           TextColor="#9D174D"/>
+                                </Grid>
+                                <ProgressBar x:Name="BarMood"
+                                             Progress="0.9"
+                                             ProgressColor="#FC3777"
+                                             HeightRequest="8"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Текстовое объяснение причины состояния (ТЗ п. 2.5.10) -->
+                    <Label x:Name="LblStatusExplanation"
+                           Text="Финни сыт, доволен и гордится твоим грамотным бюджетом!"
+                           FontFamily="MontserratMedium"
+                           FontSize="12"
+                           TextColor="#6B7280"
+                           HorizontalTextAlignment="Center"
+                           Margin="0,2,0,0"/>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ГЛАВНАЯ ФИНАНСОВАЯ КАРТОЧКА (Баланс, Копилка, Цель) -->
+            <Border BackgroundColor="#520978"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 20"
+                    Padding="16,14">
+                <Border.Shadow>
+                    <Shadow Brush="#520978" Offset="0,6" Radius="14" Opacity="0.25"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="10">
+                    
+                    <!-- Баланс и Копилка -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        
+                        <!-- Доступный баланс -->
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="💰 ДОСТУПНО"
+                                   TextColor="#FFD6E4"
+                                   FontFamily="MontserratBold"
+                                   FontSize="11"/>
+                            <Label x:Name="LblBalance"
+                                   Text="400 монет"
+                                   TextColor="White"
+                                   FontFamily="MontserratBold"
+                                   FontSize="20"/>
+                        </VerticalStackLayout>
+
+                        <!-- Накопления в копилке -->
+                        <VerticalStackLayout Grid.Column="1" Spacing="2">
+                            <Label Text="🏦 В КОПИЛКЕ"
+                                   TextColor="#FFD6E4"
+                                   FontFamily="MontserratBold"
+                                   FontSize="11"/>
+                            <Label x:Name="LblSavings"
+                                   Text="100 монет"
+                                   TextColor="#FFD6E4"
+                                   FontFamily="MontserratBold"
+                                   FontSize="20"/>
+                        </VerticalStackLayout>
+                    </Grid>
+
+                    <BoxView HeightRequest="1" Color="#702299" Margin="0,2"/>
+
+                    <!-- Прогресс финансовой цели (ТЗ п. 2.5.3, 2.5.7) -->
+                    <VerticalStackLayout Spacing="4">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label x:Name="LblGoalTitle"
+                                   Text="🎯 Цель: Трюковой самокат"
+                                   TextColor="White"
+                                   FontFamily="MontserratBold"
+                                   FontSize="13"/>
+                            <Label x:Name="LblGoalProgressText"
+                                   Grid.Column="1"
+                                   Text="100 / 350 (28%)"
+                                   TextColor="#FFD6E4"
+                                   FontFamily="MontserratMedium"
+                                   FontSize="12"/>
+                        </Grid>
+
+                        <ProgressBar x:Name="BarGoal"
+                                     Progress="0.28"
+                                     ProgressColor="#FF0053"
+                                     HeightRequest="8"/>
+
+                        <Label x:Name="LblGoalEstimatedTime"
+                               Text="⏱️ До достижения цели осталось ~5 периодов"
+                               TextColor="#FFD6E4"
+                               FontFamily="MontserratMedium"
+                               FontSize="11"/>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- БЫСТРАЯ НАВИГАЦИЯ ПО РАЗДЕЛАМ (Кнопки >= 48dp по п. 3.6 ТЗ) -->
+            <Label Text="Финансовые действия"
+                   FontFamily="MontserratBold"
+                   FontSize="16"
+                   TextColor="#1C1D22"
+                   Margin="4,2,0,0"/>
+
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
+
+                <!-- 1. План бюджета (3 конверта: обязательные, желания, сбережения) -->
+                <Button Grid.Row="0" Grid.Column="0"
+                        Text="📊 План бюджета"
+                        BackgroundColor="White"
+                        TextColor="#520978"
+                        BorderColor="#E5E7EB"
+                        BorderWidth="1.5"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="56"
+                        CornerRadius="14"
+                        Clicked="OnBudgetClicked"/>
+
+                <!-- 2. Финансовые задания (кейсы по 3 темам) -->
+                <Button Grid.Row="0" Grid.Column="1"
+                        Text="📚 Задания (+монеты)"
+                        BackgroundColor="White"
+                        TextColor="#FF0053"
+                        BorderColor="#E5E7EB"
+                        BorderWidth="1.5"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="56"
+                        CornerRadius="14"
+                        Clicked="OnTasksClicked"/>
+
+                <!-- 3. Магазин (Обязательные и необязательные товары) -->
+                <Button Grid.Row="1" Grid.Column="0"
+                        Text="🛒 Магазин заботы"
+                        BackgroundColor="White"
+                        TextColor="#059669"
+                        BorderColor="#E5E7EB"
+                        BorderWidth="1.5"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="56"
+                        CornerRadius="14"
+                        Clicked="OnShopClicked"/>
+
+                <!-- 4. Копилка и цели накоплений -->
+                <Button Grid.Row="1" Grid.Column="1"
+                        Text="🎯 Копилка и цели"
+                        BackgroundColor="White"
+                        TextColor="#4F46E5"
+                        BorderColor="#E5E7EB"
+                        BorderWidth="1.5"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="56"
+                        CornerRadius="14"
+                        Clicked="OnGoalsClicked"/>
+
+                <!-- 5. Прогресс и Словарь терминов -->
+                <Button Grid.Row="2" Grid.Column="0"
+                        Text="📖 Словарь и рост"
+                        BackgroundColor="White"
+                        TextColor="#D97706"
+                        BorderColor="#E5E7EB"
+                        BorderWidth="1.5"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="56"
+                        CornerRadius="14"
+                        Clicked="OnGlossaryClicked"/>
+
+                <!-- 6. Кабинет взрослого (контроль, бонусы, сброс) -->
+                <Button Grid.Row="2" Grid.Column="1"
+                        Text="🔒 Родителям"
+                        BackgroundColor="White"
+                        TextColor="#4B5563"
+                        BorderColor="#E5E7EB"
+                        BorderWidth="1.5"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="56"
+                        CornerRadius="14"
+                        Clicked="OnParentClicked"/>
+
+                <!-- 7. ДЕМО: Следующий игровой период (Шаг 10 Приложения А) -->
+                <Button Grid.Row="3" Grid.ColumnSpan="2"
+                        Text="⏭️ ДЕМО: Завершить период и перейти к следующему"
+                        BackgroundColor="#310F53"
+                        TextColor="White"
+                        FontFamily="MontserratBold"
+                        FontSize="14"
+                        HeightRequest="52"
+                        CornerRadius="14"
+                        Clicked="OnNextPeriodClicked"/>
+
+            </Grid>
+
+            <!-- Подвал с логотипами и статусом -->
+            <HorizontalStackLayout HorizontalOptions="Center" Spacing="16" Margin="0,10,0,16">
+                <Label Text="Департамент финансов Москвы • ЛЦТ 2026"
+                       FontFamily="MontserratMedium"
+                       FontSize="11"
+                       TextColor="#9CA3AF"/>
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

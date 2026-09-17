@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FinAPP/FinAPP.csproj" />
+  <Project Path="FinAPP.Tests/FinAPP.Tests.csproj" />
+</Solution>
