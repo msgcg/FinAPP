@@ -91,11 +91,8 @@ public class PetProfile
     public List<string> UnlockedPlatforms { get; set; } = new() { "Flowers" };
     public List<string> UnlockedDesks { get; set; } = new() { "None" };
 
-    public bool IsPlatformUnlocked(PetPlatformType platform)
-    {
-        if (platform == PetPlatformType.Flowers) return true;
-        return UnlockedPlatforms != null && UnlockedPlatforms.Contains(platform.ToString());
-    }
+    // Все подиумы полностью бесплатны и доступны детям
+    public bool IsPlatformUnlocked(PetPlatformType platform) => true;
 
     public bool IsDeskUnlocked(PetDeskType desk)
     {

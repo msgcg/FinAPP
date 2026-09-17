@@ -138,10 +138,11 @@ public class GameEngineTests
     }
 
     [Fact]
-    public void CompleteTask_IncorrectOption_ShouldExplainWithoutPunishment()
+    public void CompleteTask_IncorrectOption_ShouldPenalizeMoodWithoutMoneyPenalty()
     {
         _engine.Profile.Balance = 100;
         _engine.Profile.TestsPassedCount = 0;
+        _engine.Profile.Mood = 80;
 
         var task = new FinancialTask { Id = "test_task", Title = "Тестовый кейс" };
         var option = new TaskOption { Text = "Неверно", IsCorrect = false, Explanation = "Пояснение ошибки" };
@@ -150,8 +151,36 @@ public class GameEngineTests
 
         Assert.False(result.Success);
         Assert.Equal(100, _engine.Profile.Balance); // деньги не отбираются
+        Assert.Equal(65, _engine.Profile.Mood); // настроение снижается на 15
         Assert.Equal(0, _engine.Profile.TestsPassedCount);
         Assert.Contains("Пояснение ошибки", result.Message);
+    }
+
+    [Fact]
+    public void CompleteTask_RetryCorrectOption_ShouldRefundPenaltyAndRewardMood()
+    {
+        _engine.Profile.Balance = 100;
+        _engine.Profile.Mood = 80;
+
+        var task = new FinancialTask { Id = "test_task", Title = "Тестовый кейс" };
+        var wrongOption = new TaskOption { Text = "Неверно", IsCorrect = false, Explanation = "Пояснение ошибки" };
+        var correctOption = new TaskOption { Text = "Верно", IsCorrect = true, RewardCoins = 50, Explanation = "Всё верно!" };
+
+        // 1. Первая неверная попытка снижает настроение с 80 до 65
+        var failResult = _engine.CompleteTask(task, wrongOption, isRetry: false);
+        Assert.False(failResult.Success);
+        Assert.Equal(65, _engine.Profile.Mood);
+
+        // 2. Вторая неверная попытка в режиме retry не штрафует повторно
+        var retryFailResult = _engine.CompleteTask(task, wrongOption, isRetry: true);
+        Assert.False(retryFailResult.Success);
+        Assert.Equal(65, _engine.Profile.Mood);
+
+        // 3. Верный ответ при retry возвращает штраф (+15) и начисляет награду (+15), итого 65 + 30 = 95
+        var successResult = _engine.CompleteTask(task, correctOption, isRetry: true);
+        Assert.True(successResult.Success);
+        Assert.Equal(95, _engine.Profile.Mood);
+        Assert.Equal(150, _engine.Profile.Balance);
     }
 
     [Fact]
@@ -408,21 +437,22 @@ public class GameEngineTests
     {
         var profile = new PetProfile();
 
-        // Стартовые бесплатные подиум и стол
+        // Все подиумы полностью бесплатны для детей по умолчанию
         Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Flowers));
+        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Stars));
+        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Emerald));
+        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Cosmic));
+        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Cloud));
+
+        // Бесплатный стол по умолчанию
         Assert.True(profile.IsDeskUnlocked(PetDeskType.None));
 
-        // Платные по умолчанию заблокированы
-        Assert.False(profile.IsPlatformUnlocked(PetPlatformType.Stars));
-        Assert.False(profile.IsPlatformUnlocked(PetPlatformType.Emerald));
+        // Платные столы по умолчанию заблокированы
         Assert.False(profile.IsDeskUnlocked(PetDeskType.Modern));
         Assert.False(profile.IsDeskUnlocked(PetDeskType.Artisan));
 
-        // Разблокировка
-        profile.UnlockPlatform(PetPlatformType.Stars);
+        // Разблокировка стола
         profile.UnlockDesk(PetDeskType.Modern);
-
-        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Stars));
         Assert.True(profile.IsDeskUnlocked(PetDeskType.Modern));
     }
 
@@ -441,20 +471,21 @@ public class GameEngineTests
         Assert.Equal(deskItem.LinkedDesk.Value, _engine.Profile.Desk);
         Assert.Equal(400, _engine.Profile.Balance);
 
+        // Подиумы бесплатны (0 монет) и всегда разблокированы
         var platItem = ContentRepository.GetShopItems().First(i => i.Id == "platform_stars");
         Assert.NotNull(platItem.LinkedPlatform);
-        Assert.False(_engine.Profile.IsPlatformUnlocked(platItem.LinkedPlatform.Value));
+        Assert.True(_engine.Profile.IsPlatformUnlocked(platItem.LinkedPlatform.Value));
+        Assert.Equal(0, platItem.Price);
 
         var platResult = _engine.PurchaseItem(platItem);
 
         Assert.True(platResult.Success);
-        Assert.True(_engine.Profile.IsPlatformUnlocked(platItem.LinkedPlatform.Value));
         Assert.Equal(platItem.LinkedPlatform.Value, _engine.Profile.Platform);
-        Assert.Equal(220, _engine.Profile.Balance);
+        Assert.Equal(400, _engine.Profile.Balance); // Баланс не уменьшился (0 монет)
     }
 
     [Fact]
-    public void ContentRepository_PresetGoals_ShouldContainDesksPlatformsAndToysWithoutOldScooter()
+    public void ContentRepository_PresetGoals_ShouldContainDesksAndToysWithoutOldScooter()
     {
         var goals = ContentRepository.GetPresetGoals();
 
@@ -463,9 +494,8 @@ public class GameEngineTests
         Assert.DoesNotContain(goals, g => g.Id == "goal_game");
         Assert.DoesNotContain(goals, g => g.Id == "goal_gadget");
 
-        // Присутствуют платные столы, подиумы и игрушки
+        // Присутствуют платные столы и игрушки
         Assert.Contains(goals, g => g.LinkedDesk.HasValue);
-        Assert.Contains(goals, g => g.LinkedPlatform.HasValue);
         Assert.Contains(goals, g => !string.IsNullOrEmpty(g.LinkedShopItemId));
         Assert.True(goals.Count >= 5);
     }

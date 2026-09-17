@@ -206,7 +206,7 @@ public static class ContentRepository
             Id = "platform_stars",
             Name = "Подиум «Звёздная дорожка»",
             Category = ExpenseCategory.Interior,
-            Price = 180,
+            Price = 0,
             HungerBoost = 0,
             MoodBoost = 35,
             IconEmoji = "",
@@ -220,7 +220,7 @@ public static class ContentRepository
             Id = "platform_cloud",
             Name = "Подиум «Облако накоплений»",
             Category = ExpenseCategory.Interior,
-            Price = 200,
+            Price = 0,
             HungerBoost = 0,
             MoodBoost = 40,
             IconEmoji = "",
@@ -234,7 +234,7 @@ public static class ContentRepository
             Id = "platform_emerald",
             Name = "Подиум «Изумрудный кристалл»",
             Category = ExpenseCategory.Interior,
-            Price = 220,
+            Price = 0,
             HungerBoost = 0,
             MoodBoost = 45,
             IconEmoji = "",
@@ -248,7 +248,7 @@ public static class ContentRepository
             Id = "platform_cosmic",
             Name = "Подиум «Космический неон»",
             Category = ExpenseCategory.Interior,
-            Price = 260,
+            Price = 0,
             HungerBoost = 0,
             MoodBoost = 50,
             IconEmoji = "",
@@ -612,13 +612,13 @@ public static class ContentRepository
         },
         new FinancialGoal
         {
-            Id = "goal_platform_stars",
-            Title = "Подиум «Звёздная дорожка»",
-            TargetAmount = 180,
+            Id = "goal_desk_artisan",
+            Title = "Творческий стол художника",
+            TargetAmount = 220,
             IconEmoji = "",
-            IconImage = "ic_stat_mood.png",
-            LinkedPlatform = PetPlatformType.Stars,
-            Description = "Сияющий золотой кристалл со звёздами успеха под лапки Финни."
+            IconImage = "desk_artisan.png",
+            LinkedDesk = PetDeskType.Artisan,
+            Description = "Мольберт, краски и палитра для творческих финансовых проектов."
         },
         new FinancialGoal
         {
@@ -632,13 +632,13 @@ public static class ContentRepository
         },
         new FinancialGoal
         {
-            Id = "goal_platform_cosmic",
-            Title = "Подиум «Космический неон»",
-            TargetAmount = 260,
+            Id = "goal_toy_laser",
+            Title = "Лазерная указка-дразнилка",
+            TargetAmount = 140,
             IconEmoji = "",
-            IconImage = "ic_shop_drone.png",
-            LinkedPlatform = PetPlatformType.Cosmic,
-            Description = "Футуристический кибер-подиум с пульсирующей неоновой подсветкой."
+            IconImage = "ic_shop_laser.png",
+            LinkedShopItemId = "toy_laser",
+            Description = "Яркий луч света для весёлых прыжков и тренировки реакции Финни."
         },
         new FinancialGoal
         {

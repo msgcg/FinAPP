@@ -168,24 +168,33 @@ public class GameEngine
                       $"Внимание: теперь срок достижения цели «{goal.Title}» увеличился (~{remainingPeriods} периодов при обычном темпе).");
     }
 
+    public const int TaskMoodPenalty = 15;
+
     // Образовательные задания с немедленной обратной связью (ТЗ п. 2.5.8)
-    public (bool Success, string Message) CompleteTask(FinancialTask task, TaskOption option)
+    public (bool Success, string Message) CompleteTask(FinancialTask task, TaskOption option, bool isRetry = false)
     {
         if (option.IsCorrect)
         {
             Profile.Balance += option.RewardCoins;
             Profile.CompletedTasksCount++;
-            Profile.Mood = Math.Min(100, Profile.Mood + 15);
+            int moodGain = isRetry ? (15 + TaskMoodPenalty) : 15;
+            Profile.Mood = Math.Min(100, Profile.Mood + moodGain);
 
             OnStateChanged?.Invoke();
             _ = SaveAsync();
 
-            return (true, $"Отлично! Ответ верный!\nВам начислено +{option.RewardCoins} монет.\n\nРазбор: {option.Explanation}");
+            string refundNotice = isRetry ? "\nНастроение Финни полностью восстановлено!" : "";
+            return (true, $"Отлично! Ответ верный!\nВам начислено +{option.RewardCoins} монет.{refundNotice}\n\nРазбор: {option.Explanation}");
         }
         else
         {
-            // Обучение действием: ошибка — это учебный кейс без наказания
+            // Ошибка снижает настроение питомца, если штраф ещё не начислялся в этой попытке
+            if (!isRetry)
+            {
+                Profile.Mood = Math.Max(10, Profile.Mood - TaskMoodPenalty);
+            }
             OnStateChanged?.Invoke();
+            _ = SaveAsync();
             return (false, $"Не совсем так.\n\nРазбор эксперта: {option.Explanation}\n\nПопробуйте ещё раз или выберите другое задание!");
         }
     }

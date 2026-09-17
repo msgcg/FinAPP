@@ -49,6 +49,7 @@ public partial class MainPage : ContentPage
     // Активная задача
     private int _currentTaskIndex = 0;
     private List<FinancialTask> _tasks = new();
+    private bool _isCurrentTaskRetry = false;
 
     // Выбранная вкладка магазина (0 = Obligatory, 1 = Discretionary, 2 = Interior)
     private int _shopSelectedCategoryTab = 0;
@@ -535,14 +536,7 @@ public partial class MainPage : ContentPage
         SetCustomizerTab(false);
     }
 
-    private static int GetPlatformPrice(PetPlatformType platform) => platform switch
-    {
-        PetPlatformType.Stars => 180,
-        PetPlatformType.Emerald => 220,
-        PetPlatformType.Cosmic => 260,
-        PetPlatformType.Cloud => 200,
-        _ => 0
-    };
+    private static int GetPlatformPrice(PetPlatformType platform) => 0;
 
     private static string GetPlatformName(PetPlatformType platform) => platform switch
     {
@@ -620,12 +614,12 @@ public partial class MainPage : ContentPage
 
     private void UpdateCustomizerPlatformBadges(PetPlatformType platform)
     {
-        var p = _engine.Profile;
+        // Все подиумы бесплатны и открыты для детей
         UpdateBadgeState(BadgePlatformFlowers, true, platform == PetPlatformType.Flowers, 0);
-        UpdateBadgeState(BadgePlatformStars, p.IsPlatformUnlocked(PetPlatformType.Stars), platform == PetPlatformType.Stars, GetPlatformPrice(PetPlatformType.Stars));
-        UpdateBadgeState(BadgePlatformEmerald, p.IsPlatformUnlocked(PetPlatformType.Emerald), platform == PetPlatformType.Emerald, GetPlatformPrice(PetPlatformType.Emerald));
-        UpdateBadgeState(BadgePlatformCosmic, p.IsPlatformUnlocked(PetPlatformType.Cosmic), platform == PetPlatformType.Cosmic, GetPlatformPrice(PetPlatformType.Cosmic));
-        UpdateBadgeState(BadgePlatformCloud, p.IsPlatformUnlocked(PetPlatformType.Cloud), platform == PetPlatformType.Cloud, GetPlatformPrice(PetPlatformType.Cloud));
+        UpdateBadgeState(BadgePlatformStars, true, platform == PetPlatformType.Stars, 0);
+        UpdateBadgeState(BadgePlatformEmerald, true, platform == PetPlatformType.Emerald, 0);
+        UpdateBadgeState(BadgePlatformCosmic, true, platform == PetPlatformType.Cosmic, 0);
+        UpdateBadgeState(BadgePlatformCloud, true, platform == PetPlatformType.Cloud, 0);
     }
 
     private void UpdateCustomizerDeskBadges(PetDeskType desk)
@@ -643,48 +637,6 @@ public partial class MainPage : ContentPage
     private async Task SelectPlatformAsync(PetPlatformType platform, string speech)
     {
         var p = _engine.Profile;
-        if (!p.IsPlatformUnlocked(platform))
-        {
-            int price = GetPlatformPrice(platform);
-            string? choice = await ShowStyledActionSheetAsync(
-                $"Подиум «{GetPlatformName(platform)}»",
-                $"Этот подиум закрыт. Стоимость: {price} монет.",
-                "ic_customizer.png",
-                "Отмена",
-                $"Купить за {price} монет", "Поставить целью накопления 🎯");
-            if (choice == $"Купить за {price} монет")
-            {
-                if (p.Balance < price)
-                {
-                    AudioService.Instance.PlaySfx("sfx_error");
-                    await ShowStyledAlertAsync(
-                        "Не хватает монет",
-                        $"У тебя {p.Balance} монет, а требуется {price} монет.\nПополни баланс за счёт заданий или сними часть из копилки.",
-                        "ic_stat_balance.png",
-                        "Понятно");
-                    return;
-                }
-                p.Balance -= price;
-                p.SpentDiscretionary += price;
-                p.UnlockPlatform(platform);
-                p.Platform = platform;
-                PlayPurchaseParticleBurst("ic_stat_mood.png");
-                AudioService.Instance.PlaySfx("sfx_money");
-                AudioService.Instance.PlaySfx("sfx_purr");
-                PetView.UpdatePlatform(platform);
-                RefreshUI();
-                await _engine.SaveAsync();
-                UpdateCustomizerPlatformBadges(platform);
-                PetView.SetSpeechText($"Ура! Подиум «{GetPlatformName(platform)}» куплен и установлен!");
-                PetView.PlayAction("proud");
-            }
-            else if (choice == "Поставить целью накопления 🎯")
-            {
-                SetPlatformAsGoal(platform);
-            }
-            return;
-        }
-
         p.Platform = platform;
         AudioService.Instance.PlaySfx("sfx_tap");
         PetView.UpdatePlatform(platform);
@@ -693,35 +645,6 @@ public partial class MainPage : ContentPage
         UpdateCustomizerPlatformBadges(platform);
         PetView.SetSpeechText(speech);
         PetView.PlayAction("wave");
-    }
-
-    private void SetPlatformAsGoal(PetPlatformType platform)
-    {
-        int price = GetPlatformPrice(platform);
-        string name = GetPlatformName(platform);
-        var allGoals = GetAllGoals();
-        var existing = allGoals.FirstOrDefault(g => g.LinkedPlatform == platform);
-        if (existing == null)
-        {
-            existing = new FinancialGoal
-            {
-                Id = $"goal_plat_{platform}",
-                Title = $"Подиум «{name}»",
-                TargetAmount = price,
-                IconImage = "ic_stat_mood.png",
-                LinkedPlatform = platform,
-                Description = "Стильный подиум для комнаты Финни.",
-                IsCustom = true
-            };
-            _engine.Profile.CustomGoals.Add(existing);
-        }
-
-        _engine.Profile.SelectedGoalId = existing.Id;
-        RefreshUI();
-        _ = _engine.SaveAsync();
-        RenderGoalsUI();
-        AudioService.Instance.PlaySfx("sfx_button");
-        PetView.SetSpeechText($"Подиум «{name}» выбран новой целью! Копим {price} монет!");
     }
 
     private void SetDeskAsGoal(PetDeskType desk)
@@ -1099,6 +1022,7 @@ public partial class MainPage : ContentPage
 
     private void RenderCurrentTask()
     {
+        _isCurrentTaskRetry = false;
         if (_tasks.Count == 0) return;
         var task = _tasks[_currentTaskIndex % _tasks.Count];
 
@@ -1145,11 +1069,12 @@ public partial class MainPage : ContentPage
 
     private async Task SelectTaskAnswer(FinancialTask task, TaskOption option, Border selectedBorder)
     {
-        var (success, msg) = _engine.CompleteTask(task, option);
+        var (success, msg) = _engine.CompleteTask(task, option, _isCurrentTaskRetry);
         TaskFeedbackBorder.IsVisible = true;
 
         if (success)
         {
+            _isCurrentTaskRetry = false;
             selectedBorder.BackgroundColor = Color.FromArgb("#DCFCE7");
             selectedBorder.Stroke = Color.FromArgb("#10B981");
             TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#F0FDF4");
@@ -1162,13 +1087,15 @@ public partial class MainPage : ContentPage
         }
         else
         {
+            _isCurrentTaskRetry = true;
             selectedBorder.BackgroundColor = Color.FromArgb("#FEF3C7");
             selectedBorder.Stroke = Color.FromArgb("#F59E0B");
             TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#FFFBEB");
             TaskFeedbackBorder.Stroke = Color.FromArgb("#FCD34D");
             LblTaskFeedback.Text = msg;
             LblTaskFeedback.TextColor = Color.FromArgb("#92400E");
-            PetView.SetSpeechText("Ошибаться полезно — так мы учимся быть финансово грамотными!");
+            PetView.SetSpeechText("Ошибаться полезно для учёбы! Финни немного загрустил, но ты можешь исправить это, нажав «Попробовать ещё раз»!");
+            RefreshUI();
         }
 
         // Показываем праздничную / поучительную модалку результата с анимированным Финни
@@ -1930,32 +1857,6 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async Task ShowPlatformGoalPickerAsync()
-    {
-        var platforms = new[]
-        {
-            PetPlatformType.Stars,
-            PetPlatformType.Cloud,
-            PetPlatformType.Emerald,
-            PetPlatformType.Cosmic
-        };
-        var options = platforms.Select(p => $"{GetPlatformName(p)} ({GetPlatformPrice(p)} монет)").ToArray();
-        string? choice = await ShowStyledActionSheetAsync(
-            "Цель: Подиум",
-            "Выбери подиум для накопления:",
-            "ic_customizer.png",
-            "Отмена",
-            options);
-        if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
-        {
-            int idx = Array.IndexOf(options, choice);
-            if (idx >= 0)
-            {
-                SetPlatformAsGoal(platforms[idx]);
-            }
-        }
-    }
-
     private async Task ShowToyGoalPickerAsync()
     {
         var toys = ContentRepository.GetShopItems().Where(i => i.Category == ExpenseCategory.Discretionary).ToList();
@@ -1986,7 +1887,6 @@ public partial class MainPage : ContentPage
             "Отмена",
             "Ввести свою мечту и сумму вручную",
             "Выбрать рабочий столик Финни",
-            "Выбрать подиум под лапки",
             "Выбрать игрушку из магазина");
 
         if (choice == "Ввести свою мечту и сумму вручную")
@@ -2032,10 +1932,6 @@ public partial class MainPage : ContentPage
         else if (choice == "Выбрать рабочий столик Финни")
         {
             await ShowDeskGoalPickerAsync();
-        }
-        else if (choice == "Выбрать подиум под лапки")
-        {
-            await ShowPlatformGoalPickerAsync();
         }
         else if (choice == "Выбрать игрушку из магазина")
         {
@@ -2452,7 +2348,7 @@ public partial class MainPage : ContentPage
         string? result = await ShowStyledPromptAsync(
             "PIN-код родителей",
             "Задайте 4-значный цифровой PIN для входа (или оставьте пустым для входа по арифметическому примеру):",
-            "ic_action_parent.png",
+            "ic_nav_parent.png",
             "Сохранить", "Отмена", placeholder: "4 цифры", maxLength: 4, keyboard: Keyboard.Numeric);
 
         if (result != null)
@@ -2581,7 +2477,7 @@ public partial class MainPage : ContentPage
         bool confirm = await ShowStyledConfirmAsync(
             "Сброс данных приложения",
             "Вы действительно хотите сбросить все данные приложения к начальному состоянию? Весь накопленный прогресс будет удалён.",
-            "ic_action_parent.png",
+            "ic_nav_parent.png",
             "Сбросить", "Отмена",
             isDestructive: true);
         if (!confirm) return;
@@ -2624,9 +2520,7 @@ public partial class MainPage : ContentPage
         bool music = AudioService.Instance.IsMusicEnabled;
 
         if (SwitchQuickSfx != null) SwitchQuickSfx.IsToggled = sfx;
-        if (SwitchParentSfx != null) SwitchParentSfx.IsToggled = sfx;
         if (SwitchQuickMusic != null) SwitchQuickMusic.IsToggled = music;
-        if (SwitchParentMusic != null) SwitchParentMusic.IsToggled = music;
 
         if (ImgIconSfx != null) ImgIconSfx.Source = sfx ? "ic_sound_on.png" : "ic_sound_off.png";
         if (ImgIconMusic != null) ImgIconMusic.Source = music ? "ic_music_on.png" : "ic_music_off.png";
@@ -2801,12 +2695,6 @@ public partial class MainPage : ContentPage
         ShowOnboarding();
     }
 
-    private async void OnParentReplayOnboardingClicked(object? sender, EventArgs e)
-    {
-        if (sender is VisualElement v) await AnimateTap(v);
-        await CloseModal();
-        ShowOnboarding();
-    }
 
     // =========================================================================
     // 11. ДЕМО: ЗАВЕРШЕНИЕ ПЕРИОДА И ПЕРЕХОД К СЛЕДУЮЩЕМУ (Шаг 10 ТЗ)
