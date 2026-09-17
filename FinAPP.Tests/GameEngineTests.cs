@@ -373,4 +373,97 @@ public class GameEngineTests
         Assert.True(summary.EndPeriodSavings > 0, "EndPeriodSavings должен фиксировать баланс сбережений");
         Assert.Equal(_engine.Profile.Savings, summary.EndPeriodSavings);
     }
+
+    [Fact]
+    public void FinnyEmotion_LowMoodOrHunger_ShouldBeSad_AndHappyOtherwise()
+    {
+        // 1. При сытости <= 40 - грустный
+        _engine.Profile.Hunger = 40;
+        _engine.Profile.Mood = 80;
+        Assert.Equal("sad", _engine.CurrentEmotion);
+
+        // 2. При настроении <= 40 - грустный
+        _engine.Profile.Hunger = 80;
+        _engine.Profile.Mood = 35;
+        Assert.Equal("sad", _engine.CurrentEmotion);
+
+        // 3. При высоких показателях (> 40) - веселый (happy или proud)
+        _engine.Profile.Hunger = 60;
+        _engine.Profile.Mood = 60;
+        _engine.Profile.IsPlanConfirmed = false;
+        Assert.Equal("happy", _engine.CurrentEmotion);
+
+        // 4. При отличных показателях и утвержденном плане - гордый (proud)
+        _engine.Profile.Hunger = 80;
+        _engine.Profile.Mood = 85;
+        _engine.Profile.IsPlanConfirmed = true;
+        Assert.Equal("proud", _engine.CurrentEmotion);
+    }
+
+    [Fact]
+    public void PetProfile_PlatformsAndDesks_DefaultAndUnlocking_ShouldWorkCorrectly()
+    {
+        var profile = new PetProfile();
+
+        // Стартовые бесплатные подиум и стол
+        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Flowers));
+        Assert.True(profile.IsDeskUnlocked(PetDeskType.None));
+
+        // Платные по умолчанию заблокированы
+        Assert.False(profile.IsPlatformUnlocked(PetPlatformType.Stars));
+        Assert.False(profile.IsPlatformUnlocked(PetPlatformType.Emerald));
+        Assert.False(profile.IsDeskUnlocked(PetDeskType.Modern));
+        Assert.False(profile.IsDeskUnlocked(PetDeskType.Artisan));
+
+        // Разблокировка
+        profile.UnlockPlatform(PetPlatformType.Stars);
+        profile.UnlockDesk(PetDeskType.Modern);
+
+        Assert.True(profile.IsPlatformUnlocked(PetPlatformType.Stars));
+        Assert.True(profile.IsDeskUnlocked(PetDeskType.Modern));
+    }
+
+    [Fact]
+    public void PurchaseItem_InteriorDeskAndPlatform_ShouldUnlockAndApply()
+    {
+        _engine.Profile.Balance = 600;
+        var deskItem = ContentRepository.GetShopItems().First(i => i.Id == "desk_modern");
+        Assert.NotNull(deskItem.LinkedDesk);
+        Assert.False(_engine.Profile.IsDeskUnlocked(deskItem.LinkedDesk.Value));
+
+        var result = _engine.PurchaseItem(deskItem);
+
+        Assert.True(result.Success);
+        Assert.True(_engine.Profile.IsDeskUnlocked(deskItem.LinkedDesk.Value));
+        Assert.Equal(deskItem.LinkedDesk.Value, _engine.Profile.Desk);
+        Assert.Equal(400, _engine.Profile.Balance);
+
+        var platItem = ContentRepository.GetShopItems().First(i => i.Id == "platform_stars");
+        Assert.NotNull(platItem.LinkedPlatform);
+        Assert.False(_engine.Profile.IsPlatformUnlocked(platItem.LinkedPlatform.Value));
+
+        var platResult = _engine.PurchaseItem(platItem);
+
+        Assert.True(platResult.Success);
+        Assert.True(_engine.Profile.IsPlatformUnlocked(platItem.LinkedPlatform.Value));
+        Assert.Equal(platItem.LinkedPlatform.Value, _engine.Profile.Platform);
+        Assert.Equal(220, _engine.Profile.Balance);
+    }
+
+    [Fact]
+    public void ContentRepository_PresetGoals_ShouldContainDesksPlatformsAndToysWithoutOldScooter()
+    {
+        var goals = ContentRepository.GetPresetGoals();
+
+        // Старые цели удалены
+        Assert.DoesNotContain(goals, g => g.Id == "goal_scooter");
+        Assert.DoesNotContain(goals, g => g.Id == "goal_game");
+        Assert.DoesNotContain(goals, g => g.Id == "goal_gadget");
+
+        // Присутствуют платные столы, подиумы и игрушки
+        Assert.Contains(goals, g => g.LinkedDesk.HasValue);
+        Assert.Contains(goals, g => g.LinkedPlatform.HasValue);
+        Assert.Contains(goals, g => !string.IsNullOrEmpty(g.LinkedShopItemId));
+        Assert.True(goals.Count >= 5);
+    }
 }

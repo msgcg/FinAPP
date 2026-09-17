@@ -3,7 +3,8 @@ namespace FinAPP.Models;
 public enum ExpenseCategory
 {
     Obligatory,     // Обязательные расходы (еда, уход, здоровье)
-    Discretionary   // Необязательные расходы (желания, игрушки, развлечения)
+    Discretionary,  // Необязательные расходы (желания, игрушки, развлечения)
+    Interior        // Мебель и стиль (столики и подиумы Финни)
 }
 
 public class ShopItem
@@ -20,9 +21,15 @@ public class ShopItem
     public string Icon => IconEmoji;
     public string Description { get; set; } = string.Empty;
 
-    public string CategoryName => Category == ExpenseCategory.Obligatory 
-        ? "Обязательные расходы" 
-        : "Желания и развлечения";
+    public PetDeskType? LinkedDesk { get; set; }
+    public PetPlatformType? LinkedPlatform { get; set; }
+
+    public string CategoryName => Category switch
+    {
+        ExpenseCategory.Obligatory => "Обязательные расходы",
+        ExpenseCategory.Discretionary => "Желания и развлечения",
+        _ => "Мебель и стиль"
+    };
 
     public string EffectDescription
     {

@@ -84,8 +84,38 @@ public class PetProfile
     // Финансы
     public int Balance { get; set; } = 450;
     public int Savings { get; set; } = 150;
-    public string SelectedGoalId { get; set; } = "goal_gadget";
+    public string SelectedGoalId { get; set; } = "goal_desk_modern";
     public List<FinancialGoal> CustomGoals { get; set; } = new();
+
+    // Разблокированные подиумы и рабочие столы (стартовые Flowers и None бесплатны)
+    public List<string> UnlockedPlatforms { get; set; } = new() { "Flowers" };
+    public List<string> UnlockedDesks { get; set; } = new() { "None" };
+
+    public bool IsPlatformUnlocked(PetPlatformType platform)
+    {
+        if (platform == PetPlatformType.Flowers) return true;
+        return UnlockedPlatforms != null && UnlockedPlatforms.Contains(platform.ToString());
+    }
+
+    public bool IsDeskUnlocked(PetDeskType desk)
+    {
+        if (desk == PetDeskType.None) return true;
+        return UnlockedDesks != null && UnlockedDesks.Contains(desk.ToString());
+    }
+
+    public void UnlockPlatform(PetPlatformType platform)
+    {
+        UnlockedPlatforms ??= new List<string> { "Flowers" };
+        if (!UnlockedPlatforms.Contains(platform.ToString()))
+            UnlockedPlatforms.Add(platform.ToString());
+    }
+
+    public void UnlockDesk(PetDeskType desk)
+    {
+        UnlockedDesks ??= new List<string> { "None" };
+        if (!UnlockedDesks.Contains(desk.ToString()))
+            UnlockedDesks.Add(desk.ToString());
+    }
 
     // Игровой цикл и периоды (по ТЗ: не менее 5 периодов в демо-режиме)
     public int CurrentPeriod { get; set; } = 1;

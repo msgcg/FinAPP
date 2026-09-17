@@ -50,8 +50,8 @@ public partial class MainPage : ContentPage
     private int _currentTaskIndex = 0;
     private List<FinancialTask> _tasks = new();
 
-    // Категория магазина (true = Obligatory, false = Discretionary)
-    private bool _isShopObligCategory = true;
+    // Выбранная вкладка магазина (0 = Obligatory, 1 = Discretionary, 2 = Interior)
+    private int _shopSelectedCategoryTab = 0;
 
     // Пин для родителей
     private int _parentMathA = 7;
@@ -200,8 +200,16 @@ public partial class MainPage : ContentPage
     private async void OnSpeechBubbleTapped(object? sender, EventArgs e)
     {
         await AnimateTap(SpeechBubble);
-        PetView.NextQuote();
-        PetView.PlayAction("wave");
+        if (_engine.CurrentEmotion == "sad")
+        {
+            PetView.SetSpeechText(_engine.EmotionStatusExplanation);
+            PetView.PlayAction("sad");
+        }
+        else
+        {
+            PetView.NextQuote();
+            PetView.PlayAction("wave");
+        }
     }
 
     private async void OnAgeJuniorClicked(object? sender, EventArgs e)
@@ -334,24 +342,207 @@ public partial class MainPage : ContentPage
         SetCustomizerTab(false);
     }
 
+    private static int GetPlatformPrice(PetPlatformType platform) => platform switch
+    {
+        PetPlatformType.Stars => 180,
+        PetPlatformType.Emerald => 220,
+        PetPlatformType.Cosmic => 260,
+        PetPlatformType.Cloud => 200,
+        _ => 0
+    };
+
+    private static string GetPlatformName(PetPlatformType platform) => platform switch
+    {
+        PetPlatformType.Flowers => "Цветочная полянка",
+        PetPlatformType.Stars => "Звёздная дорожка",
+        PetPlatformType.Emerald => "Изумрудный кристалл",
+        PetPlatformType.Cosmic => "Космический неон",
+        PetPlatformType.Cloud => "Облако накоплений",
+        _ => "Подиум"
+    };
+
+    private static int GetDeskPrice(PetDeskType desk) => desk switch
+    {
+        PetDeskType.Modern => 200,
+        PetDeskType.Artisan => 220,
+        PetDeskType.Market => 250,
+        PetDeskType.Maker => 280,
+        PetDeskType.Reading => 300,
+        PetDeskType.Botanical => 240,
+        _ => 0
+    };
+
+    private static string GetDeskName(PetDeskType desk) => desk switch
+    {
+        PetDeskType.None => "Без стола",
+        PetDeskType.Modern => "Стол IT-финансиста",
+        PetDeskType.Artisan => "Творческий стол",
+        PetDeskType.Market => "Лавка предпринимателя",
+        PetDeskType.Maker => "Верстак инженера",
+        PetDeskType.Reading => "Кабинет профессора",
+        PetDeskType.Botanical => "Эко-стол биолога",
+        _ => "Рабочий стол"
+    };
+
+    private static string GetDeskIcon(PetDeskType desk) => desk switch
+    {
+        PetDeskType.Modern => "desk_modern.png",
+        PetDeskType.Artisan => "desk_artisan.png",
+        PetDeskType.Market => "desk_market.png",
+        PetDeskType.Maker => "desk_maker.png",
+        PetDeskType.Reading => "desk_reading.png",
+        PetDeskType.Botanical => "desk_botanical.png",
+        _ => "ic_customizer.png"
+    };
+
+    private void UpdateBadgeState(Border badge, bool isUnlocked, bool isActive, int price)
+    {
+        if (badge.Content is Label lbl)
+        {
+            badge.IsVisible = true;
+            if (isActive)
+            {
+                lbl.Text = "Активно";
+                badge.BackgroundColor = Color.FromArgb("#10B981");
+            }
+            else if (isUnlocked)
+            {
+                lbl.Text = "Выбрать";
+                badge.BackgroundColor = Color.FromArgb("#6B7280");
+            }
+            else
+            {
+                lbl.Text = $"🔒 {price} м.";
+                badge.BackgroundColor = Color.FromArgb("#DC2626");
+            }
+        }
+    }
+
     private void UpdateCustomizerPlatformBadges(PetPlatformType platform)
     {
-        BadgePlatformFlowers.IsVisible = platform == PetPlatformType.Flowers;
-        BadgePlatformStars.IsVisible = platform == PetPlatformType.Stars;
-        BadgePlatformEmerald.IsVisible = platform == PetPlatformType.Emerald;
-        BadgePlatformCosmic.IsVisible = platform == PetPlatformType.Cosmic;
-        BadgePlatformCloud.IsVisible = platform == PetPlatformType.Cloud;
+        var p = _engine.Profile;
+        UpdateBadgeState(BadgePlatformFlowers, true, platform == PetPlatformType.Flowers, 0);
+        UpdateBadgeState(BadgePlatformStars, p.IsPlatformUnlocked(PetPlatformType.Stars), platform == PetPlatformType.Stars, GetPlatformPrice(PetPlatformType.Stars));
+        UpdateBadgeState(BadgePlatformEmerald, p.IsPlatformUnlocked(PetPlatformType.Emerald), platform == PetPlatformType.Emerald, GetPlatformPrice(PetPlatformType.Emerald));
+        UpdateBadgeState(BadgePlatformCosmic, p.IsPlatformUnlocked(PetPlatformType.Cosmic), platform == PetPlatformType.Cosmic, GetPlatformPrice(PetPlatformType.Cosmic));
+        UpdateBadgeState(BadgePlatformCloud, p.IsPlatformUnlocked(PetPlatformType.Cloud), platform == PetPlatformType.Cloud, GetPlatformPrice(PetPlatformType.Cloud));
+    }
+
+    private void UpdateCustomizerDeskBadges(PetDeskType desk)
+    {
+        var p = _engine.Profile;
+        UpdateBadgeState(BadgeDeskNone, true, desk == PetDeskType.None, 0);
+        UpdateBadgeState(BadgeDeskModern, p.IsDeskUnlocked(PetDeskType.Modern), desk == PetDeskType.Modern, GetDeskPrice(PetDeskType.Modern));
+        UpdateBadgeState(BadgeDeskArtisan, p.IsDeskUnlocked(PetDeskType.Artisan), desk == PetDeskType.Artisan, GetDeskPrice(PetDeskType.Artisan));
+        UpdateBadgeState(BadgeDeskMarket, p.IsDeskUnlocked(PetDeskType.Market), desk == PetDeskType.Market, GetDeskPrice(PetDeskType.Market));
+        UpdateBadgeState(BadgeDeskMaker, p.IsDeskUnlocked(PetDeskType.Maker), desk == PetDeskType.Maker, GetDeskPrice(PetDeskType.Maker));
+        UpdateBadgeState(BadgeDeskReading, p.IsDeskUnlocked(PetDeskType.Reading), desk == PetDeskType.Reading, GetDeskPrice(PetDeskType.Reading));
+        UpdateBadgeState(BadgeDeskBotanical, p.IsDeskUnlocked(PetDeskType.Botanical), desk == PetDeskType.Botanical, GetDeskPrice(PetDeskType.Botanical));
     }
 
     private async Task SelectPlatformAsync(PetPlatformType platform, string speech)
     {
-        _engine.Profile.Platform = platform;
+        var p = _engine.Profile;
+        if (!p.IsPlatformUnlocked(platform))
+        {
+            int price = GetPlatformPrice(platform);
+            string choice = await DisplayActionSheet($"Подиум «{GetPlatformName(platform)}» закрыт ({price} монет)", "Отмена", null,
+                $"Купить за {price} монет", "Поставить целью накопления 🎯");
+            if (choice == $"Купить за {price} монет")
+            {
+                if (p.Balance < price)
+                {
+                    AudioService.Instance.PlaySfx("sfx_error");
+                    await DisplayAlert("Не хватает монет", $"У вас {p.Balance} монет, а требуется {price} монет.\nПополните баланс за счёт заданий или снимите часть из копилки.", "Понятно");
+                    return;
+                }
+                p.Balance -= price;
+                p.SpentDiscretionary += price;
+                p.UnlockPlatform(platform);
+                p.Platform = platform;
+                PlayPurchaseParticleBurst("ic_stat_mood.png");
+                AudioService.Instance.PlaySfx("sfx_money");
+                AudioService.Instance.PlaySfx("sfx_purr");
+                PetView.UpdatePlatform(platform);
+                RefreshUI();
+                await _engine.SaveAsync();
+                UpdateCustomizerPlatformBadges(platform);
+                PetView.SetSpeechText($"Ура! Подиум «{GetPlatformName(platform)}» куплен и установлен!");
+                return;
+            }
+            else if (choice == "Поставить целью накопления 🎯")
+            {
+                SetPlatformAsGoal(platform);
+                return;
+            }
+            return;
+        }
+
+        p.Platform = platform;
         UpdateCustomizerPlatformBadges(platform);
         PetView.UpdatePlatform(platform);
         PetView.PlayAction("proud");
         RefreshUI();
         await _engine.SaveAsync();
         PetView.SetSpeechText(speech);
+    }
+
+    private void SetPlatformAsGoal(PetPlatformType platform)
+    {
+        int price = GetPlatformPrice(platform);
+        string name = GetPlatformName(platform);
+        var allGoals = GetAllGoals();
+        var existing = allGoals.FirstOrDefault(g => g.LinkedPlatform == platform);
+        if (existing == null)
+        {
+            existing = new FinancialGoal
+            {
+                Id = $"goal_plat_{platform}",
+                Title = $"Подиум «{name}»",
+                TargetAmount = price,
+                IconImage = "ic_stat_mood.png",
+                LinkedPlatform = platform,
+                Description = "Стильный подиум для комнаты Финни.",
+                IsCustom = true
+            };
+            _engine.Profile.CustomGoals.Add(existing);
+        }
+
+        _engine.Profile.SelectedGoalId = existing.Id;
+        RefreshUI();
+        _ = _engine.SaveAsync();
+        RenderGoalsUI();
+        AudioService.Instance.PlaySfx("sfx_button");
+        PetView.SetSpeechText($"Подиум «{name}» выбран новой целью! Копим {price} монет!");
+    }
+
+    private void SetDeskAsGoal(PetDeskType desk)
+    {
+        int price = GetDeskPrice(desk);
+        string name = GetDeskName(desk);
+        var allGoals = GetAllGoals();
+        var existing = allGoals.FirstOrDefault(g => g.LinkedDesk == desk);
+        if (existing == null)
+        {
+            existing = new FinancialGoal
+            {
+                Id = $"goal_desk_{desk}",
+                Title = name,
+                TargetAmount = price,
+                IconImage = GetDeskIcon(desk),
+                LinkedDesk = desk,
+                Description = "Рабочий стол для финансового кабинета Финни.",
+                IsCustom = true
+            };
+            _engine.Profile.CustomGoals.Add(existing);
+        }
+
+        _engine.Profile.SelectedGoalId = existing.Id;
+        RefreshUI();
+        _ = _engine.SaveAsync();
+        RenderGoalsUI();
+        AudioService.Instance.PlaySfx("sfx_button");
+        PetView.SetSpeechText($"Рабочий стол «{name}» выбран новой целью! Копим {price} монет!");
     }
 
     private async void OnPlatformFlowersClicked(object? sender, EventArgs e)
@@ -384,20 +575,45 @@ public partial class MainPage : ContentPage
         await SelectPlatformAsync(PetPlatformType.Cloud, "Облако накоплений! Мягкий небесный подиум для лёгких сбережений!");
     }
 
-    private void UpdateCustomizerDeskBadges(PetDeskType desk)
-    {
-        BadgeDeskNone.IsVisible = desk == PetDeskType.None;
-        BadgeDeskModern.IsVisible = desk == PetDeskType.Modern;
-        BadgeDeskArtisan.IsVisible = desk == PetDeskType.Artisan;
-        BadgeDeskMarket.IsVisible = desk == PetDeskType.Market;
-        BadgeDeskMaker.IsVisible = desk == PetDeskType.Maker;
-        BadgeDeskReading.IsVisible = desk == PetDeskType.Reading;
-        BadgeDeskBotanical.IsVisible = desk == PetDeskType.Botanical;
-    }
-
     private async Task SelectDeskAsync(PetDeskType desk, string speech)
     {
-        _engine.Profile.Desk = desk;
+        var p = _engine.Profile;
+        if (!p.IsDeskUnlocked(desk))
+        {
+            int price = GetDeskPrice(desk);
+            string choice = await DisplayActionSheet($"Стол «{GetDeskName(desk)}» закрыт ({price} монет)", "Отмена", null,
+                $"Купить за {price} монет", "Поставить целью накопления 🎯");
+            if (choice == $"Купить за {price} монет")
+            {
+                if (p.Balance < price)
+                {
+                    AudioService.Instance.PlaySfx("sfx_error");
+                    await DisplayAlert("Не хватает монет", $"У вас {p.Balance} монет, а требуется {price} монет.\nПополните баланс за счёт заданий или снимите часть из копилки.", "Понятно");
+                    return;
+                }
+                p.Balance -= price;
+                p.SpentDiscretionary += price;
+                p.UnlockDesk(desk);
+                p.Desk = desk;
+                PlayPurchaseParticleBurst(GetDeskIcon(desk));
+                AudioService.Instance.PlaySfx("sfx_money");
+                AudioService.Instance.PlaySfx("sfx_purr");
+                PetView.UpdateDesk(desk);
+                RefreshUI();
+                await _engine.SaveAsync();
+                UpdateCustomizerDeskBadges(desk);
+                PetView.SetSpeechText($"Ура! Рабочий стол «{GetDeskName(desk)}» куплен!");
+                return;
+            }
+            else if (choice == "Поставить целью накопления 🎯")
+            {
+                SetDeskAsGoal(desk);
+                return;
+            }
+            return;
+        }
+
+        p.Desk = desk;
         UpdateCustomizerDeskBadges(desk);
         PetView.UpdateDesk(desk);
         PetView.PlayAction("proud");
@@ -875,12 +1091,12 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
-    // 5. МОДАЛКА: МАГАЗИН ЗАБОТЫ (ПОКУПКИ ЕДЫ И ИГРУШЕК)
+    // 5. МОДАЛКА: МАГАЗИН ЗАБОТЫ (ПОКУПКИ ЕДЫ, ИГРУШЕК И МЕБЕЛИ)
     // =========================================================================
     private async void OnShopClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        _isShopObligCategory = true;
+        _shopSelectedCategoryTab = 0;
         RenderShopCategoryUI();
         await ShowModal("Магазин заботы о Финни", PanelShop);
     }
@@ -888,14 +1104,21 @@ public partial class MainPage : ContentPage
     private async void OnShopTabObligClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
-        _isShopObligCategory = true;
+        _shopSelectedCategoryTab = 0;
         RenderShopCategoryUI();
     }
 
     private async void OnShopTabDiscClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
-        _isShopObligCategory = false;
+        _shopSelectedCategoryTab = 1;
+        RenderShopCategoryUI();
+    }
+
+    private async void OnShopTabDecorClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _shopSelectedCategoryTab = 2;
         RenderShopCategoryUI();
     }
 
@@ -903,27 +1126,32 @@ public partial class MainPage : ContentPage
     {
         LblShopBalance.Text = $"Доступно монет: {_engine.Profile.Balance} монет";
 
-        if (_isShopObligCategory)
-        {
-            BtnShopTabOblig.BackgroundColor = Color.FromArgb("#520978");
-            LblShopTabOblig.TextColor = Colors.White;
-            BtnShopTabDisc.BackgroundColor = Color.FromArgb("#E5E7EB");
-            LblShopTabDisc.TextColor = Color.FromArgb("#4B5563");
-        }
-        else
-        {
-            BtnShopTabDisc.BackgroundColor = Color.FromArgb("#520978");
-            LblShopTabDisc.TextColor = Colors.White;
-            BtnShopTabOblig.BackgroundColor = Color.FromArgb("#E5E7EB");
-            LblShopTabOblig.TextColor = Color.FromArgb("#4B5563");
-        }
+        BtnShopTabOblig.BackgroundColor = _shopSelectedCategoryTab == 0 ? Color.FromArgb("#520978") : Color.FromArgb("#E5E7EB");
+        LblShopTabOblig.TextColor = _shopSelectedCategoryTab == 0 ? Colors.White : Color.FromArgb("#4B5563");
+
+        BtnShopTabDisc.BackgroundColor = _shopSelectedCategoryTab == 1 ? Color.FromArgb("#520978") : Color.FromArgb("#E5E7EB");
+        LblShopTabDisc.TextColor = _shopSelectedCategoryTab == 1 ? Colors.White : Color.FromArgb("#4B5563");
+
+        BtnShopTabDecor.BackgroundColor = _shopSelectedCategoryTab == 2 ? Color.FromArgb("#520978") : Color.FromArgb("#E5E7EB");
+        LblShopTabDecor.TextColor = _shopSelectedCategoryTab == 2 ? Colors.White : Color.FromArgb("#4B5563");
 
         ShopItemsContainer.Children.Clear();
-        var category = _isShopObligCategory ? ExpenseCategory.Obligatory : ExpenseCategory.Discretionary;
+        ExpenseCategory category = _shopSelectedCategoryTab switch
+        {
+            0 => ExpenseCategory.Obligatory,
+            1 => ExpenseCategory.Discretionary,
+            _ => ExpenseCategory.Interior
+        };
         var items = ContentRepository.GetShopItems().Where(i => i.Category == category).ToList();
+        var p = _engine.Profile;
 
         foreach (var item in items)
         {
+            bool isUnlocked = (item.LinkedDesk.HasValue && p.IsDeskUnlocked(item.LinkedDesk.Value)) ||
+                              (item.LinkedPlatform.HasValue && p.IsPlatformUnlocked(item.LinkedPlatform.Value));
+            bool isActive = (item.LinkedDesk.HasValue && p.Desk == item.LinkedDesk.Value) ||
+                            (item.LinkedPlatform.HasValue && p.Platform == item.LinkedPlatform.Value);
+
             var card = new Border
             {
                 BackgroundColor = Color.FromArgb("#F9FAFB"),
@@ -942,10 +1170,10 @@ public partial class MainPage : ContentPage
                     new ColumnDefinition(GridLength.Star),
                     new ColumnDefinition(GridLength.Auto)
                 },
-                ColumnSpacing = 10
+                ColumnSpacing = 8
             };
 
-            // Иконка товара из презентации (в контрастном контейнере)
+            // Иконка товара (в контрастном контейнере)
             var imgIcon = new Image
             {
                 Source = item.IconImage,
@@ -956,7 +1184,9 @@ public partial class MainPage : ContentPage
             };
             var iconBadge = new Border
             {
-                BackgroundColor = item.Category == ExpenseCategory.Obligatory ? Color.FromArgb("#DCFCE7") : Color.FromArgb("#EDE9FE"),
+                BackgroundColor = item.Category == ExpenseCategory.Obligatory 
+                    ? Color.FromArgb("#DCFCE7") 
+                    : (item.Category == ExpenseCategory.Interior ? Color.FromArgb("#FEF3C7") : Color.FromArgb("#EDE9FE")),
                 StrokeThickness = 0,
                 StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
                 WidthRequest = 42,
@@ -970,35 +1200,210 @@ public partial class MainPage : ContentPage
             var vText = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
             Grid.SetColumn(vText, 1);
             vText.Children.Add(new Label { Text = item.Name, FontFamily = "MontserratBold", FontSize = 13, TextColor = Color.FromArgb("#1F2937") });
-            string effectStr = item.HungerBoost > 0 ? $"+{item.HungerBoost}% Сытость" : $"+{item.MoodBoost}% Настроение";
+            string effectStr = item.Category == ExpenseCategory.Interior
+                ? "Мебель / Интерьер"
+                : (item.HungerBoost > 0 ? $"+{item.HungerBoost}% Сытость" : $"+{item.MoodBoost}% Настроение");
             vText.Children.Add(new Label { Text = effectStr, FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#059669") });
             grid.Children.Add(vText);
 
-            // Кнопка покупки
-            var buyBtn = new Border
-            {
-                BackgroundColor = Color.FromArgb("#10B981"),
-                StrokeThickness = 0,
-                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
-                Padding = new Thickness(12, 6),
-                InputTransparent = false,
-                VerticalOptions = LayoutOptions.Center
-            };
-            Grid.SetColumn(buyBtn, 2);
-            buyBtn.Content = new Label { Text = $"{item.Price} монет", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+            // Действия
+            var actionLayout = new HorizontalStackLayout { Spacing = 6, VerticalOptions = LayoutOptions.Center };
+            Grid.SetColumn(actionLayout, 2);
 
-            var tap = new TapGestureRecognizer();
-            tap.Tapped += async (s, e) =>
+            if (isUnlocked)
             {
-                await AnimateTap(buyBtn);
-                await BuyShopItem(item);
-            };
-            buyBtn.GestureRecognizers.Add(tap);
-            grid.Children.Add(buyBtn);
+                var activeBadge = new Border
+                {
+                    BackgroundColor = isActive ? Color.FromArgb("#10B981") : Color.FromArgb("#6B7280"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                    Padding = new Thickness(10, 6),
+                    VerticalOptions = LayoutOptions.Center,
+                    InputTransparent = false
+                };
+                activeBadge.Content = new Label
+                {
+                    Text = isActive ? "Активно" : "Выбрать",
+                    TextColor = Colors.White,
+                    FontFamily = "MontserratBold",
+                    FontSize = 11,
+                    HorizontalOptions = LayoutOptions.Center
+                };
+                var tapActive = new TapGestureRecognizer();
+                tapActive.Tapped += async (s, e) =>
+                {
+                    await AnimateTap(activeBadge);
+                    if (item.LinkedDesk.HasValue)
+                    {
+                        p.Desk = item.LinkedDesk.Value;
+                        PetView.UpdateDesk(p.Desk);
+                    }
+                    if (item.LinkedPlatform.HasValue)
+                    {
+                        p.Platform = item.LinkedPlatform.Value;
+                        PetView.UpdatePlatform(p.Platform);
+                    }
+                    RefreshUI();
+                    await _engine.SaveAsync();
+                    RenderShopCategoryUI();
+                };
+                activeBadge.GestureRecognizers.Add(tapActive);
+                actionLayout.Children.Add(activeBadge);
+            }
+            else
+            {
+                // Кнопка "В цель 🎯"
+                var goalBtn = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#EBE9F8"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                    Padding = new Thickness(8, 6),
+                    InputTransparent = false,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                goalBtn.Content = new Label { Text = "🎯", FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+                var tapGoal = new TapGestureRecognizer();
+                tapGoal.Tapped += async (s, e) =>
+                {
+                    await AnimateTap(goalBtn);
+                    SetItemAsGoal(item);
+                };
+                goalBtn.GestureRecognizers.Add(tapGoal);
+                actionLayout.Children.Add(goalBtn);
 
+                // Кнопка покупки
+                var buyBtn = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#10B981"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                    Padding = new Thickness(10, 6),
+                    InputTransparent = false,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                buyBtn.Content = new Label { Text = $"{item.Price} м.", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+                var tapBuy = new TapGestureRecognizer();
+                tapBuy.Tapped += async (s, e) =>
+                {
+                    await AnimateTap(buyBtn);
+                    await BuyShopItem(item);
+                };
+                buyBtn.GestureRecognizers.Add(tapBuy);
+                actionLayout.Children.Add(buyBtn);
+            }
+
+            grid.Children.Add(actionLayout);
             card.Content = grid;
             ShopItemsContainer.Children.Add(card);
         }
+    }
+
+    private void PlayPurchaseParticleBurst(string iconSource)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(iconSource))
+                iconSource = "ic_stat_balance.png";
+
+            double screenW = Width > 0 ? Width : 360;
+            double screenH = Height > 0 ? Height : 640;
+
+            int particleCount = 16;
+            var rnd = new Random();
+            var tasks = new List<Task>();
+            var particles = new List<Image>();
+
+            for (int i = 0; i < particleCount; i++)
+            {
+                var particle = new Image
+                {
+                    Source = iconSource,
+                    WidthRequest = rnd.Next(32, 48),
+                    HeightRequest = rnd.Next(32, 48),
+                    Opacity = 1.0,
+                    InputTransparent = true,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                    TranslationX = 0,
+                    TranslationY = 0,
+                    Scale = 0.6
+                };
+
+                ParticleOverlayGrid.Children.Add(particle);
+                particles.Add(particle);
+
+                double angle = rnd.NextDouble() * 2 * Math.PI;
+                double distance = rnd.Next(100, 240);
+                double targetX = Math.Cos(angle) * distance;
+                double targetY = Math.Sin(angle) * distance + rnd.Next(30, 90);
+                double targetRot = rnd.Next(-360, 360);
+                double targetScale = rnd.NextDouble() * 0.5 + 0.8;
+                uint duration = (uint)rnd.Next(650, 1000);
+
+                var moveTask = Task.Run(async () =>
+                {
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        var trans = particle.TranslateToAsync(targetX, targetY, duration, Easing.CubicOut);
+                        var rot = particle.RotateToAsync(targetRot, duration);
+                        var sc = particle.ScaleToAsync(targetScale, duration, Easing.CubicOut);
+                        await Task.WhenAll(trans, rot, sc);
+                        await particle.FadeToAsync(0, 250, Easing.CubicIn);
+                    });
+                });
+                tasks.Add(moveTask);
+            }
+
+            _ = Task.Run(async () =>
+            {
+                await Task.WhenAll(tasks);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    foreach (var p in particles)
+                    {
+                        ParticleOverlayGrid.Children.Remove(p);
+                    }
+                });
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[ParticleBurst] error: {ex.Message}");
+        }
+    }
+
+    private void SetItemAsGoal(ShopItem item)
+    {
+        var allGoals = GetAllGoals();
+        var existing = allGoals.FirstOrDefault(g => 
+            (item.LinkedDesk.HasValue && g.LinkedDesk == item.LinkedDesk) ||
+            (item.LinkedPlatform.HasValue && g.LinkedPlatform == item.LinkedPlatform) ||
+            (!string.IsNullOrEmpty(item.Id) && g.LinkedShopItemId == item.Id));
+
+        if (existing == null)
+        {
+            existing = new FinancialGoal
+            {
+                Id = $"goal_shop_{item.Id}",
+                Title = item.Name,
+                TargetAmount = item.Price,
+                IconImage = item.IconImage,
+                LinkedDesk = item.LinkedDesk,
+                LinkedPlatform = item.LinkedPlatform,
+                LinkedShopItemId = item.Id,
+                Description = item.Description,
+                IsCustom = true
+            };
+            _engine.Profile.CustomGoals.Add(existing);
+        }
+
+        _engine.Profile.SelectedGoalId = existing.Id;
+        RefreshUI();
+        _ = _engine.SaveAsync();
+        RenderGoalsUI();
+        AudioService.Instance.PlaySfx("sfx_button");
+        PetView.SetSpeechText($"Товар «{existing.Title}» выбран новой целью! Копим {existing.TargetAmount} монет!");
     }
 
     private async Task ShowPurchaseToastAsync(ShopItem item)
@@ -1006,6 +1411,7 @@ public partial class MainPage : ContentPage
         try
         {
             string effectText = item.HungerBoost > 0 ? $"+{item.HungerBoost}% сытости!" : $"+{item.MoodBoost}% настроения!";
+            if (item.Category == ExpenseCategory.Interior) effectText = "Мебель для комнаты!";
             LblPurchaseToast.Text = $"{effectText} (-{item.Price} монет)";
             BorderPurchaseToast.Opacity = 0;
             BorderPurchaseToast.TranslationY = 15;
@@ -1047,13 +1453,29 @@ public partial class MainPage : ContentPage
         p.Hunger = Math.Min(100, p.Hunger + item.HungerBoost);
         p.Mood = Math.Min(100, p.Mood + item.MoodBoost);
 
+        if (item.LinkedDesk.HasValue)
+        {
+            p.UnlockDesk(item.LinkedDesk.Value);
+            p.Desk = item.LinkedDesk.Value;
+            PetView.UpdateDesk(p.Desk);
+        }
+        if (item.LinkedPlatform.HasValue)
+        {
+            p.UnlockPlatform(item.LinkedPlatform.Value);
+            p.Platform = item.LinkedPlatform.Value;
+            PetView.UpdatePlatform(p.Platform);
+        }
+
         RefreshUI();
         await _engine.SaveAsync();
         RenderShopCategoryUI();
 
+        // Запуск анимации рассыпания частиц купленной вещи!
+        PlayPurchaseParticleBurst(item.IconImage);
+
         // Озвучивание покупки и урчания довольного котика
         AudioService.Instance.PlaySfx("sfx_money");
-        if (item.HungerBoost > 0 || item.MoodBoost > 15)
+        if (item.HungerBoost > 0 || item.MoodBoost > 15 || item.Category == ExpenseCategory.Interior)
         {
             AudioService.Instance.PlaySfx("sfx_purr");
         }
@@ -1061,7 +1483,6 @@ public partial class MainPage : ContentPage
         // Визуальный бейдж обратной связи над персонажем (ТЗ п. 2.5.6)
         _ = ShowPurchaseToastAsync(item);
 
-        // Грамотная благодарность на русском языке в винительном падеже
         PetView.SetSpeechText(string.IsNullOrEmpty(item.ThanksText) ? "Муррр! Спасибо за заботу! Теперь я доволен!" : item.ThanksText);
         PetView.PlayAction("proud");
     }
@@ -1129,7 +1550,32 @@ public partial class MainPage : ContentPage
             info.Children.Add(new Label { Text = $"Стоимость: {goal.TargetAmount} монет  •  {gPercent}%", FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#6B7280") });
             grid.Children.Add(info);
 
-            if (isCurrent)
+            var actionLayout = new HorizontalStackLayout { Spacing = 6, VerticalOptions = LayoutOptions.Center };
+            Grid.SetColumn(actionLayout, 2);
+
+            bool isAchieved = p.Savings >= goal.TargetAmount;
+            if (isAchieved)
+            {
+                var buyAchievedBtn = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#10B981"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                    Padding = new Thickness(10, 5),
+                    InputTransparent = false,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                buyAchievedBtn.Content = new Label { Text = "Купить! 🎉", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 11 };
+                var tapAchieved = new TapGestureRecognizer();
+                tapAchieved.Tapped += async (s, e) =>
+                {
+                    await AnimateTap(buyAchievedBtn);
+                    await ClaimGoalRewardAsync(goal);
+                };
+                buyAchievedBtn.GestureRecognizers.Add(tapAchieved);
+                actionLayout.Children.Add(buyAchievedBtn);
+            }
+            else if (isCurrent)
             {
                 var currentBadge = new Border
                 {
@@ -1140,8 +1586,7 @@ public partial class MainPage : ContentPage
                     VerticalOptions = LayoutOptions.Center,
                     Content = new Label { Text = "Активна", FontFamily = "MontserratBold", FontSize = 11, TextColor = Colors.White }
                 };
-                Grid.SetColumn(currentBadge, 2);
-                grid.Children.Add(currentBadge);
+                actionLayout.Children.Add(currentBadge);
             }
             else
             {
@@ -1154,7 +1599,6 @@ public partial class MainPage : ContentPage
                     InputTransparent = false,
                     VerticalOptions = LayoutOptions.Center
                 };
-                Grid.SetColumn(selectBtn, 2);
                 selectBtn.Content = new Label { Text = "Выбрать", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 11 };
 
                 var tap = new TapGestureRecognizer();
@@ -1168,38 +1612,173 @@ public partial class MainPage : ContentPage
                     PetView.SetSpeechText($"Отличный выбор! Наша новая цель — «{goal.Title}»! Копим монетки!");
                 };
                 selectBtn.GestureRecognizers.Add(tap);
-                grid.Children.Add(selectBtn);
+                actionLayout.Children.Add(selectBtn);
             }
 
+            grid.Children.Add(actionLayout);
             goalCard.Content = grid;
             GoalsListContainer.Children.Add(goalCard);
+        }
+    }
+
+    private async Task ClaimGoalRewardAsync(FinancialGoal goal)
+    {
+        var p = _engine.Profile;
+        if (p.Savings < goal.TargetAmount)
+        {
+            AudioService.Instance.PlaySfx("sfx_error");
+            PetView.SetSpeechText("Сначала нужно накопить всю сумму цели в копилке!");
+            return;
+        }
+
+        p.Savings -= goal.TargetAmount;
+
+        if (goal.LinkedDesk.HasValue)
+        {
+            p.UnlockDesk(goal.LinkedDesk.Value);
+            p.Desk = goal.LinkedDesk.Value;
+            PetView.UpdateDesk(p.Desk);
+        }
+        if (goal.LinkedPlatform.HasValue)
+        {
+            p.UnlockPlatform(goal.LinkedPlatform.Value);
+            p.Platform = goal.LinkedPlatform.Value;
+            PetView.UpdatePlatform(p.Platform);
+        }
+        if (!string.IsNullOrEmpty(goal.LinkedShopItemId))
+        {
+            var shopItem = ContentRepository.GetShopItems().FirstOrDefault(i => i.Id == goal.LinkedShopItemId);
+            if (shopItem != null)
+            {
+                p.Hunger = Math.Min(100, p.Hunger + shopItem.HungerBoost);
+                p.Mood = Math.Min(100, p.Mood + shopItem.MoodBoost);
+            }
+        }
+
+        if (goal.IsCustom && p.CustomGoals.Contains(goal))
+        {
+            p.CustomGoals.Remove(goal);
+        }
+
+        var remainingGoals = GetAllGoals();
+        p.SelectedGoalId = remainingGoals.FirstOrDefault()?.Id ?? "goal_desk_modern";
+
+        RefreshUI();
+        await _engine.SaveAsync();
+        RenderGoalsUI();
+
+        PlayPurchaseParticleBurst(goal.IconImage);
+
+        AudioService.Instance.PlaySfx("sfx_fanfare");
+        AudioService.Instance.PlaySfx("sfx_purr");
+        PetView.SetSpeechText($"УРААА! МЕЧТА ИСПОЛНИЛАСЬ! Мы накопили и купили «{goal.Title}»! Ты настоящий мастер сбережений!");
+        PetView.PlayAction("proud");
+    }
+
+    private async Task ShowDeskGoalPickerAsync()
+    {
+        var desks = new[]
+        {
+            PetDeskType.Modern,
+            PetDeskType.Artisan,
+            PetDeskType.Market,
+            PetDeskType.Maker,
+            PetDeskType.Reading,
+            PetDeskType.Botanical
+        };
+        var options = desks.Select(d => $"{GetDeskName(d)} ({GetDeskPrice(d)} монет)").ToArray();
+        string choice = await DisplayActionSheet("Выбери рабочий стол для накопления:", "Отмена", null, options);
+        if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
+        {
+            int idx = Array.IndexOf(options, choice);
+            if (idx >= 0)
+            {
+                SetDeskAsGoal(desks[idx]);
+            }
+        }
+    }
+
+    private async Task ShowPlatformGoalPickerAsync()
+    {
+        var platforms = new[]
+        {
+            PetPlatformType.Stars,
+            PetPlatformType.Cloud,
+            PetPlatformType.Emerald,
+            PetPlatformType.Cosmic
+        };
+        var options = platforms.Select(p => $"{GetPlatformName(p)} ({GetPlatformPrice(p)} монет)").ToArray();
+        string choice = await DisplayActionSheet("Выбери подиум для накопления:", "Отмена", null, options);
+        if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
+        {
+            int idx = Array.IndexOf(options, choice);
+            if (idx >= 0)
+            {
+                SetPlatformAsGoal(platforms[idx]);
+            }
+        }
+    }
+
+    private async Task ShowToyGoalPickerAsync()
+    {
+        var toys = ContentRepository.GetShopItems().Where(i => i.Category == ExpenseCategory.Discretionary).ToList();
+        var options = toys.Select(t => $"{t.Name} ({t.Price} монет)").ToArray();
+        string choice = await DisplayActionSheet("Выбери игрушку для накопления:", "Отмена", null, options);
+        if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
+        {
+            int idx = Array.IndexOf(options, choice);
+            if (idx >= 0)
+            {
+                SetItemAsGoal(toys[idx]);
+            }
         }
     }
 
     private async void OnAddCustomGoalClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        string name = await DisplayPromptAsync("Новая цель", "На что ты хочешь накопить?", "Далее", "Отмена", "Например: Роликовые коньки", maxLength: 35);
-        if (string.IsNullOrWhiteSpace(name)) return;
+        string choice = await DisplayActionSheet("Поставить новую цель накопления", "Отмена", null,
+            "Ввести свою мечту и сумму вручную",
+            "Выбрать рабочий столик Финни",
+            "Выбрать подиум под лапки",
+            "Выбрать игрушку из магазина");
 
-        string amountStr = await DisplayPromptAsync("Стоимость цели", $"Сколько монет стоит «{name.Trim()}»?", "Создать", "Отмена", "Например: 500", keyboard: Keyboard.Numeric);
-        if (int.TryParse(amountStr, out int targetAmount) && targetAmount > 0)
+        if (choice == "Ввести свою мечту и сумму вручную")
         {
-            var newGoal = new FinancialGoal
+            string name = await DisplayPromptAsync("Новая цель", "На что ты хочешь накопить?", "Далее", "Отмена", "Например: Роликовые коньки", maxLength: 35);
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            string amountStr = await DisplayPromptAsync("Стоимость цели", $"Сколько монет стоит «{name.Trim()}»?", "Создать", "Отмена", "Например: 500", keyboard: Keyboard.Numeric);
+            if (int.TryParse(amountStr, out int targetAmount) && targetAmount > 0)
             {
-                Id = $"goal_custom_{Guid.NewGuid():N}",
-                Title = name.Trim(),
-                TargetAmount = targetAmount,
-                IconImage = "ic_goal_custom.png",
-                Description = "Твоя личная мечта!",
-                IsCustom = true
-            };
-            _engine.Profile.CustomGoals.Add(newGoal);
-            _engine.Profile.SelectedGoalId = newGoal.Id;
-            RefreshUI();
-            await _engine.SaveAsync();
-            RenderGoalsUI();
-            PetView.SetSpeechText($"Ура! Мы поставили новую цель: «{name.Trim()}»! Накопим вместе!");
+                var newGoal = new FinancialGoal
+                {
+                    Id = $"goal_custom_{Guid.NewGuid():N}",
+                    Title = name.Trim(),
+                    TargetAmount = targetAmount,
+                    IconImage = "ic_stat_savings.png",
+                    Description = "Твоя личная мечта!",
+                    IsCustom = true
+                };
+                _engine.Profile.CustomGoals.Add(newGoal);
+                _engine.Profile.SelectedGoalId = newGoal.Id;
+                RefreshUI();
+                await _engine.SaveAsync();
+                RenderGoalsUI();
+                PetView.SetSpeechText($"Ура! Мы поставили новую цель: «{name.Trim()}»! Накопим вместе!");
+            }
+        }
+        else if (choice == "Выбрать рабочий столик Финни")
+        {
+            await ShowDeskGoalPickerAsync();
+        }
+        else if (choice == "Выбрать подиум под лапки")
+        {
+            await ShowPlatformGoalPickerAsync();
+        }
+        else if (choice == "Выбрать игрушку из магазина")
+        {
+            await ShowToyGoalPickerAsync();
         }
     }
 

@@ -33,7 +33,7 @@ public class GameEngine
     {
         get
         {
-            if (Profile.Hunger <= 35 || Profile.Mood <= 35)
+            if (Profile.Hunger <= 40 || Profile.Mood <= 40)
                 return "sad";
             if (Profile.Hunger >= 75 && Profile.Mood >= 75 && Profile.IsPlanConfirmed)
                 return "proud";
@@ -46,9 +46,9 @@ public class GameEngine
     {
         get
         {
-            if (Profile.Hunger <= 35)
+            if (Profile.Hunger <= 40)
                 return $"{Profile.PetName} проголодался (сытость {Profile.Hunger}%)! Нужен питательный обед из обязательных расходов.";
-            if (Profile.Mood <= 35)
+            if (Profile.Mood <= 40)
                 return $"{Profile.PetName} заскучал (настроение {Profile.Mood}%)! Поиграйте или купите игрушку из желаний.";
             if (Profile.Hunger >= 75 && Profile.Mood >= 75)
                 return $"{Profile.PetName} сыт, счастлив и гордится вашим грамотным бюджетом!";
@@ -76,6 +76,17 @@ public class GameEngine
         else
         {
             Profile.ActualDiscretionary += item.Price;
+        }
+
+        if (item.LinkedDesk.HasValue)
+        {
+            Profile.UnlockDesk(item.LinkedDesk.Value);
+            Profile.Desk = item.LinkedDesk.Value;
+        }
+        if (item.LinkedPlatform.HasValue)
+        {
+            Profile.UnlockPlatform(item.LinkedPlatform.Value);
+            Profile.Platform = item.LinkedPlatform.Value;
         }
 
         OnStateChanged?.Invoke();

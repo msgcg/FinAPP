@@ -114,6 +114,148 @@ public static class ContentRepository
             IconImage = "ic_shop_drone.png",
             ThanksText = "Муррр! Спасибо за крутой мини-коптер! Финни теперь пилот!",
             Description = "Супер-гаджет для Финни. Покупать стоит только при избытке карманных денег!"
+        },
+
+        // 3. Мебель и обустройство комнаты (Интерьер - платные столы и подиумы)
+        new ShopItem
+        {
+            Id = "desk_modern",
+            Name = "Стол IT-финансиста",
+            Category = ExpenseCategory.Interior,
+            Price = 200,
+            HungerBoost = 0,
+            MoodBoost = 40,
+            IconEmoji = "",
+            IconImage = "desk_modern.png",
+            LinkedDesk = PetDeskType.Modern,
+            ThanksText = "Муррр! Какой крутой IT-стол! Теперь Финни настоящий программист и инвестор!",
+            Description = "Ноутбук, настольная лампа и мониторы для юного финансового гения."
+        },
+        new ShopItem
+        {
+            Id = "desk_artisan",
+            Name = "Творческий стол",
+            Category = ExpenseCategory.Interior,
+            Price = 220,
+            HungerBoost = 0,
+            MoodBoost = 45,
+            IconEmoji = "",
+            IconImage = "desk_artisan.png",
+            LinkedDesk = PetDeskType.Artisan,
+            ThanksText = "Муррр! Творческая мастерская открыта! Будем рисовать графики накоплений!",
+            Description = "Палитра, краски и холст для создания творческих шедевров."
+        },
+        new ShopItem
+        {
+            Id = "desk_market",
+            Name = "Лавка предпринимателя",
+            Category = ExpenseCategory.Interior,
+            Price = 250,
+            HungerBoost = 0,
+            MoodBoost = 50,
+            IconEmoji = "",
+            IconImage = "desk_market.png",
+            LinkedDesk = PetDeskType.Market,
+            ThanksText = "Муррр! Наш первый стартап начинает работу! Добро пожаловать в лавку Финни!",
+            Description = "Витрина, монеты и касса своего первого настоящего бизнеса."
+        },
+        new ShopItem
+        {
+            Id = "desk_maker",
+            Name = "Верстак инженера",
+            Category = ExpenseCategory.Interior,
+            Price = 280,
+            HungerBoost = 0,
+            MoodBoost = 55,
+            IconEmoji = "",
+            IconImage = "desk_maker.png",
+            LinkedDesk = PetDeskType.Maker,
+            ThanksText = "Муррр! Шестерёнки крутятся, механизм работает! Отличный верстак!",
+            Description = "Шестерни, чертежи и инструменты юного изобретателя."
+        },
+        new ShopItem
+        {
+            Id = "desk_reading",
+            Name = "Кабинет профессора",
+            Category = ExpenseCategory.Interior,
+            Price = 300,
+            HungerBoost = 0,
+            MoodBoost = 60,
+            IconEmoji = "",
+            IconImage = "desk_reading.png",
+            LinkedDesk = PetDeskType.Reading,
+            ThanksText = "Муррр! Какая библиотека! Читаю умные книги по экономике и финансам!",
+            Description = "Книги, старинный глобус и свитки финансовой мудрости."
+        },
+        new ShopItem
+        {
+            Id = "desk_botanical",
+            Name = "Эко-стол биолога",
+            Category = ExpenseCategory.Interior,
+            Price = 240,
+            HungerBoost = 0,
+            MoodBoost = 45,
+            IconEmoji = "",
+            IconImage = "desk_botanical.png",
+            LinkedDesk = PetDeskType.Botanical,
+            ThanksText = "Муррр! Растения радуют зеленью, как растущие сбережения в копилке!",
+            Description = "Комнатные растения, пробирки и лейка."
+        },
+        new ShopItem
+        {
+            Id = "platform_stars",
+            Name = "Подиум «Звёздная дорожка»",
+            Category = ExpenseCategory.Interior,
+            Price = 180,
+            HungerBoost = 0,
+            MoodBoost = 35,
+            IconEmoji = "",
+            IconImage = "ic_stat_mood.png",
+            LinkedPlatform = PetPlatformType.Stars,
+            ThanksText = "Муррр! Золотой пьедестал сияет звёздами! Финни — звезда финансов!",
+            Description = "Сияющий золотой кристалл со мерцающими звёздами."
+        },
+        new ShopItem
+        {
+            Id = "platform_cloud",
+            Name = "Подиум «Облако накоплений»",
+            Category = ExpenseCategory.Interior,
+            Price = 200,
+            HungerBoost = 0,
+            MoodBoost = 40,
+            IconEmoji = "",
+            IconImage = "ic_shop_bed.png",
+            LinkedPlatform = PetPlatformType.Cloud,
+            ThanksText = "Муррр! Мягко, словно на настоящем небесном облачке сбережений!",
+            Description = "Небесно-голубой подиум, дарящий ощущение лёгкости."
+        },
+        new ShopItem
+        {
+            Id = "platform_emerald",
+            Name = "Подиум «Изумрудный кристалл»",
+            Category = ExpenseCategory.Interior,
+            Price = 220,
+            HungerBoost = 0,
+            MoodBoost = 45,
+            IconEmoji = "",
+            IconImage = "ic_stat_hunger.png",
+            LinkedPlatform = PetPlatformType.Emerald,
+            ThanksText = "Муррр! Изумрудный кристалл заряжает копилку неоновой энергией!",
+            Description = "Неоновый изумрудно-мятный свет для стильной комнаты Финни."
+        },
+        new ShopItem
+        {
+            Id = "platform_cosmic",
+            Name = "Подиум «Космический неон»",
+            Category = ExpenseCategory.Interior,
+            Price = 260,
+            HungerBoost = 0,
+            MoodBoost = 50,
+            IconEmoji = "",
+            IconImage = "ic_shop_drone.png",
+            LinkedPlatform = PetPlatformType.Cosmic,
+            ThanksText = "Муррр! Кибер-подиум из будущего! Летим к звёздным целям!",
+            Description = "Футуристический кибер-подиум с пульсирующей подсветкой."
         }
     };
 
@@ -455,35 +597,78 @@ public static class ContentRepository
         return allTasks;
     }
 
-    // Не менее 3 целей накопления (п. 2.6 ТЗ)
+    // Цели накопления (п. 2.6 ТЗ): мебель, подиумы и желанные игрушки
     public static List<FinancialGoal> GetPresetGoals() => new()
     {
         new FinancialGoal
         {
-            Id = "goal_scooter",
-            Title = "Спортивный трюковой самокат",
-            TargetAmount = 350,
+            Id = "goal_desk_modern",
+            Title = "Стол IT-финансиста",
+            TargetAmount = 200,
             IconEmoji = "",
-            IconImage = "ic_goal_scooter.png",
-            Description = "Отличная краткосрочная цель для прогулок в парке."
+            IconImage = "desk_modern.png",
+            LinkedDesk = PetDeskType.Modern,
+            Description = "Ноутбук, лампа и мониторы для цифрового банкинга и учета финансов."
         },
         new FinancialGoal
         {
-            Id = "goal_game",
-            Title = "Настольная экономическая игра",
-            TargetAmount = 650,
+            Id = "goal_platform_stars",
+            Title = "Подиум «Звёздная дорожка»",
+            TargetAmount = 180,
             IconEmoji = "",
-            IconImage = "ic_goal_game.png",
-            Description = "Увлекательная игра для всей семьи, учит инвестициям и торговле."
+            IconImage = "ic_stat_mood.png",
+            LinkedPlatform = PetPlatformType.Stars,
+            Description = "Сияющий золотой кристалл со звёздами успеха под лапки Финни."
         },
         new FinancialGoal
         {
-            Id = "goal_gadget",
-            Title = "Умные детские часы с GPS",
-            TargetAmount = 1000,
+            Id = "goal_desk_market",
+            Title = "Лавка предпринимателя",
+            TargetAmount = 250,
             IconEmoji = "",
-            IconImage = "ic_goal_gadget.png",
-            Description = "Полезный гаджет для связи с родителями и шагомера."
+            IconImage = "desk_market.png",
+            LinkedDesk = PetDeskType.Market,
+            Description = "Своя собственная торговая лавка: витрина, сладости и первая касса!"
+        },
+        new FinancialGoal
+        {
+            Id = "goal_platform_cosmic",
+            Title = "Подиум «Космический неон»",
+            TargetAmount = 260,
+            IconEmoji = "",
+            IconImage = "ic_shop_drone.png",
+            LinkedPlatform = PetPlatformType.Cosmic,
+            Description = "Футуристический кибер-подиум с пульсирующей неоновой подсветкой."
+        },
+        new FinancialGoal
+        {
+            Id = "goal_desk_reading",
+            Title = "Кабинет профессора",
+            TargetAmount = 300,
+            IconEmoji = "",
+            IconImage = "desk_reading.png",
+            LinkedDesk = PetDeskType.Reading,
+            Description = "Книги, старинный глобус и свитки для изучения финансовой науки."
+        },
+        new FinancialGoal
+        {
+            Id = "goal_toy_drone",
+            Title = "Игрушечный мини-коптер",
+            TargetAmount = 220,
+            IconEmoji = "",
+            IconImage = "ic_shop_drone.png",
+            LinkedShopItemId = "toy_drone",
+            Description = "Крутой летающий дрон с камерой для активных игр с Финни."
+        },
+        new FinancialGoal
+        {
+            Id = "goal_toy_bed",
+            Title = "Мягкая лежанка-облачко",
+            TargetAmount = 140,
+            IconEmoji = "",
+            IconImage = "ic_shop_bed.png",
+            LinkedShopItemId = "toy_bed",
+            Description = "Уютное спальное место для сладких снов Финни."
         }
     };
 

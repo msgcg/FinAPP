@@ -10,6 +10,9 @@ public class FinancialGoal
     public string IconImage { get; set; } = "ic_goal_scooter.png";
     public string Description { get; set; } = string.Empty;
     public bool IsCustom { get; set; } = false;
+    public PetDeskType? LinkedDesk { get; set; }
+    public PetPlatformType? LinkedPlatform { get; set; }
+    public string? LinkedShopItemId { get; set; }
 
     public int GetProgressPercent(int currentSavings)
     {

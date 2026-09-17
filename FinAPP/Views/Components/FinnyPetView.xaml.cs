@@ -432,9 +432,16 @@ public partial class FinnyPetView : ContentView
             }
             catch { }
 
-            // 2. Смена цитаты Финни
-            _quoteIndex = (_quoteIndex + 1) % _finnyQuotes.Length;
-            SetSpeechText(_finnyQuotes[_quoteIndex]);
+            // 2. Смена цитаты Финни в зависимости от настроения
+            if (_currentEmotionGif.EndsWith("_sad.gif"))
+            {
+                SetSpeechText("Мяу... Животик урчит или мне грустно! Давай заглянем в магазин заботы или поиграем!");
+            }
+            else
+            {
+                _quoteIndex = (_quoteIndex + 1) % _finnyQuotes.Length;
+                SetSpeechText(_finnyQuotes[_quoteIndex]);
+            }
 
             // 3. Отменяем предыдущий таймер возврата, если был
             _waveCts?.Cancel();
@@ -442,8 +449,15 @@ public partial class FinnyPetView : ContentView
             _waveCts = new CancellationTokenSource();
             var ct = _waveCts.Token;
 
-            // 4. Переключаем на анимацию приветствия текущей стадии
-            ApplyAnimation($"{_currentStagePrefix}_wave.gif", force: true);
+            // 4. Переключаем на анимацию приветствия текущей стадии (если не грустный)
+            if (_currentEmotionGif.EndsWith("_sad.gif"))
+            {
+                ApplyAnimation(_currentEmotionGif, force: true);
+            }
+            else
+            {
+                ApplyAnimation($"{_currentStagePrefix}_wave.gif", force: true);
+            }
 
             // 5. Пружинистый подскок персонажа
             await PetContainer.ScaleToAsync(_baseScale * 1.05, 120, Easing.CubicOut);

@@ -973,21 +973,29 @@
                                 <Label x:Name="LblShopBalance" Text="Доступно: 400 монет" FontFamily="MontserratBold" FontSize="14" TextColor="#520978" VerticalOptions="Center"/>
                             </HorizontalStackLayout>
 
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="6">
                                 <Border x:Name="BtnShopTabOblig" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
-                                        <Image Source="ic_stat_hunger.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
-                                        <Label x:Name="LblShopTabOblig" Text="Еда и уход" TextColor="White" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True">
+                                        <Image Source="ic_stat_hunger.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" InputTransparent="True"/>
+                                        <Label x:Name="LblShopTabOblig" Text="Еда" TextColor="White" FontFamily="MontserratBold" FontSize="11" VerticalOptions="Center" InputTransparent="True"/>
                                     </HorizontalStackLayout>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShopTabObligClicked"/></Border.GestureRecognizers>
                                 </Border>
 
-                                <Border x:Name="BtnShopTabDisc" BackgroundColor="#E5E7EB" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
-                                        <Image Source="ic_stat_mood.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
-                                        <Label x:Name="LblShopTabDisc" Text="Игры и радости" TextColor="#4B5563" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                <Border x:Name="BtnShopTabDisc" Grid.Column="1" BackgroundColor="#E5E7EB" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True">
+                                        <Image Source="ic_stat_mood.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" InputTransparent="True"/>
+                                        <Label x:Name="LblShopTabDisc" Text="Игры" TextColor="#4B5563" FontFamily="MontserratBold" FontSize="11" VerticalOptions="Center" InputTransparent="True"/>
                                     </HorizontalStackLayout>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShopTabDiscClicked"/></Border.GestureRecognizers>
+                                </Border>
+
+                                <Border x:Name="BtnShopTabDecor" Grid.Column="2" BackgroundColor="#E5E7EB" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
+                                    <HorizontalStackLayout Spacing="4" HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True">
+                                        <Image Source="ic_customizer.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center" InputTransparent="True"/>
+                                        <Label x:Name="LblShopTabDecor" Text="Мебель" TextColor="#4B5563" FontFamily="MontserratBold" FontSize="11" VerticalOptions="Center" InputTransparent="True"/>
+                                    </HorizontalStackLayout>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnShopTabDecorClicked"/></Border.GestureRecognizers>
                                 </Border>
                             </Grid>
 
@@ -1947,6 +1955,9 @@
             </VerticalStackLayout>
         </Border>
     </Grid>
+
+    <!-- Оверлей для анимации рассыпания частиц при покупках и достижении целей -->
+    <Grid x:Name="ParticleOverlayGrid" InputTransparent="True" ZIndex="9999" IsVisible="True"/>
 
 </Grid>
 </ContentPage>
