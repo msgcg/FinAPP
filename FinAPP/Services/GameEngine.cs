@@ -219,6 +219,14 @@ public class GameEngine
         bool isBudgetKept = Profile.ActualObligatory <= Profile.PlannedObligatory * 1.2 &&
                             Profile.ActualDiscretionary <= Profile.PlannedDiscretionary * 1.2;
 
+        // Начисление сложного процента на сбережения в копилке (ТЗ п. 2.5.7: банковский процент +5%)
+        int interest = 0;
+        if (Profile.Savings > 0)
+        {
+            interest = Math.Max(1, (int)Math.Round(Profile.Savings * 0.05));
+            Profile.Savings += interest;
+        }
+
         var summary = new PeriodSummary
         {
             PeriodNumber = prevPeriod,
@@ -228,6 +236,7 @@ public class GameEngine
             ActualObligatory = Profile.ActualObligatory,
             ActualDiscretionary = Profile.ActualDiscretionary,
             ActualSavings = Profile.ActualSavings,
+            InterestEarned = interest,
             IsBudgetSuccess = isBudgetKept,
             SummaryNotes = isBudgetKept ? "Бюджет соблюден отлично!" : "Траты превысили запланированный план."
         };
@@ -270,8 +279,13 @@ public class GameEngine
             _ => "Финни активно растет и развивается."
         };
 
+        string interestLine = interest > 0
+            ? $"• Банковский процент на копилку (+5%): +{interest} монет.\n"
+            : string.Empty;
+
         return $"Наступил Период #{Profile.CurrentPeriod}!\n" +
                $"• Начислено карманных денег: +{pocketMoney} монет.\n" +
+               interestLine +
                $"• {growthMsg}\n" +
                $"• Не забудьте составить план личного бюджета на новый период!";
     }
@@ -289,7 +303,7 @@ public class GameEngine
     {
         bool obligOk = Profile.ActualObligatory <= (Profile.PlannedObligatory > 0 ? Profile.PlannedObligatory : 250);
         bool discOk = Profile.ActualDiscretionary <= (Profile.PlannedDiscretionary > 0 ? Profile.PlannedDiscretionary : 150);
-        return $"План/Факт: Обязательные {Profile.ActualObligatory}/{Profile.PlannedObligatory} монет ({(obligOk ? "В норме ✅" : "Превышение ⚠️")}), " +
-               $"Желания {Profile.ActualDiscretionary}/{Profile.PlannedDiscretionary} монет ({(discOk ? "В норме ✅" : "Превышение ⚠️")}).";
+        return $"План/Факт: Обязательные {Profile.ActualObligatory}/{Profile.PlannedObligatory} монет ({(obligOk ? "В норме" : "Превышение")}), " +
+               $"Желания {Profile.ActualDiscretionary}/{Profile.PlannedDiscretionary} монет ({(discOk ? "В норме" : "Превышение")}).";
     }
 }

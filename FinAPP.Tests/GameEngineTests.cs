@@ -280,4 +280,79 @@ public class GameEngineTests
             }
         }
     }
+
+    [Fact]
+    public void AdvanceToNextPeriod_ShouldAccrueCompoundInterestOnSavings()
+    {
+        // Начальные накопления 200 монет
+        _engine.Profile.Savings = 200;
+        _engine.Profile.Balance = 300;
+        int initialSavings = _engine.Profile.Savings;
+
+        string msg = _engine.AdvanceToNextPeriod();
+
+        // +5% от 200 = 10 монет
+        int expectedInterest = 10;
+        Assert.Equal(initialSavings + expectedInterest, _engine.Profile.Savings);
+        Assert.True(_engine.Profile.History.Count > 0);
+        var lastSummary = _engine.Profile.History.Last();
+        Assert.Equal(expectedInterest, lastSummary.InterestEarned);
+        Assert.Contains("+10 монет", msg);
+    }
+
+    [Fact]
+    public void AdvanceToNextPeriod_SmallSavings_ShouldAccrueAtLeastOneCoinInterest()
+    {
+        // Небольшие сбережения 10 монет -> 5% от 10 = 0.5 -> округление и минимум 1 монета
+        _engine.Profile.Savings = 10;
+        string msg = _engine.AdvanceToNextPeriod();
+
+        Assert.Equal(11, _engine.Profile.Savings);
+        var lastSummary = _engine.Profile.History.Last();
+        Assert.Equal(1, lastSummary.InterestEarned);
+        Assert.Contains("+1 монет", msg);
+    }
+
+    [Fact]
+    public void PetDesks_AllTypes_ShouldHaveExistingPngAssets()
+    {
+        var testDir = AppContext.BaseDirectory;
+        var currentDir = new DirectoryInfo(testDir);
+        while (currentDir != null && !File.Exists(Path.Combine(currentDir.FullName, "FinAPP.slnx")))
+        {
+            currentDir = currentDir.Parent;
+        }
+        Assert.NotNull(currentDir);
+
+        var imgDir = Path.Combine(currentDir.FullName, "FinAPP", "Resources", "Images");
+        var deskFileMap = new Dictionary<PetDeskType, string>
+        {
+            [PetDeskType.Modern] = "desk_modern.png",
+            [PetDeskType.Artisan] = "desk_artisan.png",
+            [PetDeskType.Market] = "desk_market.png",
+            [PetDeskType.Maker] = "desk_maker.png",
+            [PetDeskType.Reading] = "desk_reading.png",
+            [PetDeskType.Botanical] = "desk_botanical.png"
+        };
+
+        foreach (var (deskType, fileName) in deskFileMap)
+        {
+            var filePath = Path.Combine(imgDir, fileName);
+            Assert.True(File.Exists(filePath), $"Отсутствует файл стола: {fileName} для типа {deskType}");
+            var fi = new FileInfo(filePath);
+            Assert.True(fi.Length > 20_000, $"Размер файла {fileName} подозрительно мал: {fi.Length} байт");
+        }
+    }
+
+    [Fact]
+    public void Profile_DeskAndParentPinAndOnboarding_ShouldPersistCorrectly()
+    {
+        _engine.Profile.Desk = PetDeskType.Modern;
+        _engine.Profile.ParentPin = "1234";
+        _engine.Profile.IsOnboardingCompleted = true;
+
+        Assert.Equal(PetDeskType.Modern, _engine.Profile.Desk);
+        Assert.Equal("1234", _engine.Profile.ParentPin);
+        Assert.True(_engine.Profile.IsOnboardingCompleted);
+    }
 }

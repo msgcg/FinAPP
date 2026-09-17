@@ -180,7 +180,10 @@ public partial class FinnyPetView : ContentView
         // 3. Сменная платформа / подиум под ногами котика
         UpdatePlatform(profile.Platform);
 
-        // 4. Эволюционные стадии роста (ТЗ п. 2.5.10)
+        // 4. Сменный рабочий стол перед Финни
+        UpdateDesk(profile.Desk);
+
+        // 5. Эволюционные стадии роста (ТЗ п. 2.5.10)
         switch (profile.Stage)
         {
             case GrowthStage.Baby:
@@ -203,6 +206,41 @@ public partial class FinnyPetView : ContentView
         if (!_isReacting)
         {
             PetContainer.Scale = _baseScale;
+        }
+    }
+
+    public void UpdateDesk(PetDeskType desk)
+    {
+        switch (desk)
+        {
+            case PetDeskType.Modern:
+                ImgDeskOverlay.Source = "desk_modern.png";
+                ImgDeskOverlay.IsVisible = true;
+                break;
+            case PetDeskType.Artisan:
+                ImgDeskOverlay.Source = "desk_artisan.png";
+                ImgDeskOverlay.IsVisible = true;
+                break;
+            case PetDeskType.Market:
+                ImgDeskOverlay.Source = "desk_market.png";
+                ImgDeskOverlay.IsVisible = true;
+                break;
+            case PetDeskType.Maker:
+                ImgDeskOverlay.Source = "desk_maker.png";
+                ImgDeskOverlay.IsVisible = true;
+                break;
+            case PetDeskType.Reading:
+                ImgDeskOverlay.Source = "desk_reading.png";
+                ImgDeskOverlay.IsVisible = true;
+                break;
+            case PetDeskType.Botanical:
+                ImgDeskOverlay.Source = "desk_botanical.png";
+                ImgDeskOverlay.IsVisible = true;
+                break;
+            default:
+                ImgDeskOverlay.Source = null;
+                ImgDeskOverlay.IsVisible = false;
+                break;
         }
     }
 
@@ -242,7 +280,7 @@ public partial class FinnyPetView : ContentView
                 PlatformBg.Color = Color.FromArgb("#0288D1");
                 PlatformBase.Stroke = Color.FromArgb("#E1F5FE");
                 PlatformShadow.Brush = Color.FromArgb("#40C4FF");
-                PlatformDecor.Text = "☁   ☁   ☁   ☁   ☁   ☁   ☁";
+                PlatformDecor.Text = "✧   ✧   ✧   ✧   ✧   ✧   ✧";
                 PlatformDecor.TextColor = Color.FromArgb("#F5FBFF");
                 break;
         }

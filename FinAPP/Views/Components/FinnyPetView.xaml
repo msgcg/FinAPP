@@ -63,6 +63,17 @@
                InputTransparent="True"
                Margin="0,0,0,16"/>
 
+        <!-- Накладной рабочий стол поверх нижней части персонажа (ноги и лапки за столом) -->
+        <Image x:Name="ImgDeskOverlay"
+               Aspect="AspectFit"
+               HorizontalOptions="Center"
+               VerticalOptions="End"
+               HeightRequest="115"
+               WidthRequest="165"
+               InputTransparent="True"
+               IsVisible="False"
+               Margin="0,0,0,10"/>
+
         <!-- Невидимый прозрачный слой для 100% надежного перехвата тапов по всей площади персонажа -->
         <BoxView BackgroundColor="Transparent"
                  HorizontalOptions="Fill"

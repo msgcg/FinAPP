@@ -26,6 +26,17 @@ public enum PetPlatformType
     Cloud = 4      // Облако накоплений (небесно-голубой подиум)
 }
 
+public enum PetDeskType
+{
+    None = 0,      // Без стола (свободная сцена)
+    Modern = 1,    // Стол IT-финансиста (ноутбук, лампа, гаджеты)
+    Artisan = 2,   // Творческий стол (краски, палитра, холст)
+    Market = 3,    // Лавка предпринимателя (витрина, монеты, вывеска)
+    Maker = 4,     // Верстак инженера (инструменты, шестерни, чертежи)
+    Reading = 5,   // Кабинет профессора (книги, глобус, свитки)
+    Botanical = 6  // Эко-стол биолога (комнатные растения, лейка)
+}
+
 public enum GrowthStage
 {
     Baby = 1,     // Малыш Финни (периоды 1-2)
@@ -48,6 +59,7 @@ public class PeriodSummary
     public int ActualObligatory { get; set; }
     public int ActualDiscretionary { get; set; }
     public int ActualSavings { get; set; }
+    public int InterestEarned { get; set; } = 0;
     public bool IsBudgetSuccess { get; set; }
     public string SummaryNotes { get; set; } = string.Empty;
 }
@@ -61,6 +73,7 @@ public class PetProfile
     public OutfitType Outfit { get; set; } = OutfitType.ClassicGreen;
     public AccessoryType Accessory { get; set; } = AccessoryType.None;
     public PetPlatformType Platform { get; set; } = PetPlatformType.Flowers;
+    public PetDeskType Desk { get; set; } = PetDeskType.None;
     public GrowthStage Stage { get; set; } = GrowthStage.Baby;
 
     // Жизненные показатели питомца (0 - 100%)
@@ -86,6 +99,7 @@ public class PetProfile
     // Статистика для кабинета взрослого
     public int TestsPassedCount { get; set; } = 0;
     public int BonusCoinsFromParent { get; set; } = 0;
+    public string ParentPin { get; set; } = string.Empty;
 
     // Планирование текущего периода
     public int PlannedObligatory { get; set; } = 150;

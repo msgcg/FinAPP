@@ -21,6 +21,31 @@ public partial class MainPage : ContentPage
     private int _tempSav = 100;
     private const int PeriodIncome = 500;
 
+    // Отрисовщики кастомных графиков
+    private readonly BudgetDonutChartDrawable _budgetDonut = new();
+    private readonly HistoryChartDrawable _historyChart = new();
+
+    // Интерактивный онбординг (4 шага)
+    private int _onboardingStep = 0;
+    private readonly (string Title, string Desc, string Icon, string IconBg)[] _onboardingSlides = new[]
+    {
+        ("Привет! Я твой кот Финни!", 
+         "Добро пожаловать в FinAPP — твой персональный тренажёр финансовой грамотности! Вместе мы научимся планировать бюджет, копить на мечту и принимать умные решения!",
+         "ic_gift.png", "#F3E8FF"),
+        ("Правило трёх конвертов",
+         "Каждый период карманные деньги распределяются по трём конвертам:\n• Обязательные расходы (уход и здоровье Финни)\n• Желания и радости (игрушки и сладости)\n• Копилка (накопления на твою главную мечту!)",
+         "ic_stat_balance.png", "#DCFCE7"),
+        ("Зарабатывай и получай %!",
+         "Решай финансовые задачки, получай монетные награды и откладывай в копилку. А в конце каждого периода банк начисляет +5% сложного процента на все твои сбережения!",
+         "ic_stat_savings.png", "#FEF3C7"),
+        ("Стань Финни-Мастером!",
+         "Заботься обо мне, выбирай подиумы и рабочие столы в гардеробе, следи за бюджетом и пройди путь эволюции от Малыша до Финни-Мастера 3-й стадии!",
+         "ic_shield.png", "#FDF2F8")
+    };
+
+    // Ввод PIN-кода родителя
+    private string _currentPinInput = "";
+
     // Активная задача
     private int _currentTaskIndex = 0;
     private List<FinancialTask> _tasks = new();
@@ -43,6 +68,9 @@ public partial class MainPage : ContentPage
         _engine = new GameEngine(_storageService);
         _engine.OnStateChanged += () => MainThread.BeginInvokeOnMainThread(RefreshUI);
 
+        GvBudgetDonut.Drawable = _budgetDonut;
+        GvHistoryChart.Drawable = _historyChart;
+
         PetView.SpeechTextChanged = (text) =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
@@ -62,6 +90,11 @@ public partial class MainPage : ContentPage
         _tasks = _engine.GetTasksForCurrentAge();
         StartPetLifeTimer();
         RefreshUI();
+
+        if (!_engine.Profile.IsOnboardingCompleted)
+        {
+            ShowOnboarding();
+        }
     }
 
     private void StartPetLifeTimer()
@@ -221,6 +254,7 @@ public partial class MainPage : ContentPage
         PanelParent.IsVisible = false;
         PanelCustomizer.IsVisible = false;
         PanelTransfer.IsVisible = false;
+        PanelAnalytics.IsVisible = false;
 
         activePanel.IsVisible = true;
         ModalOverlay.Opacity = 0;
@@ -247,14 +281,50 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
-    // 2. МОДАЛКА: КАСТОМИЗАЦИЯ ПЛАТФОРМ И ИМЯ
+    // 2. МОДАЛКА: КАСТОМИЗАЦИЯ ПОДИУМОВ, РАБОЧИХ СТОЛОВ И ИМЕНИ
     // =========================================================================
     private async void OnCustomizerClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
         EntryPetName.Text = _engine.Profile.PetName;
         UpdateCustomizerPlatformBadges(_engine.Profile.Platform);
-        await ShowModal("Платформа и имя Финни", PanelCustomizer);
+        UpdateCustomizerDeskBadges(_engine.Profile.Desk);
+        SetCustomizerTab(true);
+        await ShowModal("Внешний вид и имя Финни", PanelCustomizer);
+    }
+
+    private void SetCustomizerTab(bool isPlatform)
+    {
+        if (isPlatform)
+        {
+            BtnCustomizerTabPlatform.BackgroundColor = Color.FromArgb("#520978");
+            LblCustomizerTabPlatform.TextColor = Colors.White;
+            BtnCustomizerTabDesk.BackgroundColor = Color.FromArgb("#EBE9F8");
+            LblCustomizerTabDesk.TextColor = Color.FromArgb("#520978");
+            CustomizerPlatformsView.IsVisible = true;
+            CustomizerDesksView.IsVisible = false;
+        }
+        else
+        {
+            BtnCustomizerTabDesk.BackgroundColor = Color.FromArgb("#520978");
+            LblCustomizerTabDesk.TextColor = Colors.White;
+            BtnCustomizerTabPlatform.BackgroundColor = Color.FromArgb("#EBE9F8");
+            LblCustomizerTabPlatform.TextColor = Color.FromArgb("#520978");
+            CustomizerPlatformsView.IsVisible = false;
+            CustomizerDesksView.IsVisible = true;
+        }
+    }
+
+    private async void OnCustomizerTabPlatformClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        SetCustomizerTab(true);
+    }
+
+    private async void OnCustomizerTabDeskClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        SetCustomizerTab(false);
     }
 
     private void UpdateCustomizerPlatformBadges(PetPlatformType platform)
@@ -305,6 +375,70 @@ public partial class MainPage : ContentPage
     {
         await AnimateTap(sender as VisualElement);
         await SelectPlatformAsync(PetPlatformType.Cloud, "Облако накоплений! Мягкий небесный подиум для лёгких сбережений!");
+    }
+
+    private void UpdateCustomizerDeskBadges(PetDeskType desk)
+    {
+        BadgeDeskNone.IsVisible = desk == PetDeskType.None;
+        BadgeDeskModern.IsVisible = desk == PetDeskType.Modern;
+        BadgeDeskArtisan.IsVisible = desk == PetDeskType.Artisan;
+        BadgeDeskMarket.IsVisible = desk == PetDeskType.Market;
+        BadgeDeskMaker.IsVisible = desk == PetDeskType.Maker;
+        BadgeDeskReading.IsVisible = desk == PetDeskType.Reading;
+        BadgeDeskBotanical.IsVisible = desk == PetDeskType.Botanical;
+    }
+
+    private async Task SelectDeskAsync(PetDeskType desk, string speech)
+    {
+        _engine.Profile.Desk = desk;
+        UpdateCustomizerDeskBadges(desk);
+        PetView.UpdateDesk(desk);
+        PetView.PlayAction("proud");
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText(speech);
+    }
+
+    private async void OnDeskNoneClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.None, "Стол убран. Финни свободно гуляет по подиуму!");
+    }
+
+    private async void OnDeskModernClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.Modern, "Современная дизайн-студия! Ноутбук готов к учету цифровых финансов!");
+    }
+
+    private async void OnDeskArtisanClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.Artisan, "Мастерская ремесленника! Инструменты помогают создавать ценные вещи своими руками!");
+    }
+
+    private async void OnDeskMarketClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.Market, "Торговая лавка! Учимся продавать, договариваться и понимать основы торговли!");
+    }
+
+    private async void OnDeskMakerClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.Maker, "Лаборатория инженера! Чертежи, лампы и точные расчеты бюджета!");
+    }
+
+    private async void OnDeskReadingClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.Reading, "Кабинет профессора! Книги мудрости, глобус и финансовая наука!");
+    }
+
+    private async void OnDeskBotanicalClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await SelectDeskAsync(PetDeskType.Botanical, "Эко-стол биолога! Заботимся о растениях, как о растущих инвестициях!");
     }
 
     private async void OnSavePetNameClicked(object? sender, EventArgs e)
@@ -359,6 +493,16 @@ public partial class MainPage : ContentPage
             LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} монет";
             LblBudgetRemaining.TextColor = Color.FromArgb("#EF4444");
         }
+
+        // Обновляем визуальную круговую диаграмму (ТЗ п. 2.5.5) и легенду
+        _budgetDonut.PlannedObligatory = _tempOblig;
+        _budgetDonut.PlannedDiscretionary = _tempDisc;
+        _budgetDonut.PlannedSavings = _tempSav;
+        GvBudgetDonut.Invalidate();
+
+        LblLegendOblig.Text = $"{_tempOblig} м.";
+        LblLegendDisc.Text = $"{_tempDisc} м.";
+        LblLegendSav.Text = $"{_tempSav} м.";
     }
 
     private async void OnBudgetObligPlus(object? sender, EventArgs e)
@@ -759,6 +903,35 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async Task ShowPurchaseToastAsync(ShopItem item)
+    {
+        try
+        {
+            string effectText = item.HungerBoost > 0 ? $"+{item.HungerBoost}% сытости!" : $"+{item.MoodBoost}% настроения!";
+            LblPurchaseToast.Text = $"{effectText} (-{item.Price} монет)";
+            BorderPurchaseToast.Opacity = 0;
+            BorderPurchaseToast.TranslationY = 15;
+            BorderPurchaseToast.Scale = 0.8;
+            BorderPurchaseToast.IsVisible = true;
+
+            var fadeIn = BorderPurchaseToast.FadeToAsync(1.0, 160, Easing.CubicOut);
+            var moveUp = BorderPurchaseToast.TranslateToAsync(0, 0, 180, Easing.CubicOut);
+            var scaleUp = BorderPurchaseToast.ScaleToAsync(1.0, 180, Easing.CubicOut);
+            await Task.WhenAll(fadeIn, moveUp, scaleUp);
+
+            await Task.Delay(1800);
+
+            var fadeOut = BorderPurchaseToast.FadeToAsync(0.0, 220, Easing.CubicIn);
+            var moveUpMore = BorderPurchaseToast.TranslateToAsync(0, -18, 220, Easing.CubicIn);
+            await Task.WhenAll(fadeOut, moveUpMore);
+            BorderPurchaseToast.IsVisible = false;
+        }
+        catch
+        {
+            // Игнорируем исключения при прерывании анимации
+        }
+    }
+
     private async Task BuyShopItem(ShopItem item)
     {
         var p = _engine.Profile;
@@ -778,6 +951,10 @@ public partial class MainPage : ContentPage
         RefreshUI();
         await _engine.SaveAsync();
         RenderShopCategoryUI();
+
+        // Визуальный бейдж обратной связи над персонажем (ТЗ п. 2.5.6)
+        _ = ShowPurchaseToastAsync(item);
+
         // Грамотная благодарность на русском языке в винительном падеже
         PetView.SetSpeechText(string.IsNullOrEmpty(item.ThanksText) ? "Муррр! Спасибо за заботу! Теперь я доволен!" : item.ThanksText);
         PetView.PlayAction("proud");
@@ -1147,21 +1324,141 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
-    // 8. МОДАЛКА: КАБИНЕТ РОДИТЕЛЕЙ
+    // 8. МОДАЛКА: КАБИНЕТ РОДИТЕЛЕЙ (PIN-КОД И АРИФМЕТИЧЕСКАЯ КАПЧА)
     // =========================================================================
     private async void OnParentClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        // Генерируем случайный пример
+        // Генерируем случайный контрольный пример для резервного входа
         var rnd = new Random();
         _parentMathA = rnd.Next(4, 9);
         _parentMathB = rnd.Next(3, 9);
         LblParentMathQuestion.Text = $"{_parentMathA} × {_parentMathB} = ?";
         EntryParentMathAnswer.Text = "";
+
         ParentPinGate.IsVisible = true;
         ParentContent.IsVisible = false;
 
+        bool hasPin = !string.IsNullOrWhiteSpace(_engine.Profile.ParentPin);
+        ParentPinContainer.IsVisible = hasPin;
+        ParentMathContainer.IsVisible = !hasPin;
+        _currentPinInput = "";
+        UpdatePinDisplay();
+
         await ShowModal("Кабинет родителей", PanelParent);
+    }
+
+    private void UpdatePinDisplay()
+    {
+        int len = _currentPinInput.Length;
+        string[] dots = new string[4];
+        for (int i = 0; i < 4; i++)
+        {
+            dots[i] = i < len ? "●" : "○";
+        }
+        LblParentPinDisplay.Text = string.Join("   ", dots);
+        LblParentPinDisplay.TextColor = Color.FromArgb("#520978");
+    }
+
+    private async void OnPinDigitTapped(object? sender, EventArgs e)
+    {
+        if (sender is Border b) await AnimateTap(b);
+        string digit = "";
+        if (e is TappedEventArgs tea && tea.Parameter != null)
+        {
+            digit = tea.Parameter.ToString() ?? "";
+        }
+        else if (sender is Border b2 && b2.Content is Label l)
+        {
+            digit = l.Text.Trim();
+        }
+
+        if (!string.IsNullOrEmpty(digit) && _currentPinInput.Length < 4)
+        {
+            _currentPinInput += digit;
+            UpdatePinDisplay();
+            if (_currentPinInput.Length == 4)
+            {
+                await ValidatePinAsync();
+            }
+        }
+    }
+
+    private async void OnPinBackspaceTapped(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        if (_currentPinInput.Length > 0)
+        {
+            _currentPinInput = _currentPinInput[..^1];
+            UpdatePinDisplay();
+        }
+    }
+
+    private async void OnPinSubmitTapped(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await ValidatePinAsync();
+    }
+
+    private async Task ValidatePinAsync()
+    {
+        if (_currentPinInput == _engine.Profile.ParentPin)
+        {
+            UnlockParentCabinet();
+        }
+        else
+        {
+            LblParentPinDisplay.TextColor = Color.FromArgb("#EF4444");
+            await Task.Delay(350);
+            _currentPinInput = "";
+            UpdatePinDisplay();
+            PetView.SetSpeechText("Неверный PIN-код! Попробуйте снова или решите контрольный пример.");
+        }
+    }
+
+    private async void OnParentForgotPinClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        ParentPinContainer.IsVisible = false;
+        ParentMathContainer.IsVisible = true;
+    }
+
+    private async void OnParentUsePinClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        ParentMathContainer.IsVisible = false;
+        ParentPinContainer.IsVisible = true;
+        _currentPinInput = "";
+        UpdatePinDisplay();
+    }
+
+    private async void OnParentChangePinClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        string result = await DisplayPromptAsync("PIN-код родителей",
+            "Задайте 4-значный цифровой PIN для входа (или оставьте пустым для входа по арифметическому примеру):",
+            "Сохранить", "Отмена", placeholder: "4 цифры", maxLength: 4, keyboard: Keyboard.Numeric);
+
+        if (result != null)
+        {
+            result = result.Trim();
+            if (result.Length == 4 && int.TryParse(result, out _))
+            {
+                _engine.Profile.ParentPin = result;
+                await _engine.SaveAsync();
+                PetView.SetSpeechText("Новый 4-значный PIN-код родителей успешно установлен!");
+            }
+            else if (string.IsNullOrEmpty(result))
+            {
+                _engine.Profile.ParentPin = string.Empty;
+                await _engine.SaveAsync();
+                PetView.SetSpeechText("PIN-код снят. Доступ теперь через арифметический пример.");
+            }
+            else
+            {
+                PetView.SetSpeechText("PIN-код должен состоять ровно из 4 цифр!");
+            }
+        }
     }
 
     private async void OnParentUnlockClicked(object? sender, EventArgs e)
@@ -1169,23 +1466,28 @@ public partial class MainPage : ContentPage
         await AnimateTap(sender as VisualElement);
         if (int.TryParse(EntryParentMathAnswer.Text, out int ans) && ans == _parentMathA * _parentMathB)
         {
-            ParentPinGate.IsVisible = false;
-            ParentContent.IsVisible = true;
-
-            var p = _engine.Profile;
-            SwitchParentDemoMode.IsToggled = p.IsDemoMode;
-            LblParentStats.Text = $"Ребенок: {p.KidName}\n" +
-                $"Периодов сыграно: {p.CurrentPeriod}\n" +
-                $"Накоплено в копилке: {p.Savings} монет\n" +
-                $"Заданий выполнено: {p.CompletedTasksCount}\n" +
-                $"Текущий баланс: {p.Balance} монет";
-
-            UpdateParentStageButtons();
+            UnlockParentCabinet();
         }
         else
         {
             PetView.SetSpeechText("Неверный ответ! Вход только для родителей.");
         }
+    }
+
+    private void UnlockParentCabinet()
+    {
+        ParentPinGate.IsVisible = false;
+        ParentContent.IsVisible = true;
+
+        var p = _engine.Profile;
+        SwitchParentDemoMode.IsToggled = p.IsDemoMode;
+        LblParentStats.Text = $"Ребенок: {p.KidName}\n" +
+            $"Периодов сыграно: {p.CurrentPeriod}\n" +
+            $"Накоплено в копилке: {p.Savings} монет\n" +
+            $"Заданий выполнено: {p.CompletedTasksCount}\n" +
+            $"Текущий баланс: {p.Balance} монет";
+
+        UpdateParentStageButtons();
     }
 
     private void UpdateParentStageButtons()
@@ -1265,27 +1567,191 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
-    // 9. ДЕМО: ЗАВЕРШЕНИЕ ПЕРИОДА И ПЕРЕХОД К СЛЕДУЮЩЕМУ (Шаг 10 ТЗ)
+    // 9. ИСТОРИЯ И АНАЛИТИКА ПЕРИОДОВ (ТЗ п. 2.5.11)
+    // =========================================================================
+    private async void OnAnalyticsClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        _historyChart.History = _engine.Profile.History;
+        GvHistoryChart.Invalidate();
+
+        StackHistoryList.Children.Clear();
+        if (_engine.Profile.History == null || _engine.Profile.History.Count == 0)
+        {
+            var emptyLabel = new Label
+            {
+                Text = "Пока нет завершённых периодов.\nПерейдите к следующему периоду в демо-режиме, чтобы увидеть историю трат и накоплений!",
+                FontFamily = "MontserratMedium",
+                FontSize = 12,
+                TextColor = Color.FromArgb("#6B7280"),
+                HorizontalTextAlignment = TextAlignment.Center,
+                Margin = new Thickness(10, 14)
+            };
+            StackHistoryList.Children.Add(emptyLabel);
+        }
+        else
+        {
+            foreach (var item in _engine.Profile.History.OrderByDescending(h => h.PeriodNumber))
+            {
+                var card = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#F9FAFB"),
+                    Stroke = Color.FromArgb("#E5E7EB"),
+                    StrokeThickness = 1,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
+                    Padding = new Thickness(12, 8)
+                };
+
+                var vStack = new VerticalStackLayout { Spacing = 3 };
+
+                var headerGrid = new Grid
+                {
+                    ColumnDefinitions = new ColumnDefinitionCollection
+                    {
+                        new ColumnDefinition(GridLength.Star),
+                        new ColumnDefinition(GridLength.Auto)
+                    }
+                };
+
+                headerGrid.Children.Add(new Label
+                {
+                    Text = $"Период #{item.PeriodNumber}",
+                    FontFamily = "MontserratBold",
+                    FontSize = 13,
+                    TextColor = Color.FromArgb("#520978"),
+                    VerticalOptions = LayoutOptions.Center
+                });
+
+                var badge = new Border
+                {
+                    BackgroundColor = item.IsBudgetSuccess ? Color.FromArgb("#DCFCE7") : Color.FromArgb("#FEE2E2"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 6 },
+                    Padding = new Thickness(8, 2),
+                    VerticalOptions = LayoutOptions.Center
+                };
+                Grid.SetColumn(badge, 1);
+                badge.Content = new Label
+                {
+                    Text = item.IsBudgetSuccess ? "Бюджет соблюдён" : "Превышение",
+                    FontFamily = "MontserratBold",
+                    FontSize = 10,
+                    TextColor = item.IsBudgetSuccess ? Color.FromArgb("#166534") : Color.FromArgb("#991B1B")
+                };
+                headerGrid.Children.Add(badge);
+                vStack.Children.Add(headerGrid);
+
+                string details = $"Обязательные: {item.ActualObligatory}/{item.PlannedObligatory} м.  •  Желания: {item.ActualDiscretionary}/{item.PlannedDiscretionary} м.";
+                vStack.Children.Add(new Label { Text = details, FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#4B5563") });
+
+                string savDetails = $"Копилка: +{item.ActualSavings} м.";
+                if (item.InterestEarned > 0) savDetails += $"  •  Сложный процент (+5%): +{item.InterestEarned} м.";
+                vStack.Children.Add(new Label { Text = savDetails, FontFamily = "MontserratBold", FontSize = 11, TextColor = Color.FromArgb("#D97706") });
+
+                card.Content = vStack;
+                StackHistoryList.Children.Add(card);
+            }
+        }
+
+        await ShowModal("История и динамика периодов", PanelAnalytics);
+    }
+
+    // =========================================================================
+    // 10. ИНТЕРАКТИВНЫЙ ОНБОРДИНГ (ТЗ п. 2.5.1)
+    // =========================================================================
+    private void ShowOnboarding()
+    {
+        _onboardingStep = 0;
+        RenderOnboardingSlide();
+        ModalOnboarding.Opacity = 0;
+        ModalOnboarding.IsVisible = true;
+        _ = ModalOnboarding.FadeToAsync(1.0, 160, Easing.CubicOut);
+    }
+
+    private void RenderOnboardingSlide()
+    {
+        var slide = _onboardingSlides[_onboardingStep];
+        LblOnboardingStepBadge.Text = $"{_onboardingStep + 1} из {_onboardingSlides.Length}";
+        LblOnboardingSlideTitle.Text = slide.Title;
+        LblOnboardingSlideDesc.Text = slide.Desc;
+        ImgOnboardingSlide.Source = slide.Icon;
+        BorderOnboardingIconBg.BackgroundColor = Color.FromArgb(slide.IconBg);
+
+        Color activeDot = Color.FromArgb("#520978");
+        Color inactiveDot = Color.FromArgb("#E5E7EB");
+        DotStep1.BackgroundColor = _onboardingStep == 0 ? activeDot : inactiveDot;
+        DotStep2.BackgroundColor = _onboardingStep == 1 ? activeDot : inactiveDot;
+        DotStep3.BackgroundColor = _onboardingStep == 2 ? activeDot : inactiveDot;
+        DotStep4.BackgroundColor = _onboardingStep == 3 ? activeDot : inactiveDot;
+
+        BtnOnboardingBack.IsVisible = _onboardingStep > 0;
+        LblOnboardingNext.Text = _onboardingStep == _onboardingSlides.Length - 1 ? "Начать играть ➜" : "Далее ➜";
+    }
+
+    private async void OnOnboardingNextClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        if (_onboardingStep < _onboardingSlides.Length - 1)
+        {
+            _onboardingStep++;
+            RenderOnboardingSlide();
+        }
+        else
+        {
+            await FinishOnboardingAsync();
+        }
+    }
+
+    private async void OnOnboardingBackClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        if (_onboardingStep > 0)
+        {
+            _onboardingStep--;
+            RenderOnboardingSlide();
+        }
+    }
+
+    private async void OnOnboardingSkipClicked(object? sender, EventArgs e)
+    {
+        await FinishOnboardingAsync();
+    }
+
+    private async Task FinishOnboardingAsync()
+    {
+        _engine.Profile.IsOnboardingCompleted = true;
+        await _engine.SaveAsync();
+        await ModalOnboarding.FadeToAsync(0.0, 120, Easing.CubicIn);
+        ModalOnboarding.IsVisible = false;
+        PetView.SetSpeechText("Добро пожаловать в FinAPP! Давай спланируем бюджет или решим задачку!");
+        PetView.PlayAction("proud");
+    }
+
+    private async void OnOnboardingHeaderClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        ShowOnboarding();
+    }
+
+    private async void OnParentReplayOnboardingClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await CloseModal();
+        ShowOnboarding();
+    }
+
+    // =========================================================================
+    // 11. ДЕМО: ЗАВЕРШЕНИЕ ПЕРИОДА И ПЕРЕХОД К СЛЕДУЮЩЕМУ (Шаг 10 ТЗ)
     // =========================================================================
     private async void OnNextPeriodClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
 
-        var p = _engine.Profile;
-        string comparison = _engine.GetPlanVsFactAnalysis();
-
-        p.CurrentPeriod++;
-        p.Balance += PeriodIncome;
-        p.SpentObligatory = 0;
-        p.SpentDiscretionary = 0;
-        p.IsPlanConfirmed = false;
-
-        if (p.CurrentPeriod >= 5) p.Stage = GrowthStage.Master;
-        else if (p.CurrentPeriod >= 3) p.Stage = GrowthStage.Teen;
-
+        string advanceMsg = _engine.AdvanceToNextPeriod();
         RefreshUI();
         await _engine.SaveAsync();
 
-        PetView.SetSpeechText($"Период #{p.CurrentPeriod} начался! Начислен доход +{PeriodIncome} монет!\n{comparison}");
+        PetView.SetSpeechText(advanceMsg);
+        PetView.PlayAction("proud");
     }
 }

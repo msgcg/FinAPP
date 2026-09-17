@@ -31,8 +31,45 @@
                     </Border>
                 </HorizontalStackLayout>
 
-                <!-- Кастомизация платформ и гардероба -->
+                <!-- Верхние кнопки: Онбординг, Аналитика, Кастомизация -->
                 <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
+                    <!-- Кнопка интерактивного обучения -->
+                    <Border x:Name="BtnOnboarding"
+                            BackgroundColor="#FEF3C7"
+                            StrokeThickness="0"
+                            HeightRequest="42"
+                            WidthRequest="42"
+                            StrokeShape="RoundRectangle 21"
+                            InputTransparent="False">
+                        <Image Source="ic_speech_bubble.png"
+                               WidthRequest="20"
+                               HeightRequest="20"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOnboardingHeaderClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Кнопка аналитики и истории периодов -->
+                    <Border x:Name="BtnAnalytics"
+                            BackgroundColor="#DCFCE7"
+                            StrokeThickness="0"
+                            HeightRequest="42"
+                            WidthRequest="42"
+                            StrokeShape="RoundRectangle 21"
+                            InputTransparent="False">
+                        <Image Source="ic_stat_balance.png"
+                               WidthRequest="20"
+                               HeightRequest="20"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnAnalyticsClicked"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <!-- Кнопка гардероба и подиума -->
                     <Border x:Name="BtnCustomizer"
                             BackgroundColor="#EBE9F8"
                             StrokeThickness="0"
@@ -140,11 +177,34 @@
             <!-- 2. СЕКЦИЯ ДАШБОРДА: ФИННИ СЛЕВА + ПОКАЗАТЕЛИ КОШЕЛЬКА СПРАВА -->
             <Grid ColumnDefinitions="165,*" ColumnSpacing="8" Margin="-16,2,0,2">
                 
-                <!-- Финни до упора влево (без внешней рамки) -->
-                <comp:FinnyPetView x:Name="PetView"
-                                   Grid.Column="0"
-                                   HorizontalOptions="Start"
+                <!-- Финни до упора влево + всплывающий бейдж эффекта покупки -->
+                <Grid Grid.Column="0" WidthRequest="165" HeightRequest="240" HorizontalOptions="Start" VerticalOptions="Center">
+                    <comp:FinnyPetView x:Name="PetView"
+                                       HorizontalOptions="Start"
+                                       VerticalOptions="Center"/>
+                    
+                    <Border x:Name="BorderPurchaseToast"
+                            BackgroundColor="#10B981"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12"
+                            Padding="8,5"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Opacity="0"
+                            IsVisible="False"
+                            InputTransparent="True"
+                            ZIndex="99">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Image Source="ic_heart.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
+                            <Label x:Name="LblPurchaseToast"
+                                   Text="+25 сытости!"
+                                   TextColor="White"
+                                   FontSize="11"
+                                   FontFamily="MontserratBold"
                                    VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Border>
+                </Grid>
 
                 <!-- Карточка финансовых балансов и периода справа от Финни -->
                 <Border Grid.Column="1"
@@ -656,6 +716,32 @@
                                 </Grid>
                             </Border>
 
+                            <!-- Круговая диаграмма структуры бюджета (Donut Chart) -->
+                            <Border BackgroundColor="#F8F7FD" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="10,8">
+                                <Grid ColumnDefinitions="110,*" ColumnSpacing="12" VerticalOptions="Center">
+                                    <GraphicsView x:Name="GvBudgetDonut"
+                                                  HeightRequest="100"
+                                                  WidthRequest="100"
+                                                  HorizontalOptions="Center"
+                                                  VerticalOptions="Center"/>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                        <Label Text="Структура бюджета:" FontFamily="MontserratBold" FontSize="11" TextColor="#520978"/>
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <BoxView Color="#10B981" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label x:Name="LblLegendOblig" Text="Обязательные: 250" FontSize="10" FontFamily="MontserratMedium" TextColor="#374151" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <BoxView Color="#8B5CF6" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label x:Name="LblLegendDisc" Text="Желания: 150" FontSize="10" FontFamily="MontserratMedium" TextColor="#374151" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                                            <BoxView Color="#F59E0B" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label x:Name="LblLegendSav" Text="В копилку: 100" FontSize="10" FontFamily="MontserratMedium" TextColor="#374151" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+
                             <!-- Конверт 1: Обязательные -->
                             <Border BackgroundColor="#F0FDF4" Stroke="#86EFAC" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="12,10">
                                 <VerticalStackLayout Spacing="6">
@@ -899,13 +985,85 @@
                                     <Image Source="ic_shield.png" WidthRequest="16" HeightRequest="16" VerticalOptions="Center"/>
                                     <Label Text="Защита для взрослых" FontFamily="MontserratBold" FontSize="14" TextColor="#1F2937" VerticalOptions="Center"/>
                                 </HorizontalStackLayout>
-                                <Label Text="Решите пример, чтобы подтвердить, что вы взрослый:" FontFamily="MontserratMedium" FontSize="12" TextColor="#6B7280"/>
-                                <Label x:Name="LblParentMathQuestion" Text="7 × 8 = ?" FontFamily="MontserratBold" FontSize="18" TextColor="#520978" HorizontalOptions="Center"/>
-                                <Entry x:Name="EntryParentMathAnswer" Placeholder="Ответ" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="16" FontFamily="MontserratBold"/>
-                                <Border BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
-                                    <Label Text="Войти в кабинет" TextColor="White" FontFamily="MontserratBold" FontSize="13" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentUnlockClicked"/></Border.GestureRecognizers>
-                                </Border>
+
+                                <!-- Блок ввода 4-значного PIN-кода (если PIN установлен) -->
+                                <VerticalStackLayout x:Name="ParentPinContainer" Spacing="8" IsVisible="False">
+                                    <Label Text="Введите 4-значный PIN-код:" FontFamily="MontserratMedium" FontSize="12" TextColor="#6B7280" HorizontalOptions="Center"/>
+                                    <Label x:Name="LblParentPinDisplay" Text="○   ○   ○   ○" FontFamily="MontserratBold" FontSize="26" TextColor="#520978" HorizontalOptions="Center"/>
+                                    
+                                    <!-- Сенсорный PIN-пад -->
+                                    <Grid ColumnDefinitions="*,*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6" ColumnSpacing="6" WidthRequest="210" HorizontalOptions="Center">
+                                        <Border Grid.Row="0" Grid.Column="0" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="1" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="1"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="1" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="2" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="2"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="0" Grid.Column="2" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="3" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="3"/></Border.GestureRecognizers>
+                                        </Border>
+
+                                        <Border Grid.Row="1" Grid.Column="0" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="4" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="4"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="5" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="5"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="1" Grid.Column="2" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="6" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="6"/></Border.GestureRecognizers>
+                                        </Border>
+
+                                        <Border Grid.Row="2" Grid.Column="0" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="7" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="7"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="2" Grid.Column="1" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="8" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="8"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="2" Grid.Column="2" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="9" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="9"/></Border.GestureRecognizers>
+                                        </Border>
+
+                                        <Border Grid.Row="3" Grid.Column="0" BackgroundColor="#FEE2E2" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="CLR" FontFamily="MontserratBold" FontSize="12" TextColor="#B91C1C" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinBackspaceTapped"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="3" Grid.Column="1" BackgroundColor="#F3F4F6" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="0" FontFamily="MontserratBold" FontSize="16" TextColor="#1F2937" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinDigitTapped" CommandParameter="0"/></Border.GestureRecognizers>
+                                        </Border>
+                                        <Border Grid.Row="3" Grid.Column="2" BackgroundColor="#520978" HeightRequest="44" StrokeShape="RoundRectangle 12" InputTransparent="False">
+                                            <Label Text="OK" FontFamily="MontserratBold" FontSize="14" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPinSubmitTapped"/></Border.GestureRecognizers>
+                                        </Border>
+                                    </Grid>
+
+                                    <Label Text="Забыли PIN? Решить математический пример" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280" TextDecorations="Underline" HorizontalOptions="Center">
+                                        <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnParentForgotPinClicked"/></Label.GestureRecognizers>
+                                    </Label>
+                                </VerticalStackLayout>
+
+                                <!-- Блок математической капчи -->
+                                <VerticalStackLayout x:Name="ParentMathContainer" Spacing="8">
+                                    <Label Text="Решите пример, чтобы подтвердить, что вы взрослый:" FontFamily="MontserratMedium" FontSize="12" TextColor="#6B7280"/>
+                                    <Label x:Name="LblParentMathQuestion" Text="7 × 8 = ?" FontFamily="MontserratBold" FontSize="18" TextColor="#520978" HorizontalOptions="Center"/>
+                                    <Entry x:Name="EntryParentMathAnswer" Placeholder="Ответ" Keyboard="Numeric" HorizontalTextAlignment="Center" FontSize="16" FontFamily="MontserratBold"/>
+                                    <Border BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
+                                        <Label Text="Войти в кабинет" TextColor="White" FontFamily="MontserratBold" FontSize="13" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentUnlockClicked"/></Border.GestureRecognizers>
+                                    </Border>
+                                    <Label x:Name="LblBackToPin" Text="Использовать PIN-код" FontFamily="MontserratMedium" FontSize="11" TextColor="#6B7280" TextDecorations="Underline" HorizontalOptions="Center" IsVisible="False">
+                                        <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnParentUsePinClicked"/></Label.GestureRecognizers>
+                                    </Label>
+                                </VerticalStackLayout>
                             </VerticalStackLayout>
 
                             <VerticalStackLayout x:Name="ParentContent" Spacing="10" IsVisible="False">
@@ -957,6 +1115,24 @@
                                         <Label Text="Выдать карманные деньги (+100 монет)" TextColor="White" FontFamily="MontserratBold" FontSize="13" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentGiveBonusClicked"/></Border.GestureRecognizers>
+                                </Border>
+
+                                <!-- Управление PIN-кодом взрослого -->
+                                <Border BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
+                                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Image Source="ic_shield.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                        <Label x:Name="LblParentPinButtonText" Text="Установить или сменить 4-значный PIN" TextColor="#520978" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentChangePinClicked"/></Border.GestureRecognizers>
+                                </Border>
+
+                                <!-- Повторить интерактивное обучение -->
+                                <Border BackgroundColor="#FEF3C7" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
+                                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
+                                        <Image Source="ic_speech_bubble.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                                        <Label Text="Пройти обучение (онбординг) заново" TextColor="#92400E" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                                    </HorizontalStackLayout>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentReplayOnboardingClicked"/></Border.GestureRecognizers>
                                 </Border>
 
                                 <Border BackgroundColor="#EF4444" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
@@ -1037,12 +1213,22 @@
                             </Border>
                         </VerticalStackLayout>
 
-                        <!-- G. МОДАЛКА: КАСТОМИЗАЦИЯ ФИННИ -->
+                        <!-- G. МОДАЛКА: КАСТОМИЗАЦИЯ ФИННИ (ПОДИУМЫ И СТОЛЫ) -->
                         <VerticalStackLayout x:Name="PanelCustomizer" Spacing="12" IsVisible="False">
-                            <Label Text="Сменная платформа под лапками:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
-                            
-                            <!-- 5 платформ / пьедесталов -->
-                            <VerticalStackLayout Spacing="8">
+                            <!-- Вкладки: Подиум vs Рабочий стол -->
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                                <Border x:Name="BtnCustomizerTabPlatform" BackgroundColor="#520978" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="38" InputTransparent="False">
+                                    <Label x:Name="LblCustomizerTabPlatform" Text="Подиум" TextColor="White" FontFamily="MontserratBold" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnCustomizerTabPlatformClicked"/></Border.GestureRecognizers>
+                                </Border>
+                                <Border x:Name="BtnCustomizerTabDesk" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="38" InputTransparent="False">
+                                    <Label x:Name="LblCustomizerTabDesk" Text="Рабочий стол" TextColor="#520978" FontFamily="MontserratBold" FontSize="12" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnCustomizerTabDeskClicked"/></Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
+
+                            <!-- Вкладка 1: Подиумы под лапками -->
+                            <VerticalStackLayout x:Name="CustomizerPlatformsView" Spacing="8">
                                 <!-- 1. Цветочная полянка -->
                                 <Border x:Name="BtnPlatformFlowers" BackgroundColor="#F0FDF4" Stroke="#86EFAC" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformFlowersClicked"/></Border.GestureRecognizers>
@@ -1116,13 +1302,123 @@
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformCloudClicked"/></Border.GestureRecognizers>
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
                                         <Border BackgroundColor="#0288D1" WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 16" StrokeThickness="0">
-                                            <Label Text="☁" TextColor="#F5FBFF" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                            <Label Text="✧" TextColor="#F5FBFF" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
                                         </Border>
                                         <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
                                             <Label Text="Облако накоплений" FontFamily="MontserratBold" FontSize="12" TextColor="#075985"/>
                                             <Label Text="Воздушный небесно-голубой пьедестал" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
                                         </VerticalStackLayout>
                                         <Border x:Name="BadgePlatformCloud" Grid.Column="2" BackgroundColor="#0EA5E9" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </VerticalStackLayout>
+
+                            <!-- Вкладка 2: Рабочие столы персонажа -->
+                            <VerticalStackLayout x:Name="CustomizerDesksView" Spacing="8" IsVisible="False">
+                                <!-- 0. Без стола -->
+                                <Border x:Name="BtnDeskNone" BackgroundColor="#F9FAFB" Stroke="#E5E7EB" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskNoneClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Border BackgroundColor="#E5E7EB" WidthRequest="36" HeightRequest="36" StrokeShape="RoundRectangle 18" StrokeThickness="0">
+                                            <Label Text="✕" TextColor="#4B5563" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Без стола" FontFamily="MontserratBold" FontSize="12" TextColor="#1F2937"/>
+                                            <Label Text="Свободный подиум" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskNone" Grid.Column="2" BackgroundColor="#6B7280" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 1. IT-финансист -->
+                                <Border x:Name="BtnDeskModern" BackgroundColor="#F0F9FF" Stroke="#BAE6FD" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskModernClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Image Source="desk_modern.png" WidthRequest="44" HeightRequest="38" Aspect="AspectFit" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="IT-Финансист" FontFamily="MontserratBold" FontSize="12" TextColor="#0369A1"/>
+                                            <Label Text="Ноутбук, лампа, гаджеты" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskModern" Grid.Column="2" BackgroundColor="#0284C7" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 2. Творческий стол -->
+                                <Border x:Name="BtnDeskArtisan" BackgroundColor="#FDF2F8" Stroke="#FBCFE8" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskArtisanClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Image Source="desk_artisan.png" WidthRequest="44" HeightRequest="38" Aspect="AspectFit" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Творческий стол" FontFamily="MontserratBold" FontSize="12" TextColor="#BE185D"/>
+                                            <Label Text="Палитра, краски, эскизы" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskArtisan" Grid.Column="2" BackgroundColor="#DB2777" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 3. Лавка предпринимателя -->
+                                <Border x:Name="BtnDeskMarket" BackgroundColor="#FEFCE8" Stroke="#FDE047" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskMarketClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Image Source="desk_market.png" WidthRequest="44" HeightRequest="38" Aspect="AspectFit" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Лавка предпринимателя" FontFamily="MontserratBold" FontSize="12" TextColor="#854D0E"/>
+                                            <Label Text="Вывеска, сладости, касса" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskMarket" Grid.Column="2" BackgroundColor="#CA8A04" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 4. Верстак инженера -->
+                                <Border x:Name="BtnDeskMaker" BackgroundColor="#F3F4F6" Stroke="#D1D5DB" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskMakerClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Image Source="desk_maker.png" WidthRequest="44" HeightRequest="38" Aspect="AspectFit" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Верстак инженера" FontFamily="MontserratBold" FontSize="12" TextColor="#374151"/>
+                                            <Label Text="Инструменты, детали, чертежи" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskMaker" Grid.Column="2" BackgroundColor="#4B5563" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 5. Кабинет профессора -->
+                                <Border x:Name="BtnDeskReading" BackgroundColor="#F5F3FF" Stroke="#DDD6FE" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskReadingClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Image Source="desk_reading.png" WidthRequest="44" HeightRequest="38" Aspect="AspectFit" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Кабинет профессора" FontFamily="MontserratBold" FontSize="12" TextColor="#6D28D9"/>
+                                            <Label Text="Книги, глобус, перо" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskReading" Grid.Column="2" BackgroundColor="#7C3AED" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
+                                </Border>
+
+                                <!-- 6. Эко-стол биолога -->
+                                <Border x:Name="BtnDeskBotanical" BackgroundColor="#F0FDF4" Stroke="#BBF7D0" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDeskBotanicalClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Image Source="desk_botanical.png" WidthRequest="44" HeightRequest="38" Aspect="AspectFit" VerticalOptions="Center"/>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Эко-стол биолога" FontFamily="MontserratBold" FontSize="12" TextColor="#15803D"/>
+                                            <Label Text="Комнатные растения, лейка" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgeDeskBotanical" Grid.Column="2" BackgroundColor="#16A34A" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
                                             <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
                                         </Border>
                                     </Grid>
@@ -1137,6 +1433,36 @@
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSavePetNameClicked"/></Border.GestureRecognizers>
                                 </Border>
                             </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- I. МОДАЛКА: ИСТОРИЯ И АНАЛИТИКА ПЕРИОДОВ -->
+                        <VerticalStackLayout x:Name="PanelAnalytics" Spacing="12" IsVisible="False">
+                            <Border BackgroundColor="#F8F7FD" Stroke="#8A83D1" StrokeThickness="1" StrokeShape="RoundRectangle 14" Padding="10">
+                                <VerticalStackLayout Spacing="6">
+                                    <Label Text="Динамика бюджета и сбережений" FontFamily="MontserratBold" FontSize="12" TextColor="#520978"/>
+                                    <GraphicsView x:Name="GvHistoryChart" HeightRequest="150" HorizontalOptions="Fill"/>
+                                    <!-- Легенда графика -->
+                                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
+                                        <HorizontalStackLayout Spacing="4" HorizontalOptions="Center">
+                                            <BoxView Color="#10B981" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Text="Обязательные" FontSize="10" FontFamily="MontserratMedium" TextColor="#4B5563" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center">
+                                            <BoxView Color="#8B5CF6" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Text="Желания" FontSize="10" FontFamily="MontserratMedium" TextColor="#4B5563" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                        <HorizontalStackLayout Grid.Column="2" Spacing="4" HorizontalOptions="Center">
+                                            <BoxView Color="#F59E0B" WidthRequest="10" HeightRequest="10" CornerRadius="2" VerticalOptions="Center"/>
+                                            <Label Text="Копилка" FontSize="10" FontFamily="MontserratMedium" TextColor="#4B5563" VerticalOptions="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <Label Text="История завершенных периодов:" FontFamily="MontserratBold" FontSize="12" TextColor="#1F2937"/>
+                            <ScrollView MaximumHeightRequest="180">
+                                <VerticalStackLayout x:Name="StackHistoryList" Spacing="8"/>
+                            </ScrollView>
                         </VerticalStackLayout>
 
                     </VerticalStackLayout>
@@ -1283,6 +1609,141 @@
 
                 </VerticalStackLayout>
 
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+
+    <!-- ========================================================================= -->
+    <!-- МОДАЛЬНОЕ ОКНО ИНТЕРАКТИВНОГО ОНБОРДИНГА (4 ШАГА-КАРТОЧКИ)                -->
+    <!-- ========================================================================= -->
+    <Grid x:Name="ModalOnboarding"
+          IsVisible="False"
+          BackgroundColor="#CC090214"
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
+          ZIndex="140">
+
+        <Border x:Name="OnboardingCard"
+                BackgroundColor="White"
+                Stroke="#8A83D1"
+                StrokeThickness="2"
+                StrokeShape="RoundRectangle 26"
+                Padding="0"
+                Margin="18"
+                MaximumWidthRequest="390"
+                HorizontalOptions="Center"
+                VerticalOptions="Center">
+            <Border.Shadow>
+                <Shadow Brush="#520978" Offset="0,8" Radius="24" Opacity="0.35"/>
+            </Border.Shadow>
+
+            <VerticalStackLayout Spacing="0">
+                <!-- Яркая шапка онбординга -->
+                <Border BackgroundColor="#520978"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 24,24,0,0"
+                        Padding="16,14">
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                            <Image Source="ic_speech_bubble.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center"/>
+                            <Label Text="Школа юного финансиста" TextColor="White" FontFamily="MontserratBold" FontSize="14" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                        <Label x:Name="LblOnboardingStepBadge" Grid.Column="1" Text="1 из 4" TextColor="#FEF08A" FontFamily="MontserratBold" FontSize="12" VerticalOptions="Center"/>
+                    </Grid>
+                </Border>
+
+                <!-- Содержимое слайда -->
+                <VerticalStackLayout Padding="20,18" Spacing="16" BackgroundColor="White">
+                    <!-- Иконка / иллюстрация слайда -->
+                    <Border x:Name="BorderOnboardingIconBg"
+                            BackgroundColor="#F3E8FF"
+                            StrokeThickness="0"
+                            HeightRequest="80"
+                            WidthRequest="80"
+                            StrokeShape="RoundRectangle 40"
+                            HorizontalOptions="Center">
+                        <Image x:Name="ImgOnboardingSlide"
+                               Source="ic_gift.png"
+                               WidthRequest="46"
+                               HeightRequest="46"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
+                    </Border>
+
+                    <!-- Текстовое описание -->
+                    <VerticalStackLayout Spacing="8">
+                        <Label x:Name="LblOnboardingSlideTitle"
+                               Text="Привет! Я твой кот Финни!"
+                               FontFamily="MontserratBold"
+                               FontSize="16"
+                               TextColor="#310F53"
+                               HorizontalTextAlignment="Center"/>
+                        <Label x:Name="LblOnboardingSlideDesc"
+                               Text="Добро пожаловать в FinAPP — твой персональный тренажёр финансовой грамотности! Вместе мы научимся планировать бюджет, копить на мечту и принимать умные решения!"
+                               FontFamily="MontserratMedium"
+                               FontSize="13"
+                               TextColor="#4B5563"
+                               HorizontalTextAlignment="Center"
+                               LineBreakMode="WordWrap"/>
+                    </VerticalStackLayout>
+
+                    <!-- Индикаторы слайдов (точки) -->
+                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,4">
+                        <Border x:Name="DotStep1" BackgroundColor="#520978" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
+                        <Border x:Name="DotStep2" BackgroundColor="#E5E7EB" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
+                        <Border x:Name="DotStep3" BackgroundColor="#E5E7EB" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
+                        <Border x:Name="DotStep4" BackgroundColor="#E5E7EB" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
+                    </HorizontalStackLayout>
+
+                    <!-- Кнопки навигации -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
+                        <!-- Кнопка Назад -->
+                        <Border x:Name="BtnOnboardingBack"
+                                BackgroundColor="#F3F4F6"
+                                Stroke="#D1D5DB"
+                                StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12"
+                                HeightRequest="44"
+                                WidthRequest="75"
+                                InputTransparent="False"
+                                IsVisible="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnOnboardingBackClicked"/>
+                            </Border.GestureRecognizers>
+                            <Label Text="Назад" FontFamily="MontserratBold" FontSize="12" TextColor="#4B5563" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+
+                        <!-- Кнопка Пропустить -->
+                        <Label x:Name="BtnOnboardingSkip"
+                               Grid.Column="1"
+                               Text="Пропустить"
+                               FontFamily="MontserratMedium"
+                               FontSize="12"
+                               TextColor="#9CA3AF"
+                               TextDecorations="Underline"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnOnboardingSkipClicked"/>
+                            </Label.GestureRecognizers>
+                        </Label>
+
+                        <!-- Кнопка Далее / Начать -->
+                        <Border x:Name="BtnOnboardingNext"
+                                Grid.Column="2"
+                                BackgroundColor="#520978"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 12"
+                                HeightRequest="44"
+                                Padding="16,0"
+                                InputTransparent="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnOnboardingNextClicked"/>
+                            </Border.GestureRecognizers>
+                            <Label x:Name="LblOnboardingNext" Text="Далее ➜" FontFamily="MontserratBold" FontSize="13" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
+                        </Border>
+                    </Grid>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </Border>
     </Grid>
