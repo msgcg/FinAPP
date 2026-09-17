@@ -31,26 +31,8 @@
                     </Border>
                 </HorizontalStackLayout>
 
-                <!-- Игровой период и доступность (анимации, кастомизация) -->
+                <!-- Кастомизация платформ и гардероба -->
                 <HorizontalStackLayout Grid.Column="2" Spacing="8" VerticalOptions="Center">
-                    <Border x:Name="BtnAnimToggle"
-                            BackgroundColor="#EBE9F8"
-                            StrokeThickness="0"
-                            HeightRequest="42"
-                            WidthRequest="42"
-                            StrokeShape="RoundRectangle 21"
-                            InputTransparent="False">
-                        <Image x:Name="ImgAnimIcon"
-                               Source="ic_refresh.png"
-                               WidthRequest="20"
-                               HeightRequest="20"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"/>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnAnimToggleClicked"/>
-                        </Border.GestureRecognizers>
-                    </Border>
-
                     <Border x:Name="BtnCustomizer"
                             BackgroundColor="#EBE9F8"
                             StrokeThickness="0"
@@ -156,7 +138,7 @@
             </Border>
 
             <!-- 2. СЕКЦИЯ ДАШБОРДА: ФИННИ СЛЕВА + ПОКАЗАТЕЛИ КОШЕЛЬКА СПРАВА -->
-            <Grid ColumnDefinitions="165,*" ColumnSpacing="10" Margin="0,2">
+            <Grid ColumnDefinitions="165,*" ColumnSpacing="8" Margin="-16,2,0,2">
                 
                 <!-- Финни до упора влево (без внешней рамки) -->
                 <comp:FinnyPetView x:Name="PetView"
@@ -276,14 +258,12 @@
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnTransferMoneyClicked"/>
                             </Border.GestureRecognizers>
-                            <HorizontalStackLayout Spacing="6" HorizontalOptions="Center" VerticalOptions="Center">
-                                <Image Source="ic_refresh.png" WidthRequest="14" HeightRequest="14" VerticalOptions="Center"/>
-                                <Label Text="⇄ Перевести"
-                                       TextColor="White"
-                                       FontFamily="MontserratBold"
-                                       FontSize="12"
-                                       VerticalOptions="Center"/>
-                            </HorizontalStackLayout>
+                            <Label Text="⇄ Перевести"
+                                   TextColor="White"
+                                   FontFamily="MontserratBold"
+                                   FontSize="12"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
                         </Border>
 
                     </VerticalStackLayout>
@@ -1059,41 +1039,95 @@
 
                         <!-- G. МОДАЛКА: КАСТОМИЗАЦИЯ ФИННИ -->
                         <VerticalStackLayout x:Name="PanelCustomizer" Spacing="12" IsVisible="False">
-                            <Label Text="Цвет курточки:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
-                            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
-                                <Border BackgroundColor="#10B981" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Изумрудный" TextColor="White" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnOutfitGreenClicked"/></Border.GestureRecognizers>
+                            <Label Text="Сменная платформа под лапками:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937"/>
+                            
+                            <!-- 5 платформ / пьедесталов -->
+                            <VerticalStackLayout Spacing="8">
+                                <!-- 1. Цветочная полянка -->
+                                <Border x:Name="BtnPlatformFlowers" BackgroundColor="#F0FDF4" Stroke="#86EFAC" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformFlowersClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Border BackgroundColor="#2E7D32" WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 16" StrokeThickness="0">
+                                            <Label Text="✤" TextColor="#E8F5E9" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Цветочная полянка" FontFamily="MontserratBold" FontSize="12" TextColor="#166534"/>
+                                            <Label Text="Весенний зелёный газон с цветами" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgePlatformFlowers" Grid.Column="2" BackgroundColor="#22C55E" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
                                 </Border>
-                                <Border Grid.Column="1" BackgroundColor="#2563EB" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Синий" TextColor="White" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnOutfitBlueClicked"/></Border.GestureRecognizers>
-                                </Border>
-                                <Border Grid.Column="2" BackgroundColor="#E11D48" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Рубиновый" TextColor="White" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnOutfitRubyClicked"/></Border.GestureRecognizers>
-                                </Border>
-                            </Grid>
 
-                            <Label Text="Головной убор / Аксессуар:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937" Margin="0,4,0,0"/>
-                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" RowSpacing="8" ColumnSpacing="8">
-                                <Border Grid.Row="0" Grid.Column="0" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Без аксессуара" TextColor="#520978" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAccNoneClicked"/></Border.GestureRecognizers>
+                                <!-- 2. Звёздная дорожка -->
+                                <Border x:Name="BtnPlatformStars" BackgroundColor="#FEFCE8" Stroke="#FDE047" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformStarsClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Border BackgroundColor="#F57F17" WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 16" StrokeThickness="0">
+                                            <Label Text="★" TextColor="#FFF8E1" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Звёздная дорожка" FontFamily="MontserratBold" FontSize="12" TextColor="#854D0E"/>
+                                            <Label Text="Золотой пьедестал успеха" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgePlatformStars" Grid.Column="2" BackgroundColor="#EAB308" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
                                 </Border>
-                                <Border Grid.Row="0" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Очки инвестора" TextColor="#520978" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAccSunglassesClicked"/></Border.GestureRecognizers>
+
+                                <!-- 3. Изумрудный кристалл -->
+                                <Border x:Name="BtnPlatformEmerald" BackgroundColor="#ECFDF5" Stroke="#6EE7B7" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformEmeraldClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Border BackgroundColor="#00796B" WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 16" StrokeThickness="0">
+                                            <Label Text="◆" TextColor="#E0F2F1" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Изумрудный кристалл" FontFamily="MontserratBold" FontSize="12" TextColor="#065F46"/>
+                                            <Label Text="Неоновое свечение богатства" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgePlatformEmerald" Grid.Column="2" BackgroundColor="#10B981" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
                                 </Border>
-                                <Border Grid.Row="1" Grid.Column="0" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Шапочка экономиста" TextColor="#520978" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAccAcademicClicked"/></Border.GestureRecognizers>
+
+                                <!-- 4. Космический неон -->
+                                <Border x:Name="BtnPlatformCosmic" BackgroundColor="#F5F3FF" Stroke="#C4B5FD" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformCosmicClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Border BackgroundColor="#4A148C" WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 16" StrokeThickness="0">
+                                            <Label Text="✦" TextColor="#EDE7F6" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Космический неон" FontFamily="MontserratBold" FontSize="12" TextColor="#5B21B6"/>
+                                            <Label Text="Фиолетово-синий кибер-подиум" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgePlatformCosmic" Grid.Column="2" BackgroundColor="#8B5CF6" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
                                 </Border>
-                                <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#EBE9F8" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="40" InputTransparent="False">
-                                    <Label Text="Корона сбережений" TextColor="#520978" FontFamily="MontserratBold" FontSize="11" HorizontalOptions="Center" VerticalOptions="Center"/>
-                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAccCrownClicked"/></Border.GestureRecognizers>
+
+                                <!-- 5. Облако накоплений -->
+                                <Border x:Name="BtnPlatformCloud" BackgroundColor="#F0F9FF" Stroke="#BAE6FD" StrokeThickness="1.5" StrokeShape="RoundRectangle 14" Padding="12,10" InputTransparent="False">
+                                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnPlatformCloudClicked"/></Border.GestureRecognizers>
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10" VerticalOptions="Center">
+                                        <Border BackgroundColor="#0288D1" WidthRequest="32" HeightRequest="32" StrokeShape="RoundRectangle 16" StrokeThickness="0">
+                                            <Label Text="☁" TextColor="#F5FBFF" FontFamily="MontserratBold" FontSize="14" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                        </Border>
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="Облако накоплений" FontFamily="MontserratBold" FontSize="12" TextColor="#075985"/>
+                                            <Label Text="Воздушный небесно-голубой пьедестал" FontFamily="MontserratMedium" FontSize="10" TextColor="#4B5563"/>
+                                        </VerticalStackLayout>
+                                        <Border x:Name="BadgePlatformCloud" Grid.Column="2" BackgroundColor="#0EA5E9" StrokeThickness="0" StrokeShape="RoundRectangle 8" Padding="6,2" VerticalOptions="Center" IsVisible="False">
+                                            <Label Text="Активно" TextColor="White" FontFamily="MontserratBold" FontSize="10"/>
+                                        </Border>
+                                    </Grid>
                                 </Border>
-                            </Grid>
+                            </VerticalStackLayout>
 
                             <Label Text="Имя питомца:" FontFamily="MontserratBold" FontSize="13" TextColor="#1F2937" Margin="0,4,0,0"/>
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
@@ -1178,7 +1212,8 @@
                              WidthRequest="160"
                              BackgroundColor="Transparent"
                              InputTransparent="True"
-                             HorizontalOptions="Center"/>
+                             HorizontalOptions="Start"
+                             Margin="-16,0,0,0"/>
 
                     <!-- Карточка с разбором и пояснением финансовой мудрости -->
                     <Border x:Name="BorderTaskResultExplanation"

@@ -17,6 +17,15 @@ public enum AccessoryType
     Crown
 }
 
+public enum PetPlatformType
+{
+    Emerald = 0,   // Изумрудный кристалл (неоновый изумрудно-мятный свет)
+    Stars = 1,     // Звёздная дорожка (золотой кристалл со звёздами)
+    Flowers = 2,   // Цветочная полянка (весенняя полянка с цветочными акцентами)
+    Cosmic = 3,    // Космический неон (кибер-подиум)
+    Cloud = 4      // Облако накоплений (небесно-голубой подиум)
+}
+
 public enum GrowthStage
 {
     Baby = 1,     // Малыш Финни (периоды 1-2)
@@ -51,6 +60,7 @@ public class PetProfile
     public AgeGroup AgeGroup { get; set; } = AgeGroup.Junior7_8;
     public OutfitType Outfit { get; set; } = OutfitType.ClassicGreen;
     public AccessoryType Accessory { get; set; } = AccessoryType.None;
+    public PetPlatformType Platform { get; set; } = PetPlatformType.Flowers;
     public GrowthStage Stage { get; set; } = GrowthStage.Baby;
 
     // Жизненные показатели питомца (0 - 100%)

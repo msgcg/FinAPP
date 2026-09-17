@@ -161,16 +161,16 @@ def crop_and_resize_frames(frames, target_size=(360, 480), pad=12):
         cropped = frame.crop((x1, y1, x2, y2))
         resized = cropped.resize((new_w, new_h), Image.Resampling.LANCZOS)
         
-        # Center in canvas anchored slightly above bottom
+        # Flush Finny to the left edge (offset_x = 0) to avoid any transparent gap
         canvas = Image.new("RGBA", target_size, (0, 0, 0, 0))
-        offset_x = (tgt_w - new_w) // 2
+        offset_x = 0
         offset_y = tgt_h - new_h - 8
         canvas.paste(resized, (offset_x, max(0, offset_y)), resized)
         processed.append(canvas)
         
     return processed
 
-def save_transparent_gif(frames, output_path, fps=14, loop=0):
+def save_transparent_gif(frames, output_path, fps=14, loop=None):
     duration_ms = int(1000 / fps)
     gif_frames = []
     
@@ -185,17 +185,19 @@ def save_transparent_gif(frames, output_path, fps=14, loop=0):
         gif_frames.append(p_frame)
         
     os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
-    gif_frames[0].save(
-        output_path,
-        save_all=True,
-        append_images=gif_frames[1:],
-        duration=duration_ms,
-        loop=loop,
-        transparency=255,
-        disposal=2,
-        optimize=True
-    )
-    print(f"[OK] Saved GIF ({len(frames)} frames, {fps} fps): {output_path} ({os.path.getsize(output_path)} bytes)")
+    save_kwargs = {
+        "save_all": True,
+        "append_images": gif_frames[1:],
+        "duration": duration_ms,
+        "transparency": 255,
+        "disposal": 2,
+        "optimize": True
+    }
+    # If loop is None, Netscape 2.0 loop block is omitted, causing GIF to play once and freeze on last frame
+    if loop is not None:
+        save_kwargs["loop"] = loop
+    gif_frames[0].save(output_path, **save_kwargs)
+    print(f"[OK] Saved GIF ({len(frames)} frames, {fps} fps, loop={loop}): {output_path} ({os.path.getsize(output_path)} bytes)")
 
 def process_video_to_gif(video_path, output_path, fps=14, start=None, duration=None, key_mode="auto", tolerance=46, target_size=(360, 480)):
     frames, temp_dir = extract_frames_ffmpeg(video_path, fps=fps, start=start, duration=duration)

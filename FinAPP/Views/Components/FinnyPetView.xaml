@@ -21,12 +21,37 @@
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
 
+        <!-- Сменная платформа / пьедестал под ногами Финни -->
+        <Border x:Name="PlatformBase"
+                HeightRequest="24"
+                WidthRequest="155"
+                StrokeShape="RoundRectangle 12"
+                StrokeThickness="1.5"
+                HorizontalOptions="Center"
+                VerticalOptions="End"
+                Margin="0,0,0,2">
+            <Border.Shadow>
+                <Shadow x:Name="PlatformShadow" Brush="#00E676" Radius="10" Opacity="0.6" Offset="0,2"/>
+            </Border.Shadow>
+            <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+                <BoxView x:Name="PlatformBg" Color="#2E7D32" HorizontalOptions="Fill" VerticalOptions="Fill" />
+                <Label x:Name="PlatformDecor"
+                       Text="✤  ПОЛЯНКА  ✤"
+                       TextColor="#E8F5E9"
+                       FontSize="9"
+                       FontFamily="MontserratBold"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"/>
+            </Grid>
+        </Border>
+
         <!-- WebView для аппаратного проигрывания анимированных GIF (Android / iOS / Windows) -->
         <WebView x:Name="PetWebView"
                  BackgroundColor="Transparent"
                  InputTransparent="True"
                  HorizontalOptions="Fill"
-                 VerticalOptions="Fill"/>
+                 VerticalOptions="Fill"
+                 Margin="0,0,0,6"/>
 
         <!-- Резервное нативное изображение на случай непредвиденных сбоев WebView -->
         <Image x:Name="ImgPetFallback"
@@ -35,21 +60,8 @@
                HorizontalOptions="Fill"
                VerticalOptions="Fill"
                IsVisible="False"
-               InputTransparent="True"/>
-
-        <!-- Накладной аксессуар (очки, шапочка, корона) поверх котика -->
-        <Image x:Name="ImgAccessory"
-               Source="acc_sunglasses.png"
-               Aspect="AspectFit"
-               WidthRequest="85"
-               HeightRequest="50"
-               AnchorX="0.5"
-               AnchorY="0.95"
-               HorizontalOptions="Center"
-               VerticalOptions="Start"
-               Margin="0, 16, 0, 0"
-               IsVisible="False"
-               InputTransparent="True"/>
+               InputTransparent="True"
+               Margin="0,0,0,6"/>
 
         <!-- Невидимый прозрачный слой для 100% надежного перехвата тапов по всей площади персонажа -->
         <BoxView BackgroundColor="Transparent"

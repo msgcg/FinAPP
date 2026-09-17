@@ -142,10 +142,7 @@ public partial class MainPage : ContentPage
             ? "Цель достигнута! Можно покупать!"
             : $"До цели осталось ~{remainingPeriods} периодов (при +50 монет/период)";
 
-        // 5. Иконка доступности (анимации)
-        ImgAnimIcon.Opacity = p.AnimationsEnabled ? 1.0 : 0.4;
-
-        // 6. Тумблер возраста (7–8 лет / 9–11 лет)
+        // 5. Тумблер возраста (7–8 лет / 9–11 лет)
         bool isJunior = p.AgeGroup == AgeGroup.Junior7_8;
         BtnAgeJunior.BackgroundColor = isJunior ? Color.FromArgb("#520978") : Colors.Transparent;
         LblAgeJunior.TextColor = isJunior ? Colors.White : Color.FromArgb("#6B7280");
@@ -170,6 +167,7 @@ public partial class MainPage : ContentPage
     {
         await AnimateTap(SpeechBubble);
         PetView.NextQuote();
+        PetView.PlayAction("wave");
     }
 
     private async void OnAgeJuniorClicked(object? sender, EventArgs e)
@@ -242,88 +240,64 @@ public partial class MainPage : ContentPage
     }
 
     // =========================================================================
-    // 1. ПЕРЕКЛЮЧАТЕЛЬ АНИМАЦИИ (ДОСТУПНОСТЬ)
-    // =========================================================================
-    private async void OnAnimToggleClicked(object? sender, EventArgs e)
-    {
-        await AnimateTap(sender as VisualElement);
-        _engine.Profile.AnimationsEnabled = !_engine.Profile.AnimationsEnabled;
-        RefreshUI();
-        await _engine.SaveAsync();
-        string status = _engine.Profile.AnimationsEnabled ? "включены" : "отключены";
-        PetView.SetSpeechText($"Анимации {status}!");
-    }
-
-    // =========================================================================
-    // 2. МОДАЛКА: КАСТОМИЗАЦИЯ ВНЕШНЕГО ВИДА
+    // 2. МОДАЛКА: КАСТОМИЗАЦИЯ ПЛАТФОРМ И ИМЯ
     // =========================================================================
     private async void OnCustomizerClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
         EntryPetName.Text = _engine.Profile.PetName;
-        await ShowModal("Гардероб и имя Финни", PanelCustomizer);
+        UpdateCustomizerPlatformBadges(_engine.Profile.Platform);
+        await ShowModal("Платформа и имя Финни", PanelCustomizer);
     }
 
-    private async void OnOutfitGreenClicked(object? sender, EventArgs e)
+    private void UpdateCustomizerPlatformBadges(PetPlatformType platform)
     {
-        await AnimateTap(sender as VisualElement);
-        _engine.Profile.Outfit = OutfitType.ClassicGreen;
-        RefreshUI();
-        await _engine.SaveAsync();
-        PetView.SetSpeechText("Изумрудная куртка с монетами — классический стиль Финни!");
+        BadgePlatformFlowers.IsVisible = platform == PetPlatformType.Flowers;
+        BadgePlatformStars.IsVisible = platform == PetPlatformType.Stars;
+        BadgePlatformEmerald.IsVisible = platform == PetPlatformType.Emerald;
+        BadgePlatformCosmic.IsVisible = platform == PetPlatformType.Cosmic;
+        BadgePlatformCloud.IsVisible = platform == PetPlatformType.Cloud;
     }
 
-    private async void OnOutfitBlueClicked(object? sender, EventArgs e)
+    private async Task SelectPlatformAsync(PetPlatformType platform, string speech)
     {
-        await AnimateTap(sender as VisualElement);
-        _engine.Profile.Outfit = OutfitType.RoyalBlue;
+        _engine.Profile.Platform = platform;
+        UpdateCustomizerPlatformBadges(platform);
+        PetView.UpdatePlatform(platform);
+        PetView.PlayAction("proud");
         RefreshUI();
         await _engine.SaveAsync();
-        PetView.SetSpeechText("Королевский синий цвет — выбор уверенного инвестора!");
+        PetView.SetSpeechText(speech);
     }
 
-    private async void OnOutfitRubyClicked(object? sender, EventArgs e)
+    private async void OnPlatformFlowersClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        _engine.Profile.Outfit = OutfitType.RubyRed;
-        RefreshUI();
-        await _engine.SaveAsync();
-        PetView.SetSpeechText("Рубиновый чемпионский цвет заряжает энергией!");
+        await SelectPlatformAsync(PetPlatformType.Flowers, "Цветочная полянка! Лапкам тепло и пахнет весенней свежестью!");
     }
 
-    private async void OnAccNoneClicked(object? sender, EventArgs e)
+    private async void OnPlatformStarsClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        _engine.Profile.Accessory = AccessoryType.None;
-        RefreshUI();
-        await _engine.SaveAsync();
+        await SelectPlatformAsync(PetPlatformType.Stars, "Звёздная дорожка! Настоящий золотой пьедестал финансового успеха!");
     }
 
-    private async void OnAccSunglassesClicked(object? sender, EventArgs e)
+    private async void OnPlatformEmeraldClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        _engine.Profile.Accessory = AccessoryType.Sunglasses;
-        RefreshUI();
-        await _engine.SaveAsync();
-        PetView.SetSpeechText("Очки надел — к большим доходам готов!");
+        await SelectPlatformAsync(PetPlatformType.Emerald, "Изумрудный кристалл! Неоновая энергия накоплений заряжает копилку!");
     }
 
-    private async void OnAccAcademicClicked(object? sender, EventArgs e)
+    private async void OnPlatformCosmicClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        _engine.Profile.Accessory = AccessoryType.AcademicCap;
-        RefreshUI();
-        await _engine.SaveAsync();
-        PetView.SetSpeechText("Шапочка экономиста! Теперь Финни — профессор финансов!");
+        await SelectPlatformAsync(PetPlatformType.Cosmic, "Космический неон! Кибер-платформа для полёта к звёздным целям!");
     }
 
-    private async void OnAccCrownClicked(object? sender, EventArgs e)
+    private async void OnPlatformCloudClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
-        _engine.Profile.Accessory = AccessoryType.Crown;
-        RefreshUI();
-        await _engine.SaveAsync();
-        PetView.SetSpeechText("Корона сбережений! Мы накопили королевский запас!");
+        await SelectPlatformAsync(PetPlatformType.Cloud, "Облако накоплений! Мягкий небесный подиум для лёгких сбережений!");
     }
 
     private async void OnSavePetNameClicked(object? sender, EventArgs e)
@@ -565,13 +539,16 @@ public partial class MainPage : ContentPage
             BorderTaskResultExplanation.Stroke = Color.FromArgb("#86EFAC");
 
             BtnTaskResultTryAgain.IsVisible = false;
+            Grid.SetColumn(BtnTaskResultNext, 0);
+            Grid.SetColumnSpan(BtnTaskResultNext, 2);
             LblTaskResultNext.Text = "Следующее задание ➜";
             BtnTaskResultNext.BackgroundColor = Color.FromArgb("#10B981");
 
             // Анимация гордого Финни
             string gif = $"{stagePrefix}_proud.gif";
             string html = await FinnyPetView.GetOrLoadHtmlAsync(gif);
-            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
+            var stampedHtml = html.Replace("</html>", $"<!-- {DateTime.UtcNow.Ticks} --></html>");
+            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = stampedHtml };
         }
         else
         {
@@ -600,13 +577,16 @@ public partial class MainPage : ContentPage
             BorderTaskResultExplanation.Stroke = Color.FromArgb("#FECDD3");
 
             BtnTaskResultTryAgain.IsVisible = true;
-            LblTaskResultNext.Text = "Пропустить ➜";
+            Grid.SetColumn(BtnTaskResultNext, 1);
+            Grid.SetColumnSpan(BtnTaskResultNext, 1);
+            LblTaskResultNext.Text = "Дальше ➜";
             BtnTaskResultNext.BackgroundColor = Color.FromArgb("#6B7280");
 
-            // Анимация расстроенного Финни
+            // Анимация расстроенного Финни (подлинный плачущий котик со слезой)
             string gif = $"{stagePrefix}_sad.gif";
             string html = await FinnyPetView.GetOrLoadHtmlAsync(gif);
-            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
+            var stampedHtml = html.Replace("</html>", $"<!-- {DateTime.UtcNow.Ticks} --></html>");
+            WvTaskResultFinny.Source = new HtmlWebViewSource { Html = stampedHtml };
         }
 
         ModalTaskResult.Opacity = 0;
@@ -780,6 +760,7 @@ public partial class MainPage : ContentPage
         RenderShopCategoryUI();
         // Грамотная благодарность на русском языке в винительном падеже
         PetView.SetSpeechText(string.IsNullOrEmpty(item.ThanksText) ? "Муррр! Спасибо за заботу! Теперь я доволен!" : item.ThanksText);
+        PetView.PlayAction("proud");
     }
 
     // =========================================================================
@@ -934,6 +915,7 @@ public partial class MainPage : ContentPage
         await _engine.SaveAsync();
         RenderGoalsUI();
         PetView.SetSpeechText($"Звон монетки! +{amount} монет отправлены в копилку!");
+        PetView.PlayAction("proud");
     }
 
     private async void OnDeposit20Clicked(object? sender, EventArgs e)
@@ -967,6 +949,7 @@ public partial class MainPage : ContentPage
         await _engine.SaveAsync();
         RenderGoalsUI();
         PetView.SetSpeechText($"Взяли из копилки {amount} монет в кошелёк. Не забывай пополнять снова!");
+        PetView.PlayAction("wave");
     }
 
     private async void OnWithdraw20Clicked(object? sender, EventArgs e)
@@ -1084,6 +1067,7 @@ public partial class MainPage : ContentPage
             p.Savings += amount;
             BorderTransferAlert.IsVisible = false;
             PetView.SetSpeechText($"Звон монеток! +{amount} монет отправлены в копилку!");
+            PetView.PlayAction("proud");
         }
         else
         {
@@ -1097,6 +1081,7 @@ public partial class MainPage : ContentPage
             p.Balance += amount;
             BorderTransferAlert.IsVisible = false;
             PetView.SetSpeechText($"Сняли из копилки {amount} монет в кошелёк.");
+            PetView.PlayAction("wave");
         }
 
         RefreshUI();

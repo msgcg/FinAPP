@@ -176,25 +176,8 @@ public partial class FinnyPetView : ContentView
             ApplyAnimation(_currentEmotionGif);
         }
 
-        // 3. Накладные аксессуары поверх котика
-        switch (profile.Accessory)
-        {
-            case AccessoryType.Sunglasses:
-                ImgAccessory.Source = "acc_sunglasses.png";
-                ImgAccessory.IsVisible = true;
-                break;
-            case AccessoryType.AcademicCap:
-                ImgAccessory.Source = "acc_academic.png";
-                ImgAccessory.IsVisible = true;
-                break;
-            case AccessoryType.Crown:
-                ImgAccessory.Source = "acc_crown.png";
-                ImgAccessory.IsVisible = true;
-                break;
-            default:
-                ImgAccessory.IsVisible = false;
-                break;
-        }
+        // 3. Сменная платформа / подиум под ногами котика
+        UpdatePlatform(profile.Platform);
 
         // 4. Эволюционные стадии роста (ТЗ п. 2.5.10)
         switch (profile.Stage)
@@ -222,6 +205,58 @@ public partial class FinnyPetView : ContentView
         }
     }
 
+    public void UpdatePlatform(PetPlatformType platform)
+    {
+        switch (platform)
+        {
+            case PetPlatformType.Emerald:
+                PlatformBg.Color = Color.FromArgb("#00796B");
+                PlatformBase.Stroke = Color.FromArgb("#69F0AE");
+                PlatformShadow.Brush = Color.FromArgb("#00E676");
+                PlatformDecor.Text = "◆  КРИСТАЛЛ  ◆";
+                PlatformDecor.TextColor = Color.FromArgb("#E0F2F1");
+                break;
+            case PetPlatformType.Stars:
+                PlatformBg.Color = Color.FromArgb("#F57F17");
+                PlatformBase.Stroke = Color.FromArgb("#FFE082");
+                PlatformShadow.Brush = Color.FromArgb("#FFD700");
+                PlatformDecor.Text = "★  ЗВЁЗДЫ  ★";
+                PlatformDecor.TextColor = Color.FromArgb("#FFF8E1");
+                break;
+            case PetPlatformType.Flowers:
+                PlatformBg.Color = Color.FromArgb("#2E7D32");
+                PlatformBase.Stroke = Color.FromArgb("#B9F6CA");
+                PlatformShadow.Brush = Color.FromArgb("#69F0AE");
+                PlatformDecor.Text = "✤  ПОЛЯНКА  ✤";
+                PlatformDecor.TextColor = Color.FromArgb("#E8F5E9");
+                break;
+            case PetPlatformType.Cosmic:
+                PlatformBg.Color = Color.FromArgb("#4A148C");
+                PlatformBase.Stroke = Color.FromArgb("#B388FF");
+                PlatformShadow.Brush = Color.FromArgb("#7C4DFF");
+                PlatformDecor.Text = "✦  КОСМОС  ✦";
+                PlatformDecor.TextColor = Color.FromArgb("#EDE7F6");
+                break;
+            case PetPlatformType.Cloud:
+                PlatformBg.Color = Color.FromArgb("#0288D1");
+                PlatformBase.Stroke = Color.FromArgb("#E1F5FE");
+                PlatformShadow.Brush = Color.FromArgb("#40C4FF");
+                PlatformDecor.Text = "☁  ОБЛАКО  ☁";
+                PlatformDecor.TextColor = Color.FromArgb("#F5FBFF");
+                break;
+        }
+    }
+
+    public void PlayAction(string action)
+    {
+        ApplyAnimation($"{_currentStagePrefix}_{action}.gif", force: true);
+    }
+
+    public void ReplayCurrent()
+    {
+        ApplyAnimation(_currentEmotionGif, force: true);
+    }
+
     private void ApplyAnimation(string gifName, bool force = false)
     {
         if (!force && _activeGif == gifName) return;
@@ -240,7 +275,9 @@ public partial class FinnyPetView : ContentView
             {
                 if (!string.IsNullOrEmpty(html))
                 {
-                    PetWebView.Source = new HtmlWebViewSource { Html = html };
+                    // Adding a timestamp ensures WebView parses fresh HTML and plays 1 complete animation cycle
+                    var stampedHtml = html.Replace("</html>", $"<!-- {DateTime.UtcNow.Ticks} --></html>");
+                    PetWebView.Source = new HtmlWebViewSource { Html = stampedHtml };
                     PetWebView.IsVisible = true;
                     ImgPetFallback.IsVisible = false;
                     ConfigurePlatformWebView(PetWebView);
