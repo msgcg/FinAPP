@@ -1165,7 +1165,7 @@
                                 <Border BackgroundColor="#EF4444" StrokeThickness="0" StrokeShape="RoundRectangle 12" HeightRequest="44" InputTransparent="False">
                                     <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" VerticalOptions="Center">
                                         <Image Source="ic_refresh.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
-                                        <Label Text="Сбросить тестовые данные" TextColor="White" FontFamily="MontserratBold" FontSize="13" VerticalOptions="Center"/>
+                                        <Label Text="Сброс данных приложения" TextColor="White" FontFamily="MontserratBold" FontSize="13" VerticalOptions="Center"/>
                                     </HorizontalStackLayout>
                                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnParentResetDataClicked"/></Border.GestureRecognizers>
                                 </Border>

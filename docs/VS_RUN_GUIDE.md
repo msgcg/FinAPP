@@ -87,7 +87,7 @@ pwsh -File .\scripts\build_apk.ps1
 ```
 3. Скрипт проверит/сгенерирует релизный keystore `dist/finapp_release.keystore`, выполнит `dotnet publish -f net10.0-android -c Release` с перенаправлением промежуточных артефактов в системный `TEMP` (исключая превышение длины путей Windows) и скопирует готовый файл в:
 ```text
-dist/FinAPP.apk (размер ~81.5 МБ, архитектуры arm64-v8a, armeabi-v7a, x86_64)
+dist/FinAPP.apk (размер 82.34 МБ, архитектуры arm64-v8a, armeabi-v7a, x86_64)
 ```
 
 ### Способ 3: Графическая публикация через Visual Studio
