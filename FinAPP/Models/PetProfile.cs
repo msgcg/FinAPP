@@ -84,4 +84,9 @@ public class PetProfile
 
     // Список выполненных ID заданий
     public List<string> CompletedTaskIds { get; set; } = new();
+
+    // Алиасы для совместимости с кодом интерфейса
+    public int SpentObligatory { get => ActualObligatory; set => ActualObligatory = value; }
+    public int SpentDiscretionary { get => ActualDiscretionary; set => ActualDiscretionary = value; }
+    public int CompletedTasksCount { get => TestsPassedCount; set => TestsPassedCount = value; }
 }

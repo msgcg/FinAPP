@@ -15,6 +15,7 @@ public class ShopItem
     public int HungerBoost { get; set; }
     public int MoodBoost { get; set; }
     public string IconEmoji { get; set; } = "📦";
+    public string Icon => IconEmoji;
     public string Description { get; set; } = string.Empty;
 
     public string CategoryName => Category == ExpenseCategory.Obligatory 

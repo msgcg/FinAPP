@@ -28,41 +28,83 @@
             </HorizontalStackLayout>
         </Border>
 
-        <!-- Контейнер персонажа со слоями и анимацией -->
+        <!-- Контейнер персонажа со слоями и скелетной анимацией -->
         <Grid x:Name="PetContainer"
-              HeightRequest="260"
-              WidthRequest="220"
+              HeightRequest="270"
+              WidthRequest="230"
               HorizontalOptions="Center"
               VerticalOptions="Center">
 
             <!-- Золотое свечение для стадии Мастер -->
             <BoxView x:Name="MasterAura"
                      Color="#F59E0B"
-                     CornerRadius="110"
-                     Opacity="0.2"
+                     CornerRadius="115"
+                     Opacity="0.25"
                      IsVisible="False"
-                     HeightRequest="220"
-                     WidthRequest="220"
+                     HeightRequest="230"
+                     WidthRequest="230"
                      HorizontalOptions="Center"
                      VerticalOptions="Center"/>
 
-            <!-- Слой 1: Базовое тело и эмоция котика -->
-            <Image x:Name="ImgPetBody"
-                   Source="finny_happy.png"
+            <!-- СЛОЙ 0: Хвостик (ZIndex 0, позади туловища, опорная точка у основания) -->
+            <Image x:Name="ImgTail"
+                   Source="finny_tail.png"
                    Aspect="AspectFit"
-                   HeightRequest="240"
-                   WidthRequest="200"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"/>
+                   WidthRequest="75"
+                   HeightRequest="95"
+                   AnchorX="0.85"
+                   AnchorY="0.85"
+                   HorizontalOptions="Start"
+                   VerticalOptions="Center"
+                   Margin="12, 60, 0, 0"/>
 
-            <!-- Слой 2: Накладной аксессуар (очки, шапочка, корона) -->
-            <Image x:Name="ImgPetAccessory"
+            <!-- СЛОЙ 1: Туловище с ножками и правой лапкой на поясе (ZIndex 1) -->
+            <Image x:Name="ImgBody"
+                   Source="finny_body.png"
+                   Aspect="AspectFit"
+                   WidthRequest="165"
+                   HeightRequest="195"
+                   AnchorX="0.5"
+                   AnchorY="1.0"
+                   HorizontalOptions="Center"
+                   VerticalOptions="End"
+                   Margin="0, 0, 10, 0"/>
+
+            <!-- СЛОЙ 2: Машущая лапка (ZIndex 2, опорная точка в плечевом суставе) -->
+            <Image x:Name="ImgArmWave"
+                   Source="finny_arm_wave.png"
+                   Aspect="AspectFit"
+                   WidthRequest="95"
+                   HeightRequest="75"
+                   AnchorX="0.15"
+                   AnchorY="0.85"
+                   HorizontalOptions="End"
+                   VerticalOptions="Center"
+                   Margin="0, 0, 6, 48"/>
+
+            <!-- СЛОЙ 3: Голова с ушками и мордочкой (ZIndex 3, опорная точка у шеи) -->
+            <Image x:Name="ImgHead"
+                   Source="finny_head_happy.png"
+                   Aspect="AspectFit"
+                   WidthRequest="145"
+                   HeightRequest="135"
+                   AnchorX="0.5"
+                   AnchorY="0.95"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Start"
+                   Margin="0, 0, 10, 0"/>
+
+            <!-- СЛОЙ 4: Накладной аксессуар (очки, шапочка, корона) -->
+            <Image x:Name="ImgAccessory"
                    Source="acc_sunglasses.png"
                    Aspect="AspectFit"
-                   HeightRequest="240"
-                   WidthRequest="200"
+                   WidthRequest="110"
+                   HeightRequest="60"
+                   AnchorX="0.5"
+                   AnchorY="0.95"
                    HorizontalOptions="Center"
-                   VerticalOptions="Center"
+                   VerticalOptions="Start"
+                   Margin="0, 18, 10, 0"
                    IsVisible="False"/>
 
             <!-- Бейдж стадии роста в левом верхнем углу -->

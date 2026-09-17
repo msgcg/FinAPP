@@ -264,4 +264,14 @@ public class GameEngine
         Profile = _storageService.ResetToDemoProfile();
         OnStateChanged?.Invoke();
     }
+
+    public void ResetData() => ResetDemoProfile();
+
+    public string GetPlanVsFactAnalysis()
+    {
+        bool obligOk = Profile.ActualObligatory <= (Profile.PlannedObligatory > 0 ? Profile.PlannedObligatory : 250);
+        bool discOk = Profile.ActualDiscretionary <= (Profile.PlannedDiscretionary > 0 ? Profile.PlannedDiscretionary : 150);
+        return $"План/Факт: Обязательные {Profile.ActualObligatory}/{Profile.PlannedObligatory} ₽ ({(obligOk ? "В норме ✅" : "Превышение ⚠️")}), " +
+               $"Желания {Profile.ActualDiscretionary}/{Profile.PlannedDiscretionary} ₽ ({(discOk ? "В норме ✅" : "Превышение ⚠️")}).";
+    }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FinAPP.Models;
@@ -12,6 +13,23 @@ public partial class MainPage : ContentPage
     private readonly StorageService _storageService;
     private readonly GameEngine _engine;
     private IDispatcherTimer? _gameLoopTimer;
+
+    // Состояние планирования в модалке бюджета
+    private int _tempOblig = 250;
+    private int _tempDisc = 150;
+    private int _tempSav = 100;
+    private const int PeriodIncome = 500;
+
+    // Активная задача
+    private int _currentTaskIndex = 0;
+    private List<FinancialTask> _tasks = new();
+
+    // Категория магазина (true = Obligatory, false = Discretionary)
+    private bool _isShopObligCategory = true;
+
+    // Пин для родителей
+    private int _parentMathA = 7;
+    private int _parentMathB = 8;
 
     public MainPage()
     {
@@ -27,6 +45,7 @@ public partial class MainPage : ContentPage
     private async void OnPageLoaded(object? sender, EventArgs e)
     {
         await _engine.InitializeAsync();
+        _tasks = ContentRepository.GetFinancialTasks();
         StartPetLifeTimer();
         RefreshUI();
     }
@@ -38,7 +57,6 @@ public partial class MainPage : ContentPage
         _gameLoopTimer.Interval = TimeSpan.FromSeconds(35);
         _gameLoopTimer.Tick += (s, e) =>
         {
-            // Постепенное естественное снижение сытости и настроения
             var p = _engine.Profile;
             p.Hunger = Math.Max(15, p.Hunger - 2);
             p.Mood = Math.Max(20, p.Mood - 2);
@@ -66,9 +84,9 @@ public partial class MainPage : ContentPage
         BarHunger.Progress = p.Hunger / 100.0;
         BarHunger.ProgressColor = p.Hunger switch
         {
-            > 60 => Color.FromArgb("#10B981"), // зеленый
-            > 30 => Color.FromArgb("#F59E0B"), // желтый
-            _ => Color.FromArgb("#EF4444")      // красный
+            > 60 => Color.FromArgb("#10B981"),
+            > 30 => Color.FromArgb("#F59E0B"),
+            _ => Color.FromArgb("#EF4444")
         };
 
         LblMoodVal.Text = $"{p.Mood}%";
@@ -95,346 +113,717 @@ public partial class MainPage : ContentPage
             ? "🎉 Цель достигнута! Можно покупать!"
             : $"⏱️ До цели осталось: ~{remainingPeriods} периодов (при сбережениях 50 ₽/период)";
 
-        // 5. Кнопка анимации
-        BtnAnimToggle.Text = p.AnimationsEnabled ? "🎬 Вкл" : "⏸️ Выкл";
+        // 5. Иконка доступности
+        LblAnimIcon.Text = p.AnimationsEnabled ? "🎬" : "⏸️";
     }
 
-    // --- 1. ПЕРЕКЛЮЧЕНИЕ АНИМАЦИИ (ТЗ п. 3.6 Доступность) ---
+    // =========================================================================
+    // АНИМАЦИИ НАЖАТИЙ И УПРАВЛЕНИЕ ВНУТРИСТРАНИЧНЫМИ МОДАЛКАМИ
+    // =========================================================================
+
+    private async Task AnimateTap(VisualElement? view)
+    {
+        if (view == null) return;
+        try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+        await view.ScaleToAsync(0.93, 60, Easing.CubicOut);
+        await view.ScaleToAsync(1.0, 60, Easing.CubicIn);
+    }
+
+    private async Task ShowModal(string title, VisualElement activePanel)
+    {
+        LblModalHeader.Text = title;
+
+        PanelBudget.IsVisible = false;
+        PanelTasks.IsVisible = false;
+        PanelShop.IsVisible = false;
+        PanelGoals.IsVisible = false;
+        PanelGlossary.IsVisible = false;
+        PanelParent.IsVisible = false;
+        PanelCustomizer.IsVisible = false;
+
+        activePanel.IsVisible = true;
+        ModalOverlay.Opacity = 0;
+        ModalOverlay.IsVisible = true;
+        ModalCard.Scale = 0.92;
+
+        var f = ModalOverlay.FadeToAsync(1.0, 160, Easing.CubicOut);
+        var s = ModalCard.ScaleToAsync(1.0, 160, Easing.CubicOut);
+        await Task.WhenAll(f, s);
+    }
+
+    private async Task CloseModal()
+    {
+        var f = ModalOverlay.FadeToAsync(0.0, 130, Easing.CubicIn);
+        var s = ModalCard.ScaleToAsync(0.92, 130, Easing.CubicIn);
+        await Task.WhenAll(f, s);
+        ModalOverlay.IsVisible = false;
+    }
+
+    private async void OnCloseModalClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await CloseModal();
+    }
+
+    // =========================================================================
+    // 1. ПЕРЕКЛЮЧАТЕЛЬ АНИМАЦИИ (ДОСТУПНОСТЬ)
+    // =========================================================================
     private async void OnAnimToggleClicked(object? sender, EventArgs e)
     {
+        await AnimateTap(sender as VisualElement);
         _engine.Profile.AnimationsEnabled = !_engine.Profile.AnimationsEnabled;
         RefreshUI();
         await _engine.SaveAsync();
-        string status = _engine.Profile.AnimationsEnabled ? "включены" : "отключены (режим энергосбережения)";
-        await DisplayAlertAsync("Доступность", $"Анимации {status}.", "ОК");
+        string status = _engine.Profile.AnimationsEnabled ? "включены 🎬" : "отключены ⏸️";
+        PetView.SetSpeechText($"Анимации {status}!");
     }
 
-    // --- 2. КАСТОМИЗАЦИЯ ПИТОМЦА (ТЗ п. 2.5.2, 2.6: 9+ комбинаций) ---
+    // =========================================================================
+    // 2. МОДАЛКА: КАСТОМИЗАЦИЯ ВНЕШНЕГО ВИДА
+    // =========================================================================
     private async void OnCustomizerClicked(object? sender, EventArgs e)
     {
-        string? section = await DisplayActionSheetAsync("🎨 Настройка внешнего вида Финни", "Закрыть", null,
-            "🧥 Выбрать цвет куртки",
-            "🎩 Выбрать головной убор / аксессуар",
-            "✏️ Изменить имя котика или ребенка");
+        await AnimateTap(sender as VisualElement);
+        EntryPetName.Text = _engine.Profile.PetName;
+        await ShowModal("🎨 Гардероб и имя Финни", PanelCustomizer);
+    }
 
-        if (section == "🧥 Выбрать цвет куртки")
+    private async void OnOutfitGreenClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Outfit = OutfitType.ClassicGreen;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Изумрудная куртка с ₽ — мой классический стиль! 🟢");
+    }
+
+    private async void OnOutfitBlueClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Outfit = OutfitType.RoyalBlue;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Королевский синий цвет — выбор уверенного инвестора! 🔵");
+    }
+
+    private async void OnOutfitRubyClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Outfit = OutfitType.RubyRed;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Рубиновый чемпионский цвет заряжает энергией! 🔴");
+    }
+
+    private async void OnAccNoneClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Accessory = AccessoryType.None;
+        RefreshUI();
+        await _engine.SaveAsync();
+    }
+
+    private async void OnAccSunglassesClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Accessory = AccessoryType.Sunglasses;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Очки надел — к большим доходам готов! 😎");
+    }
+
+    private async void OnAccAcademicClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Accessory = AccessoryType.AcademicCap;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Шапочка юного экономиста! Теперь я профессор финансов! 🎓");
+    }
+
+    private async void OnAccCrownClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Accessory = AccessoryType.Crown;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Корона сбережений! Мы накопили королевский запас! 👑");
+    }
+
+    private async void OnSavePetNameClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        string newName = EntryPetName.Text?.Trim() ?? "";
+        if (!string.IsNullOrWhiteSpace(newName))
         {
-            string? jacket = await DisplayActionSheetAsync("Цвет куртки", "Отмена", null,
-                "1. Классическая изумрудная с ₽",
-                "2. Королевская синяя",
-                "3. Рубиновая чемпионская");
-
-            if (jacket?.StartsWith("1") == true) _engine.Profile.Outfit = OutfitType.ClassicGreen;
-            else if (jacket?.StartsWith("2") == true) _engine.Profile.Outfit = OutfitType.RoyalBlue;
-            else if (jacket?.StartsWith("3") == true) _engine.Profile.Outfit = OutfitType.RubyRed;
-
+            _engine.Profile.PetName = newName;
             RefreshUI();
             await _engine.SaveAsync();
-        }
-        else if (section == "🎩 Выбрать головной убор / аксессуар")
-        {
-            string? acc = await DisplayActionSheetAsync("Аксессуар", "Отмена", null,
-                "1. Без аксессуаров",
-                "2. Очки «Крутой инвестор»",
-                "3. Шапочка «Юный экономист»",
-                "4. Корона сбережений");
-
-            if (acc?.StartsWith("1") == true) _engine.Profile.Accessory = AccessoryType.None;
-            else if (acc?.StartsWith("2") == true) _engine.Profile.Accessory = AccessoryType.Sunglasses;
-            else if (acc?.StartsWith("3") == true) _engine.Profile.Accessory = AccessoryType.AcademicCap;
-            else if (acc?.StartsWith("4") == true) _engine.Profile.Accessory = AccessoryType.Crown;
-
-            RefreshUI();
-            await _engine.SaveAsync();
-        }
-        else if (section == "✏️ Изменить имя котика или ребенка")
-        {
-            string? newPet = await DisplayPromptAsync("Имя питомца", "Как назовем котика?", initialValue: _engine.Profile.PetName);
-            if (!string.IsNullOrWhiteSpace(newPet))
-            {
-                _engine.Profile.PetName = newPet.Trim();
-                RefreshUI();
-                await _engine.SaveAsync();
-            }
+            PetView.SetSpeechText($"Ура! Теперь меня зовут {newName}! 🐾");
+            await CloseModal();
         }
     }
 
-    // --- 3. ПЛАНИРОВАНИЕ БЮДЖЕТА (ТЗ п. 2.5.5) ---
+    // =========================================================================
+    // 3. МОДАЛКА: ПЛАНИРОВАНИЕ БЮДЖЕТА (3 КОНВЕРТА)
+    // =========================================================================
     private async void OnBudgetClicked(object? sender, EventArgs e)
     {
+        await AnimateTap(sender as VisualElement);
         var p = _engine.Profile;
-        string planStatus = p.IsPlanConfirmed ? "Утвержден ✅" : "Черновик (требует подтверждения) ⚠️";
+        _tempOblig = p.PlannedObligatory > 0 ? p.PlannedObligatory : 250;
+        _tempDisc = p.PlannedDiscretionary > 0 ? p.PlannedDiscretionary : 150;
+        _tempSav = p.PlannedSavings > 0 ? p.PlannedSavings : 100;
+        UpdateBudgetModalLabels();
+        await ShowModal($"📊 Бюджет периода #{p.CurrentPeriod}", PanelBudget);
+    }
 
-        string? action = await DisplayActionSheetAsync($"📊 Бюджет периода #{p.CurrentPeriod} ({planStatus})", "Закрыть", null,
-            "1. Составить / Изменить план (3 направления)",
-            "2. Сравнить План и Факт расходов");
+    private void UpdateBudgetModalLabels()
+    {
+        LblBudgetIncome.Text = $"💰 Доход: {PeriodIncome} ₽";
+        LblBudgetObligVal.Text = $"{_tempOblig} ₽";
+        LblBudgetDiscVal.Text = $"{_tempDisc} ₽";
+        LblBudgetSavVal.Text = $"{_tempSav} ₽";
 
-        if (action?.StartsWith("1") == true)
+        int sum = _tempOblig + _tempDisc + _tempSav;
+        int diff = PeriodIncome - sum;
+        if (diff == 0)
         {
-            string? obStr = await DisplayPromptAsync("Шаг 1: Обязательные расходы", 
-                $"Сколько отложить на еду и уход? (Баланс: {p.Balance} ₽):", 
-                initialValue: p.PlannedObligatory.ToString(), keyboard: Keyboard.Numeric);
-            if (string.IsNullOrEmpty(obStr) || !int.TryParse(obStr, out int ob) || ob < 0) return;
-
-            string? discStr = await DisplayPromptAsync("Шаг 2: Желания и развлечения", 
-                $"Сколько выделить на игрушки и радости?:", 
-                initialValue: p.PlannedDiscretionary.ToString(), keyboard: Keyboard.Numeric);
-            if (string.IsNullOrEmpty(discStr) || !int.TryParse(discStr, out int disc) || disc < 0) return;
-
-            string? savStr = await DisplayPromptAsync("Шаг 3: Накопления", 
-                $"Сколько направить в копилку на цель?:", 
-                initialValue: p.PlannedSavings.ToString(), keyboard: Keyboard.Numeric);
-            if (string.IsNullOrEmpty(savStr) || !int.TryParse(savStr, out int sav) || sav < 0) return;
-
-            var result = _engine.ConfirmBudgetPlan(ob, disc, sav);
-            await DisplayAlertAsync(result.Success ? "Успех" : "Внимание", result.Message, "ОК");
+            LblBudgetRemaining.Text = "Распределено 100% ✅";
+            LblBudgetRemaining.TextColor = Color.FromArgb("#10B981");
         }
-        else if (action?.StartsWith("2") == true)
+        else if (diff > 0)
         {
-            string planFact = $"📊 Сравнение Плана и Факта (Период #{p.CurrentPeriod}):\n\n" +
-                              $"🍗 Обязательные траты:\n" +
-                              $"  • План: {p.PlannedObligatory} ₽ | Факт: {p.ActualObligatory} ₽\n\n" +
-                              $"🎮 Желания и развлечения:\n" +
-                              $"  • План: {p.PlannedDiscretionary} ₽ | Факт: {p.ActualDiscretionary} ₽\n\n" +
-                              $"🏦 Накопления в копилку:\n" +
-                              $"  • План: {p.PlannedSavings} ₽ | Факт: {p.ActualSavings} ₽\n\n" +
-                              $"💡 Совет Финни: Если факт превышает план, скорректируйте траты на желания в следующем периоде!";
-
-            await DisplayAlertAsync("Исполнение бюджета", planFact, "Понятно");
+            LblBudgetRemaining.Text = $"Осталось: {diff} ₽";
+            LblBudgetRemaining.TextColor = Color.FromArgb("#FF0053");
+        }
+        else
+        {
+            LblBudgetRemaining.Text = $"Перерасход: {Math.Abs(diff)} ₽ ⚠️";
+            LblBudgetRemaining.TextColor = Color.FromArgb("#EF4444");
         }
     }
 
-    // --- 4. ФИНАНСОВЫЕ ЗАДАНИЯ И КЕЙСЫ (ТЗ п. 2.5.8) ---
+    private void OnBudgetObligPlus(object? sender, EventArgs e)
+    {
+        if (_tempOblig + 10 <= PeriodIncome) { _tempOblig += 10; UpdateBudgetModalLabels(); }
+    }
+    private void OnBudgetObligMinus(object? sender, EventArgs e)
+    {
+        if (_tempOblig - 10 >= 0) { _tempOblig -= 10; UpdateBudgetModalLabels(); }
+    }
+
+    private void OnBudgetDiscPlus(object? sender, EventArgs e)
+    {
+        if (_tempDisc + 10 <= PeriodIncome) { _tempDisc += 10; UpdateBudgetModalLabels(); }
+    }
+    private void OnBudgetDiscMinus(object? sender, EventArgs e)
+    {
+        if (_tempDisc - 10 >= 0) { _tempDisc -= 10; UpdateBudgetModalLabels(); }
+    }
+
+    private void OnBudgetSavPlus(object? sender, EventArgs e)
+    {
+        if (_tempSav + 10 <= PeriodIncome) { _tempSav += 10; UpdateBudgetModalLabels(); }
+    }
+    private void OnBudgetSavMinus(object? sender, EventArgs e)
+    {
+        if (_tempSav - 10 >= 0) { _tempSav -= 10; UpdateBudgetModalLabels(); }
+    }
+
+    private async void OnSaveBudgetPlanClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        int total = _tempOblig + _tempDisc + _tempSav;
+        if (total > PeriodIncome)
+        {
+            PetView.SetSpeechText("Мяу! План превышает доход! Уменьши одну из категорий 💡");
+            return;
+        }
+
+        var p = _engine.Profile;
+        p.PlannedObligatory = _tempOblig;
+        p.PlannedDiscretionary = _tempDisc;
+        p.PlannedSavings = _tempSav;
+        p.IsPlanConfirmed = true;
+
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Отличный план! Теперь совершай покупки согласно конвертам! 📋");
+        await CloseModal();
+    }
+
+    private void OnShowPlanFactClicked(object? sender, EventArgs e)
+    {
+        var p = _engine.Profile;
+        string report = $"📊 Сравнение План vs Факт:\n\n" +
+            $"🍗 Обязательные: План {_tempOblig} ₽ | Факт {p.SpentObligatory} ₽\n" +
+            $"🎮 Желания: План {_tempDisc} ₽ | Факт {p.SpentDiscretionary} ₽\n" +
+            $"🏦 В копилку: План {_tempSav} ₽ | Накоплено {p.Savings} ₽";
+        PetView.SetSpeechText(report);
+    }
+
+    // =========================================================================
+    // 4. МОДАЛКА: ОБРАЗОВАТЕЛЬНЫЕ ЗАДАНИЯ И КВИЗ
+    // =========================================================================
     private async void OnTasksClicked(object? sender, EventArgs e)
     {
-        var tasks = ContentRepository.GetFinancialTasks();
-        var taskNames = tasks.Select((t, i) => $"{i + 1}. [{t.TopicDisplayName.Split(' ')[0]}] {t.Title}").ToArray();
+        await AnimateTap(sender as VisualElement);
+        RenderCurrentTask();
+        await ShowModal("📚 Финансовые задачи", PanelTasks);
+    }
 
-        string? chosen = await DisplayActionSheetAsync("📚 Академия финансовой грамотности", "Закрыть", null, taskNames);
-        if (string.IsNullOrEmpty(chosen) || chosen == "Закрыть") return;
+    private void RenderCurrentTask()
+    {
+        if (_tasks.Count == 0) return;
+        var task = _tasks[_currentTaskIndex % _tasks.Count];
 
-        int index = int.Parse(chosen.Substring(0, chosen.IndexOf('.'))) - 1;
-        var task = tasks[index];
+        LblTaskTopic.Text = $"{task.TopicDisplayName}";
+        LblTaskSituation.Text = $"{task.Title}\n\n{task.ScenarioDescription}";
+        TaskFeedbackBorder.IsVisible = false;
 
-        // Показ ситуации
-        string optionsSheet = await DisplayActionSheetAsync($"💡 {task.Title}", "Отмена", null,
-            task.Options.Select(o => o.Text).ToArray());
-
-        if (string.IsNullOrEmpty(optionsSheet) || optionsSheet == "Отмена") return;
-
-        var selectedOption = task.Options.FirstOrDefault(o => o.Text == optionsSheet);
-        if (selectedOption != null)
+        TaskOptionsContainer.Children.Clear();
+        for (int i = 0; i < task.Options.Count; i++)
         {
-            var res = _engine.CompleteTask(task, selectedOption);
-            await DisplayAlertAsync(res.Success ? "Верно! 🎉" : "Обучающий момент 💡", res.Message, "ОК");
+            var option = task.Options[i];
+
+            var optionBorder = new Border
+            {
+                BackgroundColor = Color.FromArgb("#F9FAFB"),
+                Stroke = Color.FromArgb("#E5E7EB"),
+                StrokeThickness = 1.5,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
+                Padding = new Thickness(12, 10),
+                InputTransparent = false
+            };
+
+            var label = new Label
+            {
+                Text = $"{i + 1}. {option.Text}",
+                FontFamily = "MontserratMedium",
+                FontSize = 12,
+                TextColor = Color.FromArgb("#1F2937"),
+                LineBreakMode = LineBreakMode.WordWrap
+            };
+            optionBorder.Content = label;
+
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += async (s, e) =>
+            {
+                await AnimateTap(optionBorder);
+                await SelectTaskAnswer(task, option, optionBorder);
+            };
+            optionBorder.GestureRecognizers.Add(tap);
+
+            TaskOptionsContainer.Children.Add(optionBorder);
         }
     }
 
-    // --- 5. МАГАЗИН ТОВАРОВ И ЗАБОТЫ (ТЗ п. 2.5.6) ---
+    private async Task SelectTaskAnswer(FinancialTask task, TaskOption option, Border selectedBorder)
+    {
+        var (success, msg) = _engine.CompleteTask(task, option);
+        TaskFeedbackBorder.IsVisible = true;
+
+        if (success)
+        {
+            selectedBorder.BackgroundColor = Color.FromArgb("#DCFCE7");
+            selectedBorder.Stroke = Color.FromArgb("#10B981");
+            TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#F0FDF4");
+            TaskFeedbackBorder.Stroke = Color.FromArgb("#86EFAC");
+            LblTaskFeedback.Text = $"🎉 {msg}";
+            LblTaskFeedback.TextColor = Color.FromArgb("#166534");
+
+            RefreshUI();
+            PetView.SetSpeechText($"Ура! Ты блестяще решил задачу и заработал +{option.RewardCoins} монет! 🌟");
+        }
+        else
+        {
+            selectedBorder.BackgroundColor = Color.FromArgb("#FEF3C7");
+            selectedBorder.Stroke = Color.FromArgb("#F59E0B");
+            TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#FFFBEB");
+            TaskFeedbackBorder.Stroke = Color.FromArgb("#FCD34D");
+            LblTaskFeedback.Text = msg;
+            LblTaskFeedback.TextColor = Color.FromArgb("#92400E");
+            PetView.SetSpeechText("Ошибаться полезно — так мы учимся быть финансово грамотными! 🐾");
+        }
+    }
+
+    private void OnNextTaskClicked(object? sender, EventArgs e)
+    {
+        _currentTaskIndex = (_currentTaskIndex + 1) % _tasks.Count;
+        RenderCurrentTask();
+    }
+
+    // =========================================================================
+    // 5. МОДАЛКА: МАГАЗИН ЗАБОТЫ (ПОКУПКИ ЕДЫ И ИГРУШЕК)
+    // =========================================================================
     private async void OnShopClicked(object? sender, EventArgs e)
     {
-        string? categoryChoice = await DisplayActionSheetAsync("🛒 Магазин: выберите категорию", "Закрыть", null,
-            "1. 🍗 Обязательные расходы (Еда, здоровье, гигиена)",
-            "2. 🎮 Желания и радости (Игрушки, гаджеты)");
+        await AnimateTap(sender as VisualElement);
+        _isShopObligCategory = true;
+        RenderShopCategoryUI();
+        await ShowModal("🛒 Магазин заботы о Финни", PanelShop);
+    }
 
-        if (string.IsNullOrEmpty(categoryChoice) || categoryChoice == "Закрыть") return;
+    private void OnShopTabObligClicked(object? sender, EventArgs e)
+    {
+        _isShopObligCategory = true;
+        RenderShopCategoryUI();
+    }
 
-        ExpenseCategory selectedCategory = categoryChoice.StartsWith("1") 
-            ? ExpenseCategory.Obligatory 
-            : ExpenseCategory.Discretionary;
+    private void OnShopTabDiscClicked(object? sender, EventArgs e)
+    {
+        _isShopObligCategory = false;
+        RenderShopCategoryUI();
+    }
 
-        var items = ContentRepository.GetShopItems()
-            .Where(i => i.Category == selectedCategory)
-            .ToList();
+    private void RenderShopCategoryUI()
+    {
+        LblShopBalance.Text = $"💰 Доступно монет: {_engine.Profile.Balance} ₽";
 
-        string[] itemOptions = items.Select(i => $"{i.IconEmoji} {i.Name} — {i.Price} ₽").ToArray();
-
-        string? selectedItemText = await DisplayActionSheetAsync(
-            selectedCategory == ExpenseCategory.Obligatory ? "Обязательные товары" : "Желания", 
-            "Назад", null, itemOptions);
-
-        if (string.IsNullOrEmpty(selectedItemText) || selectedItemText == "Назад") return;
-
-        var chosenItem = items.FirstOrDefault(i => selectedItemText.Contains(i.Name));
-        if (chosenItem == null) return;
-
-        // Подтверждение покупки с показом цены и влияния на питомца (ТЗ п. 2.5.6)
-        bool confirm = await DisplayAlertAsync($"Подтверждение покупки",
-            $"Товар: {chosenItem.Name}\n" +
-            $"Категория: {chosenItem.CategoryName}\n" +
-            $"Цена: {chosenItem.Price} ₽\n" +
-            $"Влияние: {chosenItem.EffectDescription}\n\n" +
-            $"Ваш текущий баланс: {_engine.Profile.Balance} ₽. Купить?",
-            "Купить", "Отмена");
-
-        if (confirm)
+        if (_isShopObligCategory)
         {
-            var res = _engine.PurchaseItem(chosenItem);
-            await DisplayAlertAsync(res.Success ? "Успешная покупка 🎁" : "Нехватка средств ❌", res.Message, "ОК");
+            BtnShopTabOblig.BackgroundColor = Color.FromArgb("#520978");
+            LblShopTabOblig.TextColor = Colors.White;
+            BtnShopTabDisc.BackgroundColor = Color.FromArgb("#E5E7EB");
+            LblShopTabDisc.TextColor = Color.FromArgb("#4B5563");
+        }
+        else
+        {
+            BtnShopTabDisc.BackgroundColor = Color.FromArgb("#520978");
+            LblShopTabDisc.TextColor = Colors.White;
+            BtnShopTabOblig.BackgroundColor = Color.FromArgb("#E5E7EB");
+            LblShopTabOblig.TextColor = Color.FromArgb("#4B5563");
+        }
+
+        ShopItemsContainer.Children.Clear();
+        var category = _isShopObligCategory ? ExpenseCategory.Obligatory : ExpenseCategory.Discretionary;
+        var items = ContentRepository.GetShopItems().Where(i => i.Category == category).ToList();
+
+        foreach (var item in items)
+        {
+            var card = new Border
+            {
+                BackgroundColor = Color.FromArgb("#F9FAFB"),
+                Stroke = Color.FromArgb("#E5E7EB"),
+                StrokeThickness = 1,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 },
+                Padding = new Thickness(12, 8),
+                InputTransparent = false
+            };
+
+            var grid = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitionCollection
+                {
+                    new ColumnDefinition(GridLength.Auto),
+                    new ColumnDefinition(GridLength.Star),
+                    new ColumnDefinition(GridLength.Auto)
+                },
+                ColumnSpacing = 10
+            };
+
+            // Иконка
+            var lblIcon = new Label { Text = item.Icon, FontSize = 24, VerticalOptions = LayoutOptions.Center };
+            grid.Children.Add(lblIcon);
+
+            // Описание
+            var vText = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
+            Grid.SetColumn(vText, 1);
+            vText.Children.Add(new Label { Text = item.Name, FontFamily = "MontserratBold", FontSize = 13, TextColor = Color.FromArgb("#1F2937") });
+            string effectStr = item.HungerBoost > 0 ? $"+{item.HungerBoost}% Сытость" : $"+{item.MoodBoost}% Настроение";
+            vText.Children.Add(new Label { Text = effectStr, FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#059669") });
+            grid.Children.Add(vText);
+
+            // Кнопка покупки
+            var buyBtn = new Border
+            {
+                BackgroundColor = Color.FromArgb("#10B981"),
+                StrokeThickness = 0,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                Padding = new Thickness(12, 6),
+                InputTransparent = false,
+                VerticalOptions = LayoutOptions.Center
+            };
+            Grid.SetColumn(buyBtn, 2);
+            buyBtn.Content = new Label { Text = $"{item.Price} ₽", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+
+            var tap = new TapGestureRecognizer();
+            tap.Tapped += async (s, e) =>
+            {
+                await AnimateTap(buyBtn);
+                await BuyShopItem(item);
+            };
+            buyBtn.GestureRecognizers.Add(tap);
+            grid.Children.Add(buyBtn);
+
+            card.Content = grid;
+            ShopItemsContainer.Children.Add(card);
         }
     }
 
-    // --- 6. КОПИЛКА И ЦЕЛИ НАКОПЛЕНИЙ (ТЗ п. 2.5.7) ---
+    private async Task BuyShopItem(ShopItem item)
+    {
+        var p = _engine.Profile;
+        if (p.Balance < item.Price)
+        {
+            PetView.SetSpeechText("Недостаточно монет! Выполни задание или спланируй бюджет! 💡");
+            return;
+        }
+
+        p.Balance -= item.Price;
+        if (item.Category == ExpenseCategory.Obligatory) p.SpentObligatory += item.Price;
+        else p.SpentDiscretionary += item.Price;
+
+        p.Hunger = Math.Min(100, p.Hunger + item.HungerBoost);
+        p.Mood = Math.Min(100, p.Mood + item.MoodBoost);
+
+        RefreshUI();
+        await _engine.SaveAsync();
+        RenderShopCategoryUI();
+        PetView.SetSpeechText($"Муррр! Спасибо за {item.Name}! Теперь я доволен! 🐾");
+    }
+
+    // =========================================================================
+    // 6. МОДАЛКА: КОПИЛКА И ФИНАНСОВЫЕ ЦЕЛИ
+    // =========================================================================
     private async void OnGoalsClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        RenderGoalsUI();
+        await ShowModal("🎯 Копилка и цели", PanelGoals);
+    }
+
+    private void RenderGoalsUI()
     {
         var p = _engine.Profile;
         var goals = ContentRepository.GetPresetGoals();
         var currentGoal = goals.FirstOrDefault(g => g.Id == p.SelectedGoalId) ?? goals.First();
 
         int percent = currentGoal.GetProgressPercent(p.Savings);
-        int remPeriods = currentGoal.EstimateRemainingPeriods(p.Savings, 50);
+        LblModalGoalTitle.Text = $"{currentGoal.Icon} {currentGoal.Title}";
+        LblModalGoalProgress.Text = $"Накоплено: {p.Savings} / {currentGoal.TargetAmount} ₽ ({percent}%)";
+        BarModalGoal.Progress = percent / 100.0;
 
-        string? action = await DisplayActionSheetAsync(
-            $"🏦 Копилка (Цель: {currentGoal.Title})", "Закрыть", null,
-            "1. 📥 Пополнить копилку (+50 ₽)",
-            "2. 📥 Пополнить копилку (другая сумма)",
-            "3. 📤 Снять деньги из копилки (с предупреждением)",
-            "4. 🎯 Сменить цель накоплений");
-
-        if (action?.StartsWith("1") == true)
+        GoalsListContainer.Children.Clear();
+        foreach (var goal in goals)
         {
-            var res = _engine.DepositToSavings(50, currentGoal);
-            await DisplayAlertAsync("Копилка", res.Message, "ОК");
-        }
-        else if (action?.StartsWith("2") == true)
-        {
-            string? strAmount = await DisplayPromptAsync("Пополнение", $"Сколько монет отложить? (Баланс: {p.Balance} ₽):", keyboard: Keyboard.Numeric);
-            if (int.TryParse(strAmount, out int amt) && amt > 0)
+            bool isCurrent = goal.Id == currentGoal.Id;
+            var goalCard = new Border
             {
-                var res = _engine.DepositToSavings(amt, currentGoal);
-                await DisplayAlertAsync("Копилка", res.Message, "ОК");
-            }
-        }
-        else if (action?.StartsWith("3") == true)
-        {
-            string? strWithdraw = await DisplayPromptAsync("Снятие из копилки", $"Сколько снять? (В копилке: {p.Savings} ₽):", keyboard: Keyboard.Numeric);
-            if (int.TryParse(strWithdraw, out int wAmt) && wAmt > 0)
-            {
-                // Обязательное предупреждение по п. 2.5.7 ТЗ
-                int newRem = currentGoal.EstimateRemainingPeriods(Math.Max(0, p.Savings - wAmt), 50);
-                bool proceed = await DisplayAlertAsync("⚠️ Предупреждение о цели",
-                    $"Снятие {wAmt} ₽ отдалит покупку «{currentGoal.Title}»!\n" +
-                    $"Срок накопления увеличится до ~{newRem} периодов. Вы точно хотите снять средства?",
-                    "Да, снять", "Отмена");
+                BackgroundColor = isCurrent ? Color.FromArgb("#F3E8FF") : Color.FromArgb("#F9FAFB"),
+                Stroke = isCurrent ? Color.FromArgb("#8A83D1") : Color.FromArgb("#E5E7EB"),
+                StrokeThickness = 1.5,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
+                Padding = new Thickness(12, 8),
+                InputTransparent = false
+            };
 
-                if (proceed)
+            var grid = new Grid
+            {
+                ColumnDefinitions = new ColumnDefinitionCollection
                 {
-                    var res = _engine.WithdrawFromSavings(wAmt, currentGoal);
-                    await DisplayAlertAsync("Результат", res.Message, "ОК");
-                }
-            }
-        }
-        else if (action?.StartsWith("4") == true)
-        {
-            string[] goalOptions = goals.Select(g => $"{g.IconEmoji} {g.Title} ({g.TargetAmount} ₽)").ToArray();
-            string? chosenGoal = await DisplayActionSheetAsync("Выберите цель накоплений", "Отмена", null, goalOptions);
-            
-            var selected = goals.FirstOrDefault(g => chosenGoal != null && chosenGoal.Contains(g.Title));
-            if (selected != null)
+                    new ColumnDefinition(GridLength.Auto),
+                    new ColumnDefinition(GridLength.Star),
+                    new ColumnDefinition(GridLength.Auto)
+                },
+                ColumnSpacing = 8
+            };
+
+            grid.Children.Add(new Label { Text = goal.Icon, FontSize = 20, VerticalOptions = LayoutOptions.Center });
+            var info = new VerticalStackLayout { VerticalOptions = LayoutOptions.Center };
+            Grid.SetColumn(info, 1);
+            info.Children.Add(new Label { Text = goal.Title, FontFamily = "MontserratBold", FontSize = 12, TextColor = Color.FromArgb("#1F2937") });
+            info.Children.Add(new Label { Text = $"Цель: {goal.TargetAmount} ₽", FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#6B7280") });
+            grid.Children.Add(info);
+
+            if (isCurrent)
             {
-                p.SelectedGoalId = selected.Id;
-                RefreshUI();
-                await _engine.SaveAsync();
-                await DisplayAlertAsync("Новая цель", $"Установлена цель: «{selected.Title}» на сумму {selected.TargetAmount} ₽!", "Ура!");
+                var lblSel = new Label { Text = "Активна", FontFamily = "MontserratBold", FontSize = 11, TextColor = Color.FromArgb("#520978"), VerticalOptions = LayoutOptions.Center };
+                Grid.SetColumn(lblSel, 2);
+                grid.Children.Add(lblSel);
             }
+            else
+            {
+                var selectBtn = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#520978"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                    Padding = new Thickness(8, 4),
+                    InputTransparent = false,
+                    VerticalOptions = LayoutOptions.Center
+                };
+                Grid.SetColumn(selectBtn, 2);
+                selectBtn.Content = new Label { Text = "Выбрать", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 11 };
+
+                var tap = new TapGestureRecognizer();
+                tap.Tapped += async (s, e) =>
+                {
+                    await AnimateTap(selectBtn);
+                    p.SelectedGoalId = goal.Id;
+                    RefreshUI();
+                    await _engine.SaveAsync();
+                    RenderGoalsUI();
+                };
+                selectBtn.GestureRecognizers.Add(tap);
+                grid.Children.Add(selectBtn);
+            }
+
+            goalCard.Content = grid;
+            GoalsListContainer.Children.Add(goalCard);
         }
     }
 
-    // --- 7. СЛОВАРЬ И ИСТОРИЯ РОСТА (ТЗ п. 2.5.10, 2.5.11) ---
-    private async void OnGlossaryClicked(object? sender, EventArgs e)
+    private async Task DepositToSavings(int amount)
     {
-        string? option = await DisplayActionSheetAsync("📖 Обучающие материалы и прогресс", "Закрыть", null,
-            "1. 📚 Финансовый словарь (понятия и примеры)",
-            "2. 🌟 Стадии развития питомца",
-            "3. 📜 История прошлых игровых периодов");
-
-        if (option?.StartsWith("1") == true)
+        var p = _engine.Profile;
+        if (p.Balance < amount)
         {
-            var terms = ContentRepository.GetGlossaryTerms();
-            string[] termNames = terms.Select(t => $"{t.IconEmoji} {t.Term}").ToArray();
-
-            string? chosenTerm = await DisplayActionSheetAsync("Финансовый словарь", "Назад", null, termNames);
-            var item = terms.FirstOrDefault(t => chosenTerm != null && chosenTerm.Contains(t.Term));
-            if (item != null)
-            {
-                await DisplayAlertAsync($"{item.IconEmoji} {item.Term}",
-                    $"📖 Определение:\n{item.Definition}\n\n💡 Пример для жизни:\n{item.KidFriendlyExample}", "Понятно");
-            }
-        }
-        else if (option?.StartsWith("2") == true)
-        {
-            await DisplayAlertAsync("🌟 Стадии развития Финни",
-                "1. 🐾 Малыш (Периоды 1-2): Финни только учится обращаться с монетками.\n\n" +
-                "2. 🚀 Подросток (Периоды 3-4): Финни уверенно составляет бюджет и копит на цели.\n\n" +
-                "3. 🌟 Финни-Мастер (Периоды 5+): Котик в совершенстве владеет финансовой грамотностью и имеет золотое свечение!", "Круто!");
-        }
-        else if (option?.StartsWith("3") == true)
-        {
-            var history = _engine.Profile.History;
-            if (history.Count == 0)
-            {
-                await DisplayAlertAsync("История", "Вы находитесь в первом периоде. Завершите период кнопкой ДЕМО, чтобы увидеть отчет!", "ОК");
-                return;
-            }
-
-            string histText = string.Join("\n\n", history.Select(h => 
-                $"📅 Период #{h.PeriodNumber}: {(h.IsBudgetSuccess ? "✅ Успех" : "⚠️ Перерасход")}\n" +
-                $"  • Обязательные: план {h.PlannedObligatory} / факт {h.ActualObligatory} ₽\n" +
-                $"  • Желания: план {h.PlannedDiscretionary} / факт {h.ActualDiscretionary} ₽\n" +
-                $"  • В копилку: факт {h.ActualSavings} ₽"));
-
-            await DisplayAlertAsync("📜 Итоги завершенных периодов", histText, "Закрыть");
-        }
-    }
-
-    // --- 8. КАБИНЕТ РОДИТЕЛЯ (ТЗ п. 2.5.12, 2.5.13) ---
-    private async void OnParentClicked(object? sender, EventArgs e)
-    {
-        // Простой барьер для взрослого (арифметический пример по п. 2.5.12 ТЗ)
-        string? answer = await DisplayPromptAsync("🔒 Раздел для взрослого", "Защитный вопрос: Сколько будет 7 × 8?", keyboard: Keyboard.Numeric);
-        if (answer != "56")
-        {
-            await DisplayAlertAsync("Доступ закрыт", "Неверный ответ на защитный вопрос.", "ОК");
+            PetView.SetSpeechText($"Не хватает {amount} ₽ на балансе для пополнения копилки!");
             return;
         }
 
-        var p = _engine.Profile;
-        string? adminChoice = await DisplayActionSheetAsync("👨‍👩‍👧‍👦 Кабинет взрослого / Родительский контроль", "Закрыть", null,
-            $"📊 Пройдено тестов ребенком: {p.TestsPassedCount}",
-            $"💰 Баланс: {p.Balance} ₽ | Копилка: {p.Savings} ₽",
-            "🎁 Начислить ребенку карманный бонус (+100 ₽)",
-            "🔄 СБРОСИТЬ тестовый профиль к исходному состоянию (Эксперт)");
+        p.Balance -= amount;
+        p.Savings += amount;
+        RefreshUI();
+        await _engine.SaveAsync();
+        RenderGoalsUI();
+        PetView.SetSpeechText($"Звон монетки! +{amount} ₽ отправились в копилку! 🏦");
+    }
 
-        if (adminChoice?.StartsWith("🎁") == true)
-        {
-            _engine.AddIncome(100, "поощрение родителя");
-            await DisplayAlertAsync("Бонус начислен", "Ребенку начислено +100 ₽ за реальные успехи или помощь!", "Отлично");
-        }
-        else if (adminChoice?.StartsWith("🔄") == true)
-        {
-            bool confirmReset = await DisplayAlertAsync("Сброс профиля", 
-                "Вы уверены, что хотите сбросить тестовый профиль к исходному состоянию?\nЭто необходимо для повторного прохождения сценария жюри.",
-                "Да, сбросить", "Отмена");
+    private async void OnDeposit20Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await DepositToSavings(20);
+    }
+    private async void OnDeposit50Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await DepositToSavings(50);
+    }
+    private async void OnDeposit100Clicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        await DepositToSavings(100);
+    }
 
-            if (confirmReset)
+    // =========================================================================
+    // 7. МОДАЛКА: СЛОВАРЬ И РОСТ
+    // =========================================================================
+    private async void OnGlossaryClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        RenderGlossaryUI();
+        await ShowModal("📖 Словарь юного финансиста", PanelGlossary);
+    }
+
+    private void RenderGlossaryUI()
+    {
+        GlossaryTermsContainer.Children.Clear();
+        var terms = ContentRepository.GetGlossaryTerms();
+
+        foreach (var t in terms)
+        {
+            var card = new Border
             {
-                _engine.ResetDemoProfile();
-                await DisplayAlertAsync("Сброшено", "Профиль сброшен к исходному тестовому состоянию.", "ОК");
-            }
+                BackgroundColor = Color.FromArgb("#F9FAFB"),
+                Stroke = Color.FromArgb("#E5E7EB"),
+                StrokeThickness = 1,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 12 },
+                Padding = new Thickness(12, 8)
+            };
+
+            var v = new VerticalStackLayout { Spacing = 2 };
+            v.Children.Add(new Label { Text = t.Term, FontFamily = "MontserratBold", FontSize = 13, TextColor = Color.FromArgb("#310F53") });
+            v.Children.Add(new Label { Text = t.Definition, FontFamily = "MontserratMedium", FontSize = 11, TextColor = Color.FromArgb("#4B5563"), LineBreakMode = LineBreakMode.WordWrap });
+            card.Content = v;
+
+            GlossaryTermsContainer.Children.Add(card);
         }
     }
 
-    // --- 9. ДЕМО: ПЕРЕХОД К СЛЕДУЮЩЕМУ ПЕРИОДУ (ТЗ п. 2.6, Шаг 10) ---
+    // =========================================================================
+    // 8. МОДАЛКА: КАБИНЕТ РОДИТЕЛЕЙ
+    // =========================================================================
+    private async void OnParentClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        // Генерируем случайный пример
+        var rnd = new Random();
+        _parentMathA = rnd.Next(4, 9);
+        _parentMathB = rnd.Next(3, 9);
+        LblParentMathQuestion.Text = $"{_parentMathA} × {_parentMathB} = ?";
+        EntryParentMathAnswer.Text = "";
+        ParentPinGate.IsVisible = true;
+        ParentContent.IsVisible = false;
+
+        await ShowModal("🔒 Кабинет родителей", PanelParent);
+    }
+
+    private async void OnParentUnlockClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        if (int.TryParse(EntryParentMathAnswer.Text, out int ans) && ans == _parentMathA * _parentMathB)
+        {
+            ParentPinGate.IsVisible = false;
+            ParentContent.IsVisible = true;
+
+            var p = _engine.Profile;
+            LblParentStats.Text = $"Ребенок: {p.KidName}\n" +
+                $"Периодов сыграно: {p.CurrentPeriod}\n" +
+                $"Накоплено в копилке: {p.Savings} ₽\n" +
+                $"Заданий выполнено: {p.CompletedTasksCount}\n" +
+                $"Текущий баланс: {p.Balance} ₽";
+        }
+        else
+        {
+            PetView.SetSpeechText("Неверный ответ! Вход только для родителей 🔒");
+        }
+    }
+
+    private async void OnParentGiveBonusClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.Profile.Balance += 100;
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Родители выдали карманные деньги: +100 ₽! 🎉");
+        await CloseModal();
+    }
+
+    private async void OnParentResetDataClicked(object? sender, EventArgs e)
+    {
+        await AnimateTap(sender as VisualElement);
+        _engine.ResetData();
+        RefreshUI();
+        await _engine.SaveAsync();
+        PetView.SetSpeechText("Данные сброшены! Начинаем финансовый путь заново! 🚀");
+        await CloseModal();
+    }
+
+    // =========================================================================
+    // 9. ДЕМО: ЗАВЕРШЕНИЕ ПЕРИОДА И ПЕРЕХОД К СЛЕДУЮЩЕМУ (Шаг 10 ТЗ)
+    // =========================================================================
     private async void OnNextPeriodClicked(object? sender, EventArgs e)
     {
-        bool confirm = await DisplayAlertAsync("Завершение периода",
-            $"Завершить Период #{_engine.Profile.CurrentPeriod} и перейти к следующему?\nБудут подведены итоги бюджета и начислены карманные деньги.",
-            "Да, вперед!", "Отмена");
+        await AnimateTap(sender as VisualElement);
 
-        if (confirm)
-        {
-            string summaryMsg = _engine.AdvanceToNextPeriod();
-            await DisplayAlertAsync("Итоги периода", summaryMsg, "Отлично!");
-        }
+        var p = _engine.Profile;
+        string comparison = _engine.GetPlanVsFactAnalysis();
+
+        p.CurrentPeriod++;
+        p.Balance += PeriodIncome;
+        p.SpentObligatory = 0;
+        p.SpentDiscretionary = 0;
+        p.IsPlanConfirmed = false;
+
+        if (p.CurrentPeriod >= 5) p.Stage = GrowthStage.Master;
+        else if (p.CurrentPeriod >= 3) p.Stage = GrowthStage.Teen;
+
+        RefreshUI();
+        await _engine.SaveAsync();
+
+        PetView.SetSpeechText($"Период #{p.CurrentPeriod} начался! Начислен доход +{PeriodIncome} ₽! 🚀\n{comparison}");
     }
 }
