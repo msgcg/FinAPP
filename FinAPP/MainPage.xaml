@@ -1160,8 +1160,8 @@
                 StrokeThickness="2.5"
                 StrokeShape="RoundRectangle 26"
                 Padding="0"
-                Margin="20"
-                MaximumWidthRequest="360"
+                Margin="16"
+                MaximumWidthRequest="390"
                 HorizontalOptions="Center"
                 VerticalOptions="Center">
             <Border.Shadow>
@@ -1203,35 +1203,42 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Основной контент: анимированный Финни и пояснение -->
-                <VerticalStackLayout Padding="16,14" Spacing="12" BackgroundColor="White">
+                <!-- Основной контент: Финни слева + Окно мудрости/совета справа -->
+                <VerticalStackLayout Padding="14,14" Spacing="14" BackgroundColor="White">
                     
-                    <!-- Анимированный Финни (WebView с _proud.gif или _sad.gif) -->
-                    <WebView x:Name="WvTaskResultFinny"
-                             HeightRequest="160"
-                             WidthRequest="160"
-                             BackgroundColor="Transparent"
-                             InputTransparent="True"
-                             HorizontalOptions="Start"
-                             Margin="-16,0,0,0"/>
+                    <!-- Сетка: Финни слева + Карточка мудрости/совета справа -->
+                    <Grid ColumnDefinitions="130,*" ColumnSpacing="10" VerticalOptions="Center">
+                        <!-- Анимированный Финни (слева) -->
+                        <WebView x:Name="WvTaskResultFinny"
+                                 Grid.Column="0"
+                                 HeightRequest="155"
+                                 WidthRequest="130"
+                                 BackgroundColor="Transparent"
+                                 InputTransparent="True"
+                                 HorizontalOptions="Start"
+                                 VerticalOptions="Center"
+                                 Margin="-14,0,0,0"/>
 
-                    <!-- Карточка с разбором и пояснением финансовой мудрости -->
-                    <Border x:Name="BorderTaskResultExplanation"
-                            StrokeThickness="1.5"
-                            StrokeShape="RoundRectangle 14"
-                            Padding="12,10">
-                        <VerticalStackLayout Spacing="4">
-                            <Label x:Name="LblTaskResultExplanationHeader"
-                                   Text="Мудрость Финни:"
-                                   FontFamily="MontserratBold"
-                                   FontSize="12"/>
-                            <Label x:Name="LblTaskResultExplanation"
-                                   Text="Объяснение..."
-                                   FontFamily="MontserratMedium"
-                                   FontSize="12"
-                                   LineBreakMode="WordWrap"/>
-                        </VerticalStackLayout>
-                    </Border>
+                        <!-- Карточка с разбором и пояснением финансовой мудрости (справа от Финни) -->
+                        <Border x:Name="BorderTaskResultExplanation"
+                                Grid.Column="1"
+                                StrokeThickness="1.5"
+                                StrokeShape="RoundRectangle 14"
+                                Padding="12,10"
+                                VerticalOptions="Center">
+                            <VerticalStackLayout Spacing="4">
+                                <Label x:Name="LblTaskResultExplanationHeader"
+                                       Text="Мудрость Финни:"
+                                       FontFamily="MontserratBold"
+                                       FontSize="12"/>
+                                <Label x:Name="LblTaskResultExplanation"
+                                       Text="Объяснение..."
+                                       FontFamily="MontserratMedium"
+                                       FontSize="12"
+                                       LineBreakMode="WordWrap"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
 
                     <!-- Кнопки действий -->
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">

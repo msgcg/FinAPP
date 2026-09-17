@@ -21,24 +21,24 @@
                 HorizontalOptions="Center"
                 VerticalOptions="Center"/>
 
-        <!-- Сменная платформа / пьедестал под ногами Финни -->
+        <!-- Сменная платформа / пьедестал под ногами Финни (расположена чуть ниже, чтобы лапки стояли на ней) -->
         <Border x:Name="PlatformBase"
-                HeightRequest="24"
+                HeightRequest="20"
                 WidthRequest="155"
-                StrokeShape="RoundRectangle 12"
+                StrokeShape="RoundRectangle 10"
                 StrokeThickness="1.5"
                 HorizontalOptions="Center"
                 VerticalOptions="End"
-                Margin="0,0,0,2">
+                Margin="0,0,0,0">
             <Border.Shadow>
                 <Shadow x:Name="PlatformShadow" Brush="#00E676" Radius="10" Opacity="0.6" Offset="0,2"/>
             </Border.Shadow>
             <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
                 <BoxView x:Name="PlatformBg" Color="#2E7D32" HorizontalOptions="Fill" VerticalOptions="Fill" />
                 <Label x:Name="PlatformDecor"
-                       Text="✤  ПОЛЯНКА  ✤"
+                       Text="✤   ✤   ✤   ✤   ✤   ✤   ✤"
                        TextColor="#E8F5E9"
-                       FontSize="9"
+                       FontSize="11"
                        FontFamily="MontserratBold"
                        HorizontalOptions="Center"
                        VerticalOptions="Center"/>
@@ -51,7 +51,7 @@
                  InputTransparent="True"
                  HorizontalOptions="Fill"
                  VerticalOptions="Fill"
-                 Margin="0,0,0,6"/>
+                 Margin="0,0,0,16"/>
 
         <!-- Резервное нативное изображение на случай непредвиденных сбоев WebView -->
         <Image x:Name="ImgPetFallback"
@@ -61,7 +61,7 @@
                VerticalOptions="Fill"
                IsVisible="False"
                InputTransparent="True"
-               Margin="0,0,0,6"/>
+               Margin="0,0,0,16"/>
 
         <!-- Невидимый прозрачный слой для 100% надежного перехвата тапов по всей площади персонажа -->
         <BoxView BackgroundColor="Transparent"
