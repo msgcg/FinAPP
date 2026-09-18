@@ -91,6 +91,19 @@ public class PetProfile
     public int GoalsAchievedCount { get; set; } = 0;
     public List<string> CompletedGoalIds { get; set; } = new();
 
+    // Купленные нерегулярные товары (игрушки, предметы интерьера) текущей стадии роста (п. 2 ТЗ)
+    public List<string> PurchasedNonRegularItemIds { get; set; } = new();
+
+    public bool IsNonRegularItemPurchased(string itemId)
+    {
+        return PurchasedNonRegularItemIds != null && PurchasedNonRegularItemIds.Contains(itemId);
+    }
+
+    public void ClearNonRegularPurchases()
+    {
+        PurchasedNonRegularItemIds?.Clear();
+    }
+
     // Разблокированные подиумы и рабочие столы (стартовые Flowers и None бесплатны)
     public List<string> UnlockedPlatforms { get; set; } = new() { "Flowers" };
     public List<string> UnlockedDesks { get; set; } = new() { "None" };

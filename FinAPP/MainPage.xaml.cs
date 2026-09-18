@@ -25,22 +25,53 @@ public partial class MainPage : ContentPage
     private readonly BudgetDonutChartDrawable _budgetDonut = new();
     private readonly HistoryChartDrawable _historyChart = new();
 
-    // Интерактивный онбординг (4 шага)
+    // Интерактивный онбординг (11 шагов обучения всем возможностям)
     private int _onboardingStep = 0;
-    private readonly (string Title, string Desc, string Icon, string IconBg)[] _onboardingSlides = new[]
+    private readonly (string Title, string Desc, string Icon, string IconBg, string BorderColor)[] _onboardingSlides = new[]
     {
         ("Привет! Я твой кот Финни!", 
-         "Добро пожаловать в FinAPP — твой персональный тренажёр финансовой грамотности! Вместе мы научимся планировать бюджет, копить на мечту и принимать умные решения!",
-         "ic_gift.png", "#7C3AED"),
-        ("Правило трёх конвертов",
-         "Каждый период карманные деньги распределяются по трём конвертам:\n• Обязательные расходы (уход и здоровье Финни)\n• Желания и радости (игрушки и сладости)\n• Копилка (накопления на твою главную мечту!)",
-         "ic_stat_balance.png", "#059669"),
-        ("Зарабатывай и получай %!",
-         "Решай финансовые задачки, получай монетные награды и откладывай в копилку. А в конце каждого периода банк начисляет +5% сложного процента на все твои сбережения!",
-         "ic_stat_savings.png", "#D97706"),
-        ("Стань Финни-Мастером!",
-         "Заботься обо мне, выбирай подиумы и рабочие столы в гардеробе, следи за бюджетом и пройди путь эволюции от Малыша до Финни-Мастера 3-й стадии!",
-         "ic_master.png", "#520978")
+         "Добро пожаловать в FinAPP! Вместе мы научимся управлять личными финансами, планировать бюджет и уверенно копить на мечты!",
+         "ic_speech_bubble.png", "#F3E8FF", "#D8B4FE"),
+
+        ("Общайся и заботься о Финни",
+         "Нажимай на Финни в любой момент — котик радостно замяукает, покажет анимацию и поделится полезным финансовым советом в облачке речи!",
+         "ic_stat_mood.png", "#FEF3C7", "#FCD34D"),
+
+        ("Сытость, настроение и время",
+         "Следи за шкалами Сытости и Настроения вверху экрана. Чтобы перейти к следующему дню и получить новый доход, используй кнопку «Сменить период».",
+         "ic_stat_hunger.png", "#FFE4E6", "#FDA4AF"),
+
+        ("Кошелек и карманные деньги",
+         "В карточке «Баланс» отображаются доступные монетки. Баланс защищен от ухода в минус — потратить больше, чем есть в кошельке, невозможно!",
+         "ic_stat_balance.png", "#059669", "#047857"),
+
+        ("Планирование личного бюджета",
+         "В начале периода распределяй доход по 3 конвертам:\n• Обязательные расходы — на еду и здоровье котика\n• Желания — на игрушки и развлечения\n• Копилка — на сбережения и мечту",
+         "ic_nav_budget.png", "#EDE9FE", "#C4B5FD"),
+
+        ("Покупки и кнопка «В цель»",
+         "В магазине покупай вкусный обед, витамины и игрушки. Любой понравившийся товар можно превратить в цель накопления нажатием на фиолетовый значок прицела!",
+         "ic_nav_shop.png", "#DCFCE7", "#86EFAC"),
+
+        ("Копилка и процент от банка",
+         "Откладывай монетки на выбранную цель. Банк начисляет +5% сложного процента на все твои сбережения в копилке в конце каждого периода!",
+         "ic_nav_goals.png", "#E0E7FF", "#A5B4FC"),
+
+        ("Задания и Академия",
+         "Решай жизненные финансовые задачки о покупках, карманных деньгах и безопасности. За верные ответы ты получаешь монеты, а Финни объяснит ошибки!",
+         "ic_nav_tasks.png", "#FFE4E6", "#FDA4AF"),
+
+        ("Словарь юного финансиста",
+         "Не знаешь сложный термин? Загляни в Словарь! Здесь собраны простые и понятные объяснения для бюджета, инфляции, кредита и других понятий.",
+         "ic_nav_glossary.png", "#FEF3C7", "#FCD34D"),
+
+        ("Комната и рабочие столики",
+         "В разделе «Гардероб» выбирай для Финни светящиеся подиумы и открывай рабочие столы: IT-финансиста, ученого, предпринимателя или инженера!",
+         "ic_customizer.png", "#F3E8FF", "#D8B4FE"),
+
+        ("Эволюция и кабинет взрослых",
+         "Достигай поставленных целей, и Финни вырастет из Малыша в Юниора и Мастера! А в кабинете родителей взрослые могут настроить звук или начислить бонус.",
+         "ic_nav_parent.png", "#F1F5F9", "#CBD5E1")
     };
 
     // Ввод PIN-кода родителя
@@ -1375,7 +1406,10 @@ public partial class MainPage : ContentPage
                 BackgroundColor = item.Category == ExpenseCategory.Obligatory 
                     ? Color.FromArgb("#DCFCE7") 
                     : (item.Category == ExpenseCategory.Interior ? Color.FromArgb("#FEF3C7") : Color.FromArgb("#EDE9FE")),
-                StrokeThickness = 0,
+                Stroke = item.Category == ExpenseCategory.Obligatory 
+                    ? Color.FromArgb("#86EFAC") 
+                    : (item.Category == ExpenseCategory.Interior ? Color.FromArgb("#FDE68A") : Color.FromArgb("#DDD6FE")),
+                StrokeThickness = 1.2,
                 StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
                 WidthRequest = 42,
                 HeightRequest = 42,
@@ -1397,6 +1431,8 @@ public partial class MainPage : ContentPage
             // Действия
             var actionLayout = new HorizontalStackLayout { Spacing = 6, VerticalOptions = LayoutOptions.Center };
             Grid.SetColumn(actionLayout, 2);
+
+            bool isPurchasedNonRegular = item.Category != ExpenseCategory.Obligatory && p.IsNonRegularItemPurchased(item.Id);
 
             if (isUnlocked)
             {
@@ -1438,13 +1474,35 @@ public partial class MainPage : ContentPage
                 activeBadge.GestureRecognizers.Add(tapActive);
                 actionLayout.Children.Add(activeBadge);
             }
+            else if (isPurchasedNonRegular)
+            {
+                var ownedBadge = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#10B981"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+                    Padding = new Thickness(10, 6),
+                    VerticalOptions = LayoutOptions.Center,
+                    InputTransparent = true
+                };
+                ownedBadge.Content = new Label
+                {
+                    Text = "Куплено ✓",
+                    TextColor = Colors.White,
+                    FontFamily = "MontserratBold",
+                    FontSize = 11,
+                    HorizontalOptions = LayoutOptions.Center
+                };
+                actionLayout.Children.Add(ownedBadge);
+            }
             else
             {
-                // Кнопка "В цель 🎯"
+                // Кнопка "В цель" с высоким контрастом (фиолетовый векторный прицел)
                 var goalBtn = new Border
                 {
-                    BackgroundColor = Color.FromArgb("#EBE9F8"),
-                    StrokeThickness = 0,
+                    BackgroundColor = Color.FromArgb("#F3F0FF"),
+                    Stroke = Color.FromArgb("#8A83D1"),
+                    StrokeThickness = 1.2,
                     StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
                     Padding = new Thickness(8, 6),
                     InputTransparent = false,
@@ -1452,9 +1510,9 @@ public partial class MainPage : ContentPage
                 };
                 goalBtn.Content = new Image
                 {
-                    Source = "ic_stat_savings.png",
-                    WidthRequest = 18,
-                    HeightRequest = 18,
+                    Source = "ic_nav_goals.png",
+                    WidthRequest = 20,
+                    HeightRequest = 20,
                     HorizontalOptions = LayoutOptions.Center,
                     VerticalOptions = LayoutOptions.Center
                 };
@@ -1572,8 +1630,19 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void SetItemAsGoal(ShopItem item)
+    private async void SetItemAsGoal(ShopItem item)
     {
+        var p = _engine.Profile;
+        if (p.IsNonRegularItemPurchased(item.Id) || (item.LinkedDesk.HasValue && p.IsDeskUnlocked(item.LinkedDesk.Value)))
+        {
+            await ShowStyledAlertAsync(
+                "Предмет уже куплен",
+                $"Товар «{item.Name}» уже есть в наличии у котика!\nВыбери другую цель для накопления.",
+                "ic_nav_goals.png",
+                "Понятно");
+            return;
+        }
+
         var allGoals = GetAllGoals();
         var existing = allGoals.FirstOrDefault(g => 
             (item.LinkedDesk.HasValue && g.LinkedDesk == item.LinkedDesk) ||
@@ -1638,6 +1707,22 @@ public partial class MainPage : ContentPage
     private async Task BuyShopItem(ShopItem item)
     {
         var p = _engine.Profile;
+
+        // Проверка нерегулярных покупок (п. 2 ТЗ)
+        if (item.Category != ExpenseCategory.Obligatory)
+        {
+            if (p.IsNonRegularItemPurchased(item.Id) || (item.LinkedDesk.HasValue && p.IsDeskUnlocked(item.LinkedDesk.Value)))
+            {
+                AudioService.Instance.PlaySfx("sfx_error");
+                await ShowStyledAlertAsync(
+                    "Товар уже куплен",
+                    "Этот предмет уже приобретён для текущей стадии роста питомца!\nТы сможешь совершить новые покупки на следующей стадии развития.",
+                    "ic_nav_goals.png",
+                    "Понятно");
+                return;
+            }
+        }
+
         if (p.Balance < item.Price)
         {
             AudioService.Instance.PlaySfx("sfx_error");
@@ -1651,8 +1736,18 @@ public partial class MainPage : ContentPage
         }
 
         p.Balance -= item.Price;
-        if (item.Category == ExpenseCategory.Obligatory) p.SpentObligatory += item.Price;
-        else p.SpentDiscretionary += item.Price;
+        if (item.Category == ExpenseCategory.Obligatory)
+        {
+            p.SpentObligatory += item.Price;
+        }
+        else
+        {
+            p.SpentDiscretionary += item.Price;
+            if (!p.PurchasedNonRegularItemIds.Contains(item.Id))
+            {
+                p.PurchasedNonRegularItemIds.Add(item.Id);
+            }
+        }
 
         p.Hunger = Math.Min(100, p.Hunger + item.HungerBoost);
         p.Mood = Math.Min(100, p.Mood + item.MoodBoost);
@@ -1670,11 +1765,49 @@ public partial class MainPage : ContentPage
             PetView.UpdatePlatform(p.Platform);
         }
 
+        // Взаимная синхронизация с целью накопления: если купленный товар совпадает с целью
+        var allGoals = GetAllGoals();
+        var matchedGoal = allGoals.FirstOrDefault(g => 
+            (!string.IsNullOrEmpty(g.LinkedShopItemId) && g.LinkedShopItemId == item.Id) ||
+            (item.LinkedDesk.HasValue && g.LinkedDesk == item.LinkedDesk) ||
+            (item.LinkedPlatform.HasValue && g.LinkedPlatform == item.LinkedPlatform) ||
+            string.Equals(g.Title, item.Name, StringComparison.OrdinalIgnoreCase));
+
+        bool isGoalCompletedByShop = false;
+        bool evolved = false;
+        FinancialGoal? completedGoal = null;
+
+        if (matchedGoal != null)
+        {
+            completedGoal = matchedGoal;
+            isGoalCompletedByShop = true;
+            if (!p.CompletedGoalIds.Contains(matchedGoal.Id))
+            {
+                p.CompletedGoalIds.Add(matchedGoal.Id);
+            }
+            p.GoalsAchievedCount++;
+            if (matchedGoal.IsCustom && p.CustomGoals.Contains(matchedGoal))
+            {
+                p.CustomGoals.Remove(matchedGoal);
+            }
+            evolved = _engine.CheckGoalEvolution();
+
+            // Если это была активная цель, переключаем на следующую невыполненную
+            if (p.SelectedGoalId == matchedGoal.Id)
+            {
+                var remaining = GetAllGoals().Where(g => !p.CompletedGoalIds.Contains(g.Id) &&
+                    (string.IsNullOrEmpty(g.LinkedShopItemId) || !p.IsNonRegularItemPurchased(g.LinkedShopItemId)) &&
+                    (!g.LinkedDesk.HasValue || !p.IsDeskUnlocked(g.LinkedDesk.Value))).ToList();
+                p.SelectedGoalId = remaining.FirstOrDefault()?.Id ?? "goal_desk_reading";
+            }
+        }
+
         RefreshUI();
         await _engine.SaveAsync();
         RenderShopCategoryUI();
+        RenderGoalsUI();
 
-        // Запуск анимации рассыпания частиц купленной вещи!
+        // Запуск анимации рассыпания частиц купленной вещи
         PlayPurchaseParticleBurst(item.IconImage);
 
         // Озвучивание покупки и урчания довольного котика
@@ -1689,6 +1822,30 @@ public partial class MainPage : ContentPage
 
         PetView.SetSpeechText(string.IsNullOrEmpty(item.ThanksText) ? "Муррр! Спасибо за заботу! Теперь я доволен!" : item.ThanksText);
         PetView.PlayAction("proud");
+
+        if (isGoalCompletedByShop && completedGoal != null)
+        {
+            await Task.Delay(350);
+            if (evolved)
+            {
+                string stageName = p.Stage == GrowthStage.Master ? "Мастером (3 ст.)" : "Юниором (2 ст.)";
+                PetView.SetSpeechText($"УРААА! Я вырос и стал {stageName}! Целей достигнуто: {p.GoalsAchievedCount}!");
+                await ShowStyledAlertAsync(
+                    "Эволюция питомца!",
+                    $"Поздравляем! Ты достиг уже {p.GoalsAchievedCount} целей накопления!\n\nТвой любимец {p.PetName} повзрослел и стал «{stageName}»! Открылись новые горизонты финансовой грамотности!",
+                    "ic_master.png",
+                    "Ура!");
+            }
+            else
+            {
+                await ShowStyledAlertAsync(
+                    "Цель достигнута!",
+                    $"Покупка «{item.Name}» выполнила твою финансовую цель «{completedGoal.Title}»!\nВсего достигнуто целей: {p.GoalsAchievedCount}.",
+                    "ic_nav_goals.png",
+                    "Выбрать следующую цель");
+            }
+            await ShowGoalTypePickerAsync();
+        }
     }
 
     // =========================================================================
@@ -1758,8 +1915,26 @@ public partial class MainPage : ContentPage
             var actionLayout = new HorizontalStackLayout { Spacing = 6, VerticalOptions = LayoutOptions.Center };
             Grid.SetColumn(actionLayout, 2);
 
+            bool isAlreadyOwned = p.CompletedGoalIds.Contains(goal.Id) ||
+                (!string.IsNullOrEmpty(goal.LinkedShopItemId) && p.IsNonRegularItemPurchased(goal.LinkedShopItemId)) ||
+                (goal.LinkedDesk.HasValue && p.IsDeskUnlocked(goal.LinkedDesk.Value)) ||
+                (goal.LinkedPlatform.HasValue && p.IsPlatformUnlocked(goal.LinkedPlatform.Value));
+
             bool isAchieved = p.Savings >= goal.TargetAmount;
-            if (isAchieved)
+            if (isAlreadyOwned)
+            {
+                var ownedBadge = new Border
+                {
+                    BackgroundColor = Color.FromArgb("#10B981"),
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                    Padding = new Thickness(10, 5),
+                    VerticalOptions = LayoutOptions.Center,
+                    Content = new Label { Text = "Куплено ✓", FontFamily = "MontserratBold", FontSize = 11, TextColor = Colors.White }
+                };
+                actionLayout.Children.Add(ownedBadge);
+            }
+            else if (isAchieved)
             {
                 var buyAchievedBtn = new Border
                 {
@@ -1864,6 +2039,10 @@ public partial class MainPage : ContentPage
                 p.Hunger = Math.Min(100, p.Hunger + shopItem.HungerBoost);
                 p.Mood = Math.Min(100, p.Mood + shopItem.MoodBoost);
             }
+            if (!p.PurchasedNonRegularItemIds.Contains(goal.LinkedShopItemId))
+            {
+                p.PurchasedNonRegularItemIds.Add(goal.LinkedShopItemId);
+            }
         }
 
         if (goal.IsCustom && p.CustomGoals.Contains(goal))
@@ -1906,7 +2085,7 @@ public partial class MainPage : ContentPage
             await ShowStyledAlertAsync(
                 "Цель достигнута!",
                 $"Ура! Мечта «{goal.Title}» исполнена!\nВсего достигнуто целей: {p.GoalsAchievedCount}.",
-                "ic_stat_savings.png",
+                "ic_nav_goals.png",
                 "Выбрать следующую цель");
         }
 
@@ -1916,6 +2095,7 @@ public partial class MainPage : ContentPage
 
     private async Task ShowDeskGoalPickerAsync()
     {
+        var p = _engine.Profile;
         var desks = new[]
         {
             PetDeskType.Modern,
@@ -1924,10 +2104,21 @@ public partial class MainPage : ContentPage
             PetDeskType.Maker,
             PetDeskType.Reading,
             PetDeskType.Botanical
-        };
+        }.Where(d => !p.IsDeskUnlocked(d)).ToArray();
+
+        if (desks.Length == 0)
+        {
+            await ShowStyledAlertAsync(
+                "Все столы открыты",
+                "Все рабочие столы уже открыты в твоём гардеробе!\nВыбери игрушку из магазина или введи свою цель вручную.",
+                "ic_customizer.png",
+                "Понятно");
+            return;
+        }
+
         var options = desks.Select(d => $"{GetDeskName(d)} ({GetDeskPrice(d)} монет)").ToArray();
         string? choice = await ShowStyledActionSheetAsync(
-            $"Цель: Рабочий стол для {_engine.Profile.PetName}",
+            $"Цель: Рабочий стол для {p.PetName}",
             "Выбери рабочий стол для накопления:",
             "ic_customizer.png",
             "Отмена",
@@ -1944,12 +2135,26 @@ public partial class MainPage : ContentPage
 
     private async Task ShowToyGoalPickerAsync()
     {
-        var toys = ContentRepository.GetShopItems().Where(i => i.Category == ExpenseCategory.Discretionary).ToList();
+        var p = _engine.Profile;
+        var toys = ContentRepository.GetShopItems()
+            .Where(i => i.Category == ExpenseCategory.Discretionary && !p.IsNonRegularItemPurchased(i.Id))
+            .ToList();
+
+        if (toys.Count == 0)
+        {
+            await ShowStyledAlertAsync(
+                "Все игрушки куплены",
+                "Все игрушки для текущей стадии роста уже куплены!\nПодрасти Финни до следующей стадии роста или введи свою цель вручную.",
+                "ic_nav_goals.png",
+                "Понятно");
+            return;
+        }
+
         var options = toys.Select(t => $"{t.Name} ({t.Price} монет)").ToArray();
         string? choice = await ShowStyledActionSheetAsync(
             "Цель: Игрушка",
             "Выбери игрушку для накопления:",
-            "ic_stat_mood.png",
+            "ic_nav_goals.png",
             "Отмена",
             options);
         if (!string.IsNullOrEmpty(choice) && choice != "Отмена")
@@ -2738,13 +2943,25 @@ public partial class MainPage : ContentPage
         LblOnboardingSlideDesc.Text = FormatPetText(slide.Desc);
         ImgOnboardingSlide.Source = slide.Icon;
         BorderOnboardingIconBg.BackgroundColor = Color.FromArgb(slide.IconBg);
+        BorderOnboardingIconBg.Stroke = Color.FromArgb(slide.BorderColor);
 
+        // Динамические индикаторы слайдов (точки/пилюли)
+        LayoutOnboardingDots.Children.Clear();
         Color activeDot = Color.FromArgb("#520978");
         Color inactiveDot = Color.FromArgb("#E5E7EB");
-        DotStep1.BackgroundColor = _onboardingStep == 0 ? activeDot : inactiveDot;
-        DotStep2.BackgroundColor = _onboardingStep == 1 ? activeDot : inactiveDot;
-        DotStep3.BackgroundColor = _onboardingStep == 2 ? activeDot : inactiveDot;
-        DotStep4.BackgroundColor = _onboardingStep == 3 ? activeDot : inactiveDot;
+        for (int i = 0; i < _onboardingSlides.Length; i++)
+        {
+            bool isActive = i == _onboardingStep;
+            var dot = new Border
+            {
+                BackgroundColor = isActive ? activeDot : inactiveDot,
+                WidthRequest = isActive ? 18 : 8,
+                HeightRequest = 8,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 4 },
+                StrokeThickness = 0
+            };
+            LayoutOnboardingDots.Children.Add(dot);
+        }
 
         BtnOnboardingBack.IsVisible = _onboardingStep > 0;
         LblOnboardingNext.Text = _onboardingStep == _onboardingSlides.Length - 1 ? "Начать играть ➜" : "Далее ➜";

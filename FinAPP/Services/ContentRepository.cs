@@ -1246,6 +1246,7 @@ public static class ContentRepository
     }
 
     // Цели накопления (п. 2.6 ТЗ): мебель, подиумы и желанные игрушки
+    public static List<FinancialGoal> GetPredefinedGoals() => GetPresetGoals();
     public static List<FinancialGoal> GetPresetGoals() => new()
     {
         new FinancialGoal

@@ -568,4 +568,95 @@ public class GameEngineTests
         Assert.True(fileInfo.Length > 3_000 && fileInfo.Length < 100_000, 
             $"Размер sfx_meow.mp3 необычен: {fileInfo.Length} байт");
     }
+
+    [Fact]
+    public void PurchaseItem_RegularItem_CanBePurchasedMultipleTimes()
+    {
+        _engine.Profile.Balance = 500;
+        var food = new ShopItem
+        {
+            Id = "test_food_repeat",
+            Name = "Вкусный обед",
+            Category = ExpenseCategory.Obligatory,
+            Price = 40,
+            HungerBoost = 25
+        };
+
+        var first = _engine.PurchaseItem(food);
+        Assert.True(first.Success);
+        Assert.Equal(460, _engine.Profile.Balance);
+
+        var second = _engine.PurchaseItem(food);
+        Assert.True(second.Success);
+        Assert.Equal(420, _engine.Profile.Balance);
+    }
+
+    [Fact]
+    public void PurchaseItem_NonRegularItem_CannotBePurchasedTwiceInSameStage()
+    {
+        _engine.Profile.Balance = 500;
+        var toy = new ShopItem
+        {
+            Id = "toy_drone_unique",
+            Name = "Квадрокоптер",
+            Category = ExpenseCategory.Discretionary,
+            Price = 120,
+            MoodBoost = 35
+        };
+
+        var first = _engine.PurchaseItem(toy);
+        Assert.True(first.Success);
+        Assert.True(_engine.Profile.IsNonRegularItemPurchased("toy_drone_unique"));
+        Assert.Equal(380, _engine.Profile.Balance);
+
+        // Повторная покупка на той же стадии роста блокируется
+        var second = _engine.PurchaseItem(toy);
+        Assert.False(second.Success);
+        Assert.Contains("уже приобретён", second.Message);
+        Assert.Equal(380, _engine.Profile.Balance); // Баланс не списался
+    }
+
+    [Fact]
+    public void GrowthStageEvolution_ClearsNonRegularPurchases()
+    {
+        _engine.Profile.Stage = GrowthStage.Baby;
+        _engine.Profile.GoalsAchievedCount = 2;
+        _engine.Profile.PurchasedNonRegularItemIds.Add("toy_drone_unique");
+        Assert.True(_engine.Profile.IsNonRegularItemPurchased("toy_drone_unique"));
+
+        // Достижение 3-й цели переводит котика на стадию Teen (Юниор)
+        _engine.Profile.GoalsAchievedCount = 3;
+        bool evolved = _engine.CheckGoalEvolution();
+
+        Assert.True(evolved);
+        Assert.Equal(GrowthStage.Teen, _engine.Profile.Stage);
+        // Список покупок текущей стадии очищается для новых возможностей подросшего котика
+        Assert.Empty(_engine.Profile.PurchasedNonRegularItemIds);
+        Assert.False(_engine.Profile.IsNonRegularItemPurchased("toy_drone_unique"));
+    }
+
+    [Fact]
+    public void PurchaseItem_MatchingActiveGoal_AutomaticallyCompletesGoalAndIncrementsCount()
+    {
+        _engine.Profile.Balance = 500;
+        _engine.Profile.GoalsAchievedCount = 0;
+        _engine.Profile.CompletedGoalIds.Clear();
+        _engine.Profile.SelectedGoalId = "goal_toy_laser";
+
+        var laserShopItem = new ShopItem
+        {
+            Id = "toy_laser",
+            Name = "Лазерная указка-дразнилка",
+            Category = ExpenseCategory.Discretionary,
+            Price = 140,
+            MoodBoost = 25
+        };
+
+        var result = _engine.PurchaseItem(laserShopItem);
+        Assert.True(result.Success);
+        Assert.Contains("Цель «Лазерная указка-дразнилка» достигнута", result.Message);
+        Assert.Equal(1, _engine.Profile.GoalsAchievedCount);
+        Assert.Contains("goal_toy_laser", _engine.Profile.CompletedGoalIds);
+        Assert.True(_engine.Profile.IsNonRegularItemPurchased("toy_laser"));
+    }
 }

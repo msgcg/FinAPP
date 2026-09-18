@@ -59,6 +59,15 @@ public class GameEngine
     // Совершение покупки (ТЗ п. 2.5.6)
     public (bool Success, string Message) PurchaseItem(ShopItem item)
     {
+        // Проверка нерегулярных покупок текущей стадии роста (п. 2 ТЗ)
+        if (item.Category != ExpenseCategory.Obligatory)
+        {
+            if (Profile.IsNonRegularItemPurchased(item.Id) || (item.LinkedDesk.HasValue && Profile.IsDeskUnlocked(item.LinkedDesk.Value)))
+            {
+                return (false, "Этот предмет уже приобретён для текущей стадии роста питомца!\nВы сможете совершить новые покупки на следующей стадии развития.");
+            }
+        }
+
         if (Profile.Balance < item.Price)
         {
             int deficit = item.Price - Profile.Balance;
@@ -76,6 +85,10 @@ public class GameEngine
         else
         {
             Profile.ActualDiscretionary += item.Price;
+            if (!Profile.PurchasedNonRegularItemIds.Contains(item.Id))
+            {
+                Profile.PurchasedNonRegularItemIds.Add(item.Id);
+            }
         }
 
         if (item.LinkedDesk.HasValue)
@@ -89,10 +102,44 @@ public class GameEngine
             Profile.Platform = item.LinkedPlatform.Value;
         }
 
+        // Взаимная синхронизация с активной целью накопления (п. 2 ТЗ)
+        string goalAchievedSuffix = "";
+        var predefinedGoals = ContentRepository.GetPredefinedGoals();
+        var currentGoal = predefinedGoals.FirstOrDefault(g => g.Id == Profile.SelectedGoalId) 
+            ?? Profile.CustomGoals.FirstOrDefault(g => g.Id == Profile.SelectedGoalId);
+
+        if (currentGoal != null)
+        {
+            bool match = (!string.IsNullOrEmpty(currentGoal.LinkedShopItemId) && currentGoal.LinkedShopItemId == item.Id) ||
+                         (item.LinkedDesk.HasValue && currentGoal.LinkedDesk == item.LinkedDesk) ||
+                         (item.LinkedPlatform.HasValue && currentGoal.LinkedPlatform == item.LinkedPlatform) ||
+                         string.Equals(currentGoal.Title, item.Name, StringComparison.OrdinalIgnoreCase);
+
+            if (match)
+            {
+                if (!Profile.CompletedGoalIds.Contains(currentGoal.Id))
+                {
+                    Profile.CompletedGoalIds.Add(currentGoal.Id);
+                }
+                Profile.GoalsAchievedCount++;
+                if (currentGoal.IsCustom)
+                {
+                    Profile.CustomGoals.Remove(currentGoal);
+                }
+                bool evolved = CheckGoalEvolution();
+                goalAchievedSuffix = $"\n\nЦель «{currentGoal.Title}» достигнута благодаря покупке в магазине! Достигнуто целей: {Profile.GoalsAchievedCount}.";
+                if (evolved)
+                {
+                    string stageTitle = Profile.Stage == GrowthStage.Master ? "Мастер" : "Юниор";
+                    goalAchievedSuffix += $"\n{Profile.PetName} перешёл на стадию «{stageTitle}»!";
+                }
+            }
+        }
+
         OnStateChanged?.Invoke();
         _ = SaveAsync();
 
-        return (true, $"Успешно куплено: «{item.Name}»! {item.EffectDescription}.\nСписано: {item.Price} монет.");
+        return (true, $"Успешно куплено: «{item.Name}»! {item.EffectDescription}.\nСписано: {item.Price} монет.{goalAchievedSuffix}");
     }
 
     // Планирование бюджета на период (ТЗ п. 2.5.5)
@@ -288,6 +335,7 @@ public class GameEngine
         // Развитие и рост питомца (в демо-режиме переключается по периодам, в обычном режиме — по достигнутым целям)
         if (Profile.IsDemoMode)
         {
+            var oldStage = Profile.Stage;
             if (Profile.CurrentPeriod >= 5)
             {
                 Profile.Stage = GrowthStage.Master;
@@ -295,6 +343,10 @@ public class GameEngine
             else if (Profile.CurrentPeriod >= 3)
             {
                 Profile.Stage = GrowthStage.Teen;
+            }
+            if (Profile.Stage != oldStage)
+            {
+                Profile.ClearNonRegularPurchases();
             }
         }
         else
@@ -370,6 +422,12 @@ public class GameEngine
         {
             Profile.Stage = GrowthStage.Baby;
         }
-        return Profile.Stage != oldStage;
+
+        bool evolved = Profile.Stage != oldStage;
+        if (evolved)
+        {
+            Profile.ClearNonRegularPurchases();
+        }
+        return evolved;
     }
 }

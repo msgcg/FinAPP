@@ -1856,22 +1856,23 @@
                     <!-- Иконка / иллюстрация слайда -->
                     <Border x:Name="BorderOnboardingIconBg"
                             BackgroundColor="#F3E8FF"
-                            StrokeThickness="0"
-                            HeightRequest="80"
-                            WidthRequest="80"
-                            StrokeShape="RoundRectangle 40"
+                            Stroke="#D8B4FE"
+                            StrokeThickness="1.5"
+                            HeightRequest="76"
+                            WidthRequest="76"
+                            StrokeShape="RoundRectangle 38"
                             HorizontalOptions="Center">
                         <Image x:Name="ImgOnboardingSlide"
-                               Source="ic_gift.png"
-                               WidthRequest="46"
-                               HeightRequest="46"
+                               Source="ic_speech_bubble.png"
+                               WidthRequest="42"
+                               HeightRequest="42"
                                Aspect="AspectFit"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"/>
                     </Border>
 
                     <!-- Текстовое описание -->
-                    <VerticalStackLayout Spacing="8">
+                    <VerticalStackLayout Spacing="6">
                         <Label x:Name="LblOnboardingSlideTitle"
                                Text="Привет! Я твой кот Финни!"
                                FontFamily="MontserratBold"
@@ -1879,7 +1880,7 @@
                                TextColor="#310F53"
                                HorizontalTextAlignment="Center"/>
                         <Label x:Name="LblOnboardingSlideDesc"
-                               Text="Добро пожаловать в FinAPP — твой персональный тренажёр финансовой грамотности! Вместе мы научимся планировать бюджет, копить на мечту и принимать умные решения!"
+                               Text="Добро пожаловать в FinAPP! Вместе мы научимся управлять личными финансами, планировать бюджет и уверенно копить на мечты!"
                                FontFamily="MontserratMedium"
                                FontSize="13"
                                TextColor="#4B5563"
@@ -1887,13 +1888,8 @@
                                LineBreakMode="WordWrap"/>
                     </VerticalStackLayout>
 
-                    <!-- Индикаторы слайдов (точки) -->
-                    <HorizontalStackLayout Spacing="8" HorizontalOptions="Center" Margin="0,4">
-                        <Border x:Name="DotStep1" BackgroundColor="#520978" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
-                        <Border x:Name="DotStep2" BackgroundColor="#E5E7EB" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
-                        <Border x:Name="DotStep3" BackgroundColor="#E5E7EB" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
-                        <Border x:Name="DotStep4" BackgroundColor="#E5E7EB" WidthRequest="10" HeightRequest="10" StrokeShape="RoundRectangle 5" StrokeThickness="0"/>
-                    </HorizontalStackLayout>
+                    <!-- Индикаторы слайдов (динамические точки) -->
+                    <HorizontalStackLayout x:Name="LayoutOnboardingDots" Spacing="6" HorizontalOptions="Center" Margin="0,2"/>
 
                     <!-- Кнопки навигации -->
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0">
