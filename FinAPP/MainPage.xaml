@@ -372,7 +372,8 @@
                     <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                         
                         <!-- Сытость (зависит от обязательных расходов) -->
-                        <Border BackgroundColor="#F0FDF4"
+                        <Border Grid.Column="0"
+                                BackgroundColor="#F0FDF4"
                                 Stroke="#86EFAC"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
@@ -396,12 +397,13 @@
                                 <ProgressBar x:Name="BarHunger"
                                              Progress="0.9"
                                              ProgressColor="#10B981"
-                                             HeightRequest="6"/>
+                                             HeightRequest="7"/>
                             </VerticalStackLayout>
                         </Border>
 
                         <!-- Настроение (зависит от желаний и заданий) -->
-                        <Border BackgroundColor="#FDF2F8"
+                        <Border Grid.Column="1"
+                                BackgroundColor="#FDF2F8"
                                 Stroke="#FBCFE8"
                                 StrokeThickness="1"
                                 StrokeShape="RoundRectangle 12"
@@ -425,7 +427,7 @@
                                 <ProgressBar x:Name="BarMood"
                                              Progress="0.9"
                                              ProgressColor="#FC3777"
-                                             HeightRequest="6"/>
+                                             HeightRequest="7"/>
                             </VerticalStackLayout>
                         </Border>
                     </Grid>
