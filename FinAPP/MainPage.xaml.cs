@@ -77,6 +77,7 @@ public partial class MainPage : ContentPage
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LblSpeech.Text = text;
+                AudioService.Instance.PlaySfx("sfx_meow");
             });
         };
 
