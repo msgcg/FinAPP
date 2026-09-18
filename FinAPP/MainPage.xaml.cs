@@ -207,7 +207,6 @@ public partial class MainPage : ContentPage
 
     private async void OnSpeechBubbleTapped(object? sender, EventArgs e)
     {
-        AudioService.Instance.PlaySfx("sfx_meow");
         await AnimateTap(SpeechBubble);
         if (_engine.CurrentEmotion == "sad")
         {
@@ -1264,8 +1263,8 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            HapticFeedback.Default.Perform(HapticFeedbackType.Click);
             AudioService.Instance.PlaySfx("sfx_meow");
+            try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
             await WvTaskResultFinny.ScaleToAsync(1.08, 100, Easing.CubicOut);
             await WvTaskResultFinny.ScaleToAsync(1.0, 100, Easing.CubicIn);
         }
