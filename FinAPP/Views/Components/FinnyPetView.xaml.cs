@@ -145,6 +145,7 @@ public partial class FinnyPetView : ContentView
 
     public void UpdatePet(PetProfile profile, string emotion)
     {
+        PetName = string.IsNullOrWhiteSpace(profile.PetName) ? "Финни" : profile.PetName;
         var prevPrefix = _currentStagePrefix;
 
         // 1. Выбор префикса стадии эволюции котика (Малыш, Юниор, Мастер)
@@ -399,11 +400,12 @@ public partial class FinnyPetView : ContentView
         return GifAnimationHelper.GenerateFinnyHtml(base64);
     }
 
-    public static Task<string> GetOrLoadHtmlAsync(string gifName) => GetFreshHtmlAsync(gifName);
+    public string PetName { get; set; } = "Финни";
 
     public void SetSpeechText(string text)
     {
-        SpeechTextChanged?.Invoke(text);
+        string formatted = string.IsNullOrEmpty(text) ? "" : text.Replace("Финни", PetName);
+        SpeechTextChanged?.Invoke(formatted);
     }
 
     public void NextQuote()

@@ -87,6 +87,10 @@ public class PetProfile
     public string SelectedGoalId { get; set; } = "goal_desk_modern";
     public List<FinancialGoal> CustomGoals { get; set; } = new();
 
+    // Количество успешно достигнутых целей накопления (для автовзросления: 3 цели -> Юниор, 9 целей -> Мастер)
+    public int GoalsAchievedCount { get; set; } = 0;
+    public List<string> CompletedGoalIds { get; set; } = new();
+
     // Разблокированные подиумы и рабочие столы (стартовые Flowers и None бесплатны)
     public List<string> UnlockedPlatforms { get; set; } = new() { "Flowers" };
     public List<string> UnlockedDesks { get; set; } = new() { "None" };

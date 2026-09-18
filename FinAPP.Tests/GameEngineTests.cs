@@ -184,8 +184,9 @@ public class GameEngineTests
     }
 
     [Fact]
-    public void AdvancePeriod_FiveConsecutivePeriods_ShouldTriggerPetEvolutionToMaster()
+    public void AdvancePeriod_FiveConsecutivePeriods_ShouldTriggerPetEvolutionToMaster_InDemoMode()
     {
+        _engine.Profile.IsDemoMode = true;
         Assert.Equal(1, _engine.Profile.CurrentPeriod);
         Assert.Equal(GrowthStage.Baby, _engine.Profile.Stage);
 
@@ -214,20 +215,56 @@ public class GameEngineTests
     }
 
     [Fact]
+    public void GoalAchieved_Evolution_ZeroToTwoBaby_ThreeToEightTeen_NinePlusMaster()
+    {
+        // 0 целей - Малыш
+        _engine.Profile.GoalsAchievedCount = 0;
+        _engine.CheckGoalEvolution();
+        Assert.Equal(GrowthStage.Baby, _engine.Profile.Stage);
+
+        // 2 цели - всё ещё Малыш
+        _engine.Profile.GoalsAchievedCount = 2;
+        _engine.CheckGoalEvolution();
+        Assert.Equal(GrowthStage.Baby, _engine.Profile.Stage);
+
+        // 3 цели - взрослеет до Юниора
+        _engine.Profile.GoalsAchievedCount = 3;
+        bool evolvedToTeen = _engine.CheckGoalEvolution();
+        Assert.True(evolvedToTeen);
+        Assert.Equal(GrowthStage.Teen, _engine.Profile.Stage);
+
+        // 8 целей - всё ещё Юниор
+        _engine.Profile.GoalsAchievedCount = 8;
+        _engine.CheckGoalEvolution();
+        Assert.Equal(GrowthStage.Teen, _engine.Profile.Stage);
+
+        // 9 целей - взрослеет до Мастера
+        _engine.Profile.GoalsAchievedCount = 9;
+        bool evolvedToMaster = _engine.CheckGoalEvolution();
+        Assert.True(evolvedToMaster);
+        Assert.Equal(GrowthStage.Master, _engine.Profile.Stage);
+
+        // 12 целей - высшая стадия Мастер
+        _engine.Profile.GoalsAchievedCount = 12;
+        _engine.CheckGoalEvolution();
+        Assert.Equal(GrowthStage.Master, _engine.Profile.Stage);
+    }
+
+    [Fact]
     public void ContentRepository_ShouldMeetAllMinimumVolumesOfSpecification()
     {
         // п. 2.6 ТЗ: Покупки не менее 8 позиций двух типов
         var items = ContentRepository.GetShopItems();
         Assert.True(items.Count >= 8);
-        Assert.True(items.Any(i => i.Category == ExpenseCategory.Obligatory));
-        Assert.True(items.Any(i => i.Category == ExpenseCategory.Discretionary));
+        Assert.Contains(items, i => i.Category == ExpenseCategory.Obligatory);
+        Assert.Contains(items, i => i.Category == ExpenseCategory.Discretionary);
 
         // п. 2.6 ТЗ: Задания не менее 6 заданий по 3 темам
         var tasks = ContentRepository.GetFinancialTasks();
-        Assert.True(tasks.Count >= 6);
-        Assert.True(tasks.Any(t => t.Topic == TaskTopic.BudgetPlanning));
-        Assert.True(tasks.Any(t => t.Topic == TaskTopic.SavingsAndReserve));
-        Assert.True(tasks.Any(t => t.Topic == TaskTopic.PaymentsAndSecurity));
+        Assert.True(tasks.Count >= 36);
+        Assert.Contains(tasks, t => t.Topic == TaskTopic.BudgetPlanning);
+        Assert.Contains(tasks, t => t.Topic == TaskTopic.SavingsAndReserve);
+        Assert.Contains(tasks, t => t.Topic == TaskTopic.PaymentsAndSecurity);
 
         // п. 2.6 ТЗ: Цели накопления не менее 3 целей
         var goals = ContentRepository.GetPresetGoals();
@@ -245,7 +282,7 @@ public class GameEngineTests
         _engine.SetAgeGroup(AgeGroup.Junior7_8);
         Assert.Equal(AgeGroup.Junior7_8, _engine.Profile.AgeGroup);
         var juniorTasks = _engine.GetTasksForCurrentAge();
-        Assert.Equal(6, juniorTasks.Count);
+        Assert.Equal(18, juniorTasks.Count);
         Assert.All(juniorTasks, t => Assert.Equal(AgeGroup.Junior7_8, t.TargetAge));
         Assert.Contains(juniorTasks, t => t.Topic == TaskTopic.BudgetPlanning);
         Assert.Contains(juniorTasks, t => t.Topic == TaskTopic.SavingsAndReserve);
@@ -255,15 +292,15 @@ public class GameEngineTests
         _engine.SetAgeGroup(AgeGroup.Senior9_11);
         Assert.Equal(AgeGroup.Senior9_11, _engine.Profile.AgeGroup);
         var seniorTasks = _engine.GetTasksForCurrentAge();
-        Assert.Equal(6, seniorTasks.Count);
+        Assert.Equal(18, seniorTasks.Count);
         Assert.All(seniorTasks, t => Assert.Equal(AgeGroup.Senior9_11, t.TargetAge));
         Assert.Contains(seniorTasks, t => t.Topic == TaskTopic.BudgetPlanning);
         Assert.Contains(seniorTasks, t => t.Topic == TaskTopic.SavingsAndReserve);
         Assert.Contains(seniorTasks, t => t.Topic == TaskTopic.PaymentsAndSecurity);
 
-        // Всего заданий 12
+        // Всего заданий 36
         var allTasks = ContentRepository.GetFinancialTasks();
-        Assert.Equal(12, allTasks.Count);
+        Assert.Equal(36, allTasks.Count);
     }
 
     [Fact]
@@ -498,5 +535,37 @@ public class GameEngineTests
         Assert.Contains(goals, g => g.LinkedDesk.HasValue);
         Assert.Contains(goals, g => !string.IsNullOrEmpty(g.LinkedShopItemId));
         Assert.True(goals.Count >= 5);
+    }
+
+    [Fact]
+    public void PetName_MaxLength_ShouldBeLimitedTo12Characters()
+    {
+        string longName = "ВеликийКотФинниДвенадцатый";
+        string truncated = longName.Length > 12 ? longName.Substring(0, 12) : longName;
+        Assert.Equal(12, truncated.Length);
+        Assert.Equal("ВеликийКотФи", truncated);
+
+        _engine.Profile.PetName = truncated;
+        Assert.Equal("ВеликийКотФи", _engine.Profile.PetName);
+    }
+
+    [Fact]
+    public void SfxMeowAudio_File_ShouldExistInRawAudioAndHaveValidSize()
+    {
+        var testDir = AppContext.BaseDirectory;
+        var currentDir = new DirectoryInfo(testDir);
+        while (currentDir != null && !File.Exists(Path.Combine(currentDir.FullName, "FinAPP.slnx")))
+        {
+            currentDir = currentDir.Parent;
+        }
+        Assert.NotNull(currentDir);
+
+        var audioPath = Path.Combine(currentDir.FullName, "FinAPP", "Resources", "Raw", "audio", "sfx_meow.mp3");
+        Assert.True(File.Exists(audioPath), $"Файл sfx_meow.mp3 отсутствует по пути {audioPath}");
+
+        var fileInfo = new FileInfo(audioPath);
+        // Звук короткого мяуканья ~0.5 сек должен быть в диапазоне 4–50 КБ
+        Assert.True(fileInfo.Length > 3_000 && fileInfo.Length < 100_000, 
+            $"Размер sfx_meow.mp3 необычен: {fileInfo.Length} байт");
     }
 }

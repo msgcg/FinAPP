@@ -139,7 +139,7 @@ public partial class MainPage : ContentPage
         // 1. Питомец и эмоция
         string emotion = _engine.CurrentEmotion;
         PetView.UpdatePet(p, emotion);
-        LblPetHeader.Text = $"{p.PetName} ({p.KidName})";
+        LblPetHeader.Text = "Баланс";
         LblPeriodHeader.Text = $"Период #{p.CurrentPeriod}";
         LblStatusExplanation.Text = _engine.EmotionStatusExplanation;
 
@@ -237,6 +237,14 @@ public partial class MainPage : ContentPage
     // =========================================================================
     // АНИМАЦИИ НАЖАТИЙ И УПРАВЛЕНИЕ ВНУТРИСТРАНИЧНЫМИ МОДАЛКАМИ
     // =========================================================================
+
+    private string FormatPetText(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return "";
+        string petName = _engine?.Profile?.PetName;
+        if (string.IsNullOrWhiteSpace(petName)) petName = "Финни";
+        return text.Replace("Финни", petName);
+    }
 
     private async Task AnimateTap(VisualElement? view)
     {
@@ -499,7 +507,7 @@ public partial class MainPage : ContentPage
         UpdateCustomizerPlatformBadges(_engine.Profile.Platform);
         UpdateCustomizerDeskBadges(_engine.Profile.Desk);
         SetCustomizerTab(true);
-        await ShowModal("Внешний вид и имя Финни", PanelCustomizer);
+        await ShowModal($"Внешний вид и имя {_engine.Profile.PetName}", PanelCustomizer);
     }
 
     private void SetCustomizerTab(bool isPlatform)
@@ -810,6 +818,7 @@ public partial class MainPage : ContentPage
         string newName = EntryPetName.Text?.Trim() ?? "";
         if (!string.IsNullOrWhiteSpace(newName))
         {
+            if (newName.Length > 12) newName = newName.Substring(0, 12);
             _engine.Profile.PetName = newName;
             RefreshUI();
             await _engine.SaveAsync();
@@ -1024,10 +1033,17 @@ public partial class MainPage : ContentPage
     {
         _isCurrentTaskRetry = false;
         if (_tasks.Count == 0) return;
-        var task = _tasks[_currentTaskIndex % _tasks.Count];
+
+        var p = _engine.Profile;
+        p.CompletedTaskIds ??= new();
+
+        var uncompleted = _tasks.Where(t => !p.CompletedTaskIds.Contains(t.Id)).ToList();
+        var task = uncompleted.Count > 0
+            ? uncompleted[_currentTaskIndex % uncompleted.Count]
+            : _tasks[_currentTaskIndex % _tasks.Count];
 
         LblTaskTopic.Text = $"{task.TopicDisplayName}";
-        LblTaskSituation.Text = $"{task.Title}\n\n{task.ScenarioDescription}";
+        LblTaskSituation.Text = $"{task.Title}\n\n{FormatPetText(task.ScenarioDescription)}";
         TaskFeedbackBorder.IsVisible = false;
 
         TaskOptionsContainer.Children.Clear();
@@ -1047,7 +1063,7 @@ public partial class MainPage : ContentPage
 
             var label = new Label
             {
-                Text = $"{i + 1}. {option.Text}",
+                Text = $"{i + 1}. {FormatPetText(option.Text)}",
                 FontFamily = "MontserratMedium",
                 FontSize = 12,
                 TextColor = Color.FromArgb("#1F2937"),
@@ -1134,7 +1150,7 @@ public partial class MainPage : ContentPage
             BadgeTaskResultReward.IsVisible = true;
             LblTaskResultReward.Text = $"+{option.RewardCoins} монет на баланс!";
 
-            LblTaskResultExplanationHeader.Text = "Мудрость Финни:";
+            LblTaskResultExplanationHeader.Text = $"Мудрость {_engine.Profile.PetName}:";
             LblTaskResultExplanationHeader.TextColor = Color.FromArgb("#059669");
             LblTaskResultExplanation.Text = option.Explanation;
             LblTaskResultExplanation.TextColor = Color.FromArgb("#065F46");
@@ -1168,7 +1184,7 @@ public partial class MainPage : ContentPage
             LblTaskResultTitle.Text = "ЕСТЬ НАД ЧЕМ ПОДУМАТЬ!";
             BadgeTaskResultReward.IsVisible = false;
 
-            LblTaskResultExplanationHeader.Text = "Совет от Финни:";
+            LblTaskResultExplanationHeader.Text = $"Совет от {_engine.Profile.PetName}:";
             LblTaskResultExplanationHeader.TextColor = Color.FromArgb("#BE123C");
             LblTaskResultExplanation.Text = option.Explanation;
             LblTaskResultExplanation.TextColor = Color.FromArgb("#881337");
@@ -1223,14 +1239,14 @@ public partial class MainPage : ContentPage
         ModalTaskResult.IsVisible = false;
         WvTaskResultFinny.Source = null;
 
-        _currentTaskIndex = (_currentTaskIndex + 1) % _tasks.Count;
+        _currentTaskIndex++;
         RenderCurrentTask();
     }
 
     private async void OnNextTaskClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
-        _currentTaskIndex = (_currentTaskIndex + 1) % _tasks.Count;
+        _currentTaskIndex++;
         RenderCurrentTask();
     }
 
@@ -1242,7 +1258,7 @@ public partial class MainPage : ContentPage
         await AnimateTap(sender as VisualElement);
         _shopSelectedCategoryTab = 0;
         RenderShopCategoryUI();
-        await ShowModal("Магазин заботы о Финни", PanelShop);
+        await ShowModal($"Магазин заботы о {_engine.Profile.PetName}", PanelShop);
     }
 
     private async void OnShopTabObligClicked(object? sender, EventArgs e)
@@ -1343,7 +1359,7 @@ public partial class MainPage : ContentPage
             // Описание
             var vText = new VerticalStackLayout { Spacing = 2, VerticalOptions = LayoutOptions.Center };
             Grid.SetColumn(vText, 1);
-            vText.Children.Add(new Label { Text = item.Name, FontFamily = "MontserratBold", FontSize = 13, TextColor = Color.FromArgb("#1F2937") });
+            vText.Children.Add(new Label { Text = FormatPetText(item.Name), FontFamily = "MontserratBold", FontSize = 13, TextColor = Color.FromArgb("#1F2937") });
             string effectStr = item.Category == ExpenseCategory.Interior
                 ? "Мебель / Интерьер"
                 : (item.HungerBoost > 0 ? $"+{item.HungerBoost}% Сытость" : $"+{item.MoodBoost}% Настроение");
@@ -1786,6 +1802,12 @@ public partial class MainPage : ContentPage
         }
 
         p.Savings -= goal.TargetAmount;
+        p.GoalsAchievedCount++;
+        p.CompletedGoalIds ??= new();
+        if (!p.CompletedGoalIds.Contains(goal.Id))
+        {
+            p.CompletedGoalIds.Add(goal.Id);
+        }
 
         if (goal.LinkedDesk.HasValue)
         {
@@ -1814,6 +1836,9 @@ public partial class MainPage : ContentPage
             p.CustomGoals.Remove(goal);
         }
 
+        // Проверяем взросление питомца (0-2 цели: Малыш, 3-8 целей: Юниор, 9+ целей: Мастер)
+        bool evolved = _engine.CheckGoalEvolution();
+
         var remainingGoals = GetAllGoals();
         p.SelectedGoalId = remainingGoals.FirstOrDefault()?.Id ?? "goal_desk_modern";
 
@@ -1825,8 +1850,33 @@ public partial class MainPage : ContentPage
 
         AudioService.Instance.PlaySfx("sfx_fanfare");
         AudioService.Instance.PlaySfx("sfx_purr");
-        PetView.SetSpeechText($"УРААА! МЕЧТА ИСПОЛНИЛАСЬ! Мы накопили и купили «{goal.Title}»! Ты настоящий мастер сбережений!");
-        PetView.PlayAction("proud");
+
+        if (evolved)
+        {
+            string stageName = p.Stage == GrowthStage.Master ? "Мастером (3 ст.)" : "Юниором (2 ст.)";
+            PetView.SetSpeechText($"УРААА! Я вырос и стал {stageName}! Целей достигнуто: {p.GoalsAchievedCount}!");
+            PetView.PlayAction("proud");
+
+            await ShowStyledAlertAsync(
+                "Эволюция питомца! 🌟",
+                $"Поздравляем! Ты достиг уже {p.GoalsAchievedCount} целей накопления!\n\nТвой любимец {p.PetName} повзрослел и стал «{stageName}»! Открылись новые горизонты финансовой грамотности!",
+                "ic_master.png",
+                "Ура!");
+        }
+        else
+        {
+            PetView.SetSpeechText($"УРААА! МЕЧТА ИСПОЛНИЛАСЬ! Мы накопили и купили «{goal.Title}»! Целей: {p.GoalsAchievedCount}!");
+            PetView.PlayAction("proud");
+
+            await ShowStyledAlertAsync(
+                "Цель достигнута! 🎯",
+                $"Ура! Мечта «{goal.Title}» исполнена!\nВсего достигнуто целей: {p.GoalsAchievedCount}.",
+                "ic_stat_savings.png",
+                "Выбрать следующую цель");
+        }
+
+        // Автоматический модал выбора новой цели
+        await ShowGoalTypePickerAsync();
     }
 
     private async Task ShowDeskGoalPickerAsync()
@@ -1842,7 +1892,7 @@ public partial class MainPage : ContentPage
         };
         var options = desks.Select(d => $"{GetDeskName(d)} ({GetDeskPrice(d)} монет)").ToArray();
         string? choice = await ShowStyledActionSheetAsync(
-            "Цель: Рабочий стол",
+            $"Цель: Рабочий стол для {_engine.Profile.PetName}",
             "Выбери рабочий стол для накопления:",
             "ic_customizer.png",
             "Отмена",
@@ -1880,13 +1930,19 @@ public partial class MainPage : ContentPage
     private async void OnAddCustomGoalClicked(object? sender, EventArgs e)
     {
         await AnimateTap(sender as VisualElement);
+        await ShowGoalTypePickerAsync();
+    }
+
+    private async Task ShowGoalTypePickerAsync()
+    {
+        string deskOption = $"Выбрать рабочий столик {_engine.Profile.PetName}";
         string? choice = await ShowStyledActionSheetAsync(
             "Новая цель накопления 🎯",
             "Как ты хочешь выбрать цель?",
             "ic_stat_savings.png",
             "Отмена",
             "Ввести свою мечту и сумму вручную",
-            "Выбрать рабочий столик Финни",
+            deskOption,
             "Выбрать игрушку из магазина");
 
         if (choice == "Ввести свою мечту и сумму вручную")
@@ -1929,7 +1985,7 @@ public partial class MainPage : ContentPage
                 PetView.SetSpeechText($"Ура! Мы поставили новую цель: «{name.Trim()}»! Накопим вместе!");
             }
         }
-        else if (choice == "Выбрать рабочий столик Финни")
+        else if (choice == deskOption)
         {
             await ShowDeskGoalPickerAsync();
         }
@@ -2009,7 +2065,16 @@ public partial class MainPage : ContentPage
         await _engine.SaveAsync();
         RenderGoalsUI();
         AudioService.Instance.PlaySfx("sfx_money");
-        PetView.SetSpeechText($"Звон монетки! +{amount} монет отправлены в копилку!");
+        var allGoals = GetAllGoals();
+        var currentGoal = allGoals.FirstOrDefault(g => g.Id == p.SelectedGoalId);
+        if (currentGoal != null && p.Savings >= currentGoal.TargetAmount)
+        {
+            PetView.SetSpeechText($"УРААА! В копилке {p.Savings} монет! Цель «{currentGoal.Title}» достигнута! Открой цели и забери награду!");
+        }
+        else
+        {
+            PetView.SetSpeechText($"Звон монетки! +{amount} монет отправлены в копилку!");
+        }
         PetView.PlayAction("proud");
     }
 
@@ -2112,7 +2177,7 @@ public partial class MainPage : ContentPage
             LblTransferModeWallet.TextColor = Color.FromArgb("#4B5563");
             LblTransferModeWallet.FontFamily = "MontserratMedium";
 
-            LblTransferHint.Text = "Пополнение копилки приближает цель и радует Финни!";
+            LblTransferHint.Text = $"Пополнение копилки приближает цель и радует {_engine.Profile.PetName}!";
             LblTransferHint.TextColor = Color.FromArgb("#520978");
         }
         else
@@ -2634,8 +2699,8 @@ public partial class MainPage : ContentPage
     {
         var slide = _onboardingSlides[_onboardingStep];
         LblOnboardingStepBadge.Text = $"{_onboardingStep + 1} из {_onboardingSlides.Length}";
-        LblOnboardingSlideTitle.Text = slide.Title;
-        LblOnboardingSlideDesc.Text = slide.Desc;
+        LblOnboardingSlideTitle.Text = FormatPetText(slide.Title);
+        LblOnboardingSlideDesc.Text = FormatPetText(slide.Desc);
         ImgOnboardingSlide.Source = slide.Icon;
         BorderOnboardingIconBg.BackgroundColor = Color.FromArgb(slide.IconBg);
 

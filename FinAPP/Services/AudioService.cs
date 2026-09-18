@@ -92,18 +92,18 @@ namespace FinAPP.Services
                 foreach (var file in audioFiles)
                 {
                     var targetPath = Path.Combine(audioDir, file);
-                    if (!File.Exists(targetPath) || new FileInfo(targetPath).Length == 0)
+                    try
                     {
-                        try
+                        using var srcStream = await FileSystem.OpenAppPackageFileAsync($"audio/{file}");
+                        if (!File.Exists(targetPath) || new FileInfo(targetPath).Length != srcStream.Length)
                         {
-                            using var srcStream = await FileSystem.OpenAppPackageFileAsync($"audio/{file}");
                             using var dstStream = File.Create(targetPath);
                             await srcStream.CopyToAsync(dstStream);
                         }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Audio asset copy error {file}: {ex.Message}");
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Audio asset copy error {file}: {ex.Message}");
                     }
                 }
 

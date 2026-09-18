@@ -177,13 +177,19 @@ public class GameEngine
         {
             Profile.Balance += option.RewardCoins;
             Profile.CompletedTasksCount++;
+            Profile.CompletedTaskIds ??= new();
+            if (!Profile.CompletedTaskIds.Contains(task.Id))
+            {
+                Profile.CompletedTaskIds.Add(task.Id);
+            }
+
             int moodGain = isRetry ? (15 + TaskMoodPenalty) : 15;
             Profile.Mood = Math.Min(100, Profile.Mood + moodGain);
 
             OnStateChanged?.Invoke();
             _ = SaveAsync();
 
-            string refundNotice = isRetry ? "\nНастроение Финни полностью восстановлено!" : "";
+            string refundNotice = isRetry ? $"\nНастроение {Profile.PetName} полностью восстановлено!" : "";
             return (true, $"Отлично! Ответ верный!\nВам начислено +{option.RewardCoins} монет.{refundNotice}\n\nРазбор: {option.Explanation}");
         }
         else
@@ -279,14 +285,21 @@ public class GameEngine
         // Переход периода
         Profile.CurrentPeriod++;
 
-        // Развитие и рост питомца (3 стадии: Малыш -> Подросток -> Мастер)
-        if (Profile.CurrentPeriod >= 5)
+        // Развитие и рост питомца (в демо-режиме переключается по периодам, в обычном режиме — по достигнутым целям)
+        if (Profile.IsDemoMode)
         {
-            Profile.Stage = GrowthStage.Master;
+            if (Profile.CurrentPeriod >= 5)
+            {
+                Profile.Stage = GrowthStage.Master;
+            }
+            else if (Profile.CurrentPeriod >= 3)
+            {
+                Profile.Stage = GrowthStage.Teen;
+            }
         }
-        else if (Profile.CurrentPeriod >= 3)
+        else
         {
-            Profile.Stage = GrowthStage.Teen;
+            CheckGoalEvolution();
         }
 
         // Начисление карманных денег за новый период (+150 монет)
@@ -308,9 +321,9 @@ public class GameEngine
 
         string growthMsg = Profile.Stage switch
         {
-            GrowthStage.Master => "Финни достиг высшей стадии развития: «Финни-Мастер»!",
-            GrowthStage.Teen => "Финни повзрослел и стал подростком!",
-            _ => "Финни активно растет и развивается."
+            GrowthStage.Master => $"{Profile.PetName} достиг высшей стадии развития: «{Profile.PetName}-Мастер»!",
+            GrowthStage.Teen => $"{Profile.PetName} повзрослел и стал подростком-юниором!",
+            _ => $"{Profile.PetName} активно растет и развивается."
         };
 
         string interestLine = interest > 0
@@ -339,5 +352,24 @@ public class GameEngine
         bool discOk = Profile.ActualDiscretionary <= (Profile.PlannedDiscretionary > 0 ? Profile.PlannedDiscretionary : 150);
         return $"План/Факт: Обязательные {Profile.ActualObligatory}/{Profile.PlannedObligatory} монет ({(obligOk ? "В норме" : "Превышение")}), " +
                $"Желания {Profile.ActualDiscretionary}/{Profile.PlannedDiscretionary} монет ({(discOk ? "В норме" : "Превышение")}).";
+    }
+
+    // Автовзросление котика по достигнутым целям (0-2 цели - Малыш, 3-8 целей - Юниор, 9+ целей - Мастер)
+    public bool CheckGoalEvolution()
+    {
+        var oldStage = Profile.Stage;
+        if (Profile.GoalsAchievedCount >= 9)
+        {
+            Profile.Stage = GrowthStage.Master;
+        }
+        else if (Profile.GoalsAchievedCount >= 3)
+        {
+            Profile.Stage = GrowthStage.Teen;
+        }
+        else
+        {
+            Profile.Stage = GrowthStage.Baby;
+        }
+        return Profile.Stage != oldStage;
     }
 }
