@@ -218,8 +218,11 @@ public class GameEngine
     public const int TaskMoodPenalty = 15;
 
     // Образовательные задания с немедленной обратной связью (ТЗ п. 2.5.8)
-    public (bool Success, string Message) CompleteTask(FinancialTask task, TaskOption option, bool isRetry = false)
+    public (bool Success, string Message) CompleteTask(FinancialTask task, TaskOption option, bool isRetry = false, int attemptNumber = 1)
     {
+        Profile.TaskCompletionLog ??= new();
+        var existingRecord = Profile.TaskCompletionLog.LastOrDefault(r => r.TaskId == task.Id && r.PeriodNumber == Profile.CurrentPeriod);
+
         if (option.IsCorrect)
         {
             Profile.Balance += option.RewardCoins;
@@ -230,18 +233,30 @@ public class GameEngine
                 Profile.CompletedTaskIds.Add(task.Id);
             }
 
-            Profile.TaskCompletionLog ??= new();
-            Profile.TaskCompletionLog.Add(new TaskCompletionRecord
+            int finalAttempts = attemptNumber > 1 ? attemptNumber : (isRetry ? (existingRecord != null ? existingRecord.AttemptsCount + 1 : 2) : 1);
+            if (existingRecord != null)
             {
-                TaskId = task.Id,
-                TaskTitle = task.Title,
-                Topic = task.Topic,
-                TopicName = task.TopicDisplayName,
-                CompetencyReference = task.CompetencyReference,
-                PeriodNumber = Profile.CurrentPeriod,
-                CompletedAt = DateTime.Now,
-                RewardCoins = option.RewardCoins
-            });
+                existingRecord.IsSuccess = true;
+                existingRecord.AttemptsCount = Math.Max(finalAttempts, existingRecord.AttemptsCount);
+                existingRecord.RewardCoins = option.RewardCoins;
+                existingRecord.CompletedAt = DateTime.Now;
+            }
+            else
+            {
+                Profile.TaskCompletionLog.Add(new TaskCompletionRecord
+                {
+                    TaskId = task.Id,
+                    TaskTitle = task.Title,
+                    Topic = task.Topic,
+                    TopicName = task.TopicDisplayName,
+                    CompetencyReference = task.CompetencyReference,
+                    PeriodNumber = Profile.CurrentPeriod,
+                    CompletedAt = DateTime.Now,
+                    RewardCoins = option.RewardCoins,
+                    IsSuccess = true,
+                    AttemptsCount = finalAttempts
+                });
+            }
 
             int moodGain = isRetry ? (15 + TaskMoodPenalty) : 15;
             Profile.Mood = Math.Min(100, Profile.Mood + moodGain);
@@ -254,6 +269,29 @@ public class GameEngine
         }
         else
         {
+            int currentAttempts = attemptNumber >= 1 ? attemptNumber : 1;
+            if (existingRecord != null)
+            {
+                existingRecord.AttemptsCount = Math.Max(existingRecord.AttemptsCount + 1, currentAttempts);
+                existingRecord.CompletedAt = DateTime.Now;
+            }
+            else
+            {
+                Profile.TaskCompletionLog.Add(new TaskCompletionRecord
+                {
+                    TaskId = task.Id,
+                    TaskTitle = task.Title,
+                    Topic = task.Topic,
+                    TopicName = task.TopicDisplayName,
+                    CompetencyReference = task.CompetencyReference,
+                    PeriodNumber = Profile.CurrentPeriod,
+                    CompletedAt = DateTime.Now,
+                    RewardCoins = 0,
+                    IsSuccess = false,
+                    AttemptsCount = currentAttempts
+                });
+            }
+
             // Ошибка снижает настроение питомца, если штраф ещё не начислялся в этой попытке
             if (!isRetry)
             {

@@ -1235,10 +1235,19 @@
                                             </Border>
                                         </Grid>
 
-                                        <!-- Заголовок и записи истории -->
-                                        <Label Text="История пройденных кейсов:" FontFamily="MontserratBold" FontSize="11" TextColor="#6B7280" Margin="0,2,0,0"/>
-                                        <VerticalStackLayout x:Name="ContainerParentTaskLog" Spacing="6"/>
-                                        <Label x:Name="LblParentTaskLogEmpty" Text="Задания ещё не выполнялись. Записи появятся после решения первых кейсов." FontFamily="MontserratMedium" FontSize="11" TextColor="#9CA3AF" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                                        <!-- Заголовок и записи истории с фиксированным размером и внутренним скроллом -->
+                                        <Grid ColumnDefinitions="*,Auto" Margin="0,2,0,0">
+                                            <Label Text="История пройденных кейсов:" FontFamily="MontserratBold" FontSize="11" TextColor="#6B7280" VerticalOptions="Center"/>
+                                            <Label Text="скролл внутри" FontFamily="MontserratMedium" FontSize="9" TextColor="#9CA3AF" VerticalOptions="Center"/>
+                                        </Grid>
+                                        <Border BackgroundColor="#F9FAFB" Stroke="#E5E7EB" StrokeThickness="1" StrokeShape="RoundRectangle 10" Padding="6" HeightRequest="240">
+                                            <ScrollView Orientation="Vertical" VerticalScrollBarVisibility="Always">
+                                                <Grid>
+                                                    <VerticalStackLayout x:Name="ContainerParentTaskLog" Spacing="6"/>
+                                                    <Label x:Name="LblParentTaskLogEmpty" Text="Задания ещё не выполнялись. Записи появятся после решения первых кейсов." FontFamily="MontserratMedium" FontSize="11" TextColor="#9CA3AF" HorizontalOptions="Center" VerticalOptions="Center" HorizontalTextAlignment="Center" Margin="10,20"/>
+                                                </Grid>
+                                            </ScrollView>
+                                        </Border>
                                     </VerticalStackLayout>
                                 </Border>
 

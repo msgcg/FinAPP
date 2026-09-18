@@ -81,6 +81,7 @@ public partial class MainPage : ContentPage
     private int _currentTaskIndex = 0;
     private List<FinancialTask> _tasks = new();
     private bool _isCurrentTaskRetry = false;
+    private int _currentTaskAttemptNumber = 1;
 
     // Выбранная вкладка магазина (0 = Obligatory, 1 = Discretionary, 2 = Interior)
     private int _shopSelectedCategoryTab = 0;
@@ -1069,6 +1070,7 @@ public partial class MainPage : ContentPage
     private void RenderCurrentTask()
     {
         _isCurrentTaskRetry = false;
+        _currentTaskAttemptNumber = 1;
         if (_tasks.Count == 0) return;
 
         var p = _engine.Profile;
@@ -1125,12 +1127,13 @@ public partial class MainPage : ContentPage
     private async Task SelectTaskAnswer(FinancialTask task, TaskOption option, Border selectedBorder)
     {
         TaskOptionsContainer.InputTransparent = true;
-        var (success, msg) = _engine.CompleteTask(task, option, _isCurrentTaskRetry);
+        var (success, msg) = _engine.CompleteTask(task, option, _isCurrentTaskRetry, _currentTaskAttemptNumber);
         TaskFeedbackBorder.IsVisible = true;
 
         if (success)
         {
             _isCurrentTaskRetry = false;
+            _currentTaskAttemptNumber = 1;
             selectedBorder.BackgroundColor = Color.FromArgb("#DCFCE7");
             selectedBorder.Stroke = Color.FromArgb("#10B981");
             TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#F0FDF4");
@@ -1144,6 +1147,7 @@ public partial class MainPage : ContentPage
         else
         {
             _isCurrentTaskRetry = true;
+            _currentTaskAttemptNumber++;
             selectedBorder.BackgroundColor = Color.FromArgb("#FEF3C7");
             selectedBorder.Stroke = Color.FromArgb("#F59E0B");
             TaskFeedbackBorder.BackgroundColor = Color.FromArgb("#FFFBEB");
@@ -2739,16 +2743,18 @@ public partial class MainPage : ContentPage
                         CompetencyReference = t.CompetencyReference,
                         PeriodNumber = 1,
                         CompletedAt = DateTime.Now,
-                        RewardCoins = t.Options.FirstOrDefault(o => o.IsCorrect)?.RewardCoins ?? 60
+                        RewardCoins = t.Options.FirstOrDefault(o => o.IsCorrect)?.RewardCoins ?? 60,
+                        IsSuccess = true,
+                        AttemptsCount = 1
                     });
                 }
             }
         }
 
-        // Подсчет уникальных пройденных заданий по темам
-        int budgetCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.BudgetPlanning).Select(t => t.TaskId).Distinct().Count();
-        int savingsCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.SavingsAndReserve).Select(t => t.TaskId).Distinct().Count();
-        int securityCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.PaymentsAndSecurity).Select(t => t.TaskId).Distinct().Count();
+        // Подсчет уникальных успешно пройденных заданий по темам
+        int budgetCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.BudgetPlanning && t.IsSuccess).Select(t => t.TaskId).Distinct().Count();
+        int savingsCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.SavingsAndReserve && t.IsSuccess).Select(t => t.TaskId).Distinct().Count();
+        int securityCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.PaymentsAndSecurity && t.IsSuccess).Select(t => t.TaskId).Distinct().Count();
 
         if (LblParentTopicBudget != null) LblParentTopicBudget.Text = $"{budgetCount} тем";
         if (LblParentTopicSavings != null) LblParentTopicSavings.Text = $"{savingsCount} тем";
@@ -2765,8 +2771,8 @@ public partial class MainPage : ContentPage
 
         if (LblParentTaskLogEmpty != null) LblParentTaskLogEmpty.IsVisible = false;
 
-        // Показываем последние записи (до 10 штук, новые сверху)
-        var recentRecords = p.TaskCompletionLog.AsEnumerable().Reverse().Take(10);
+        // Отображаем все записи (новые сверху), которые прокручиваются внутри фиксированного контейнера
+        var recentRecords = p.TaskCompletionLog.AsEnumerable().Reverse().ToList();
         foreach (var record in recentRecords)
         {
             var (badgeBg, badgeText, badgeBorder) = record.Topic switch
@@ -2776,6 +2782,45 @@ public partial class MainPage : ContentPage
                 TaskTopic.PaymentsAndSecurity => (Color.FromArgb("#F5F3FF"), Color.FromArgb("#6D28D9"), Color.FromArgb("#DDD6FE")),
                 _ => (Color.FromArgb("#F3F4F6"), Color.FromArgb("#374151"), Color.FromArgb("#E5E7EB"))
             };
+
+            string attemptOrdinal = record.AttemptsCount switch
+            {
+                1 => "1-й попытки",
+                2 => "2-й попытки",
+                3 => "3-й попытки",
+                4 => "4-й попытки",
+                _ => $"{record.AttemptsCount}-й попытки"
+            };
+
+            Color statusBg;
+            Color statusBorder;
+            Color statusTextColor;
+            string statusText;
+
+            if (record.IsSuccess)
+            {
+                if (record.AttemptsCount <= 1)
+                {
+                    statusBg = Color.FromArgb("#ECFDF5");
+                    statusBorder = Color.FromArgb("#A7F3D0");
+                    statusTextColor = Color.FromArgb("#047857");
+                    statusText = "Решено успешно • с 1-й попытки";
+                }
+                else
+                {
+                    statusBg = Color.FromArgb("#FEF3C7");
+                    statusBorder = Color.FromArgb("#FDE68A");
+                    statusTextColor = Color.FromArgb("#B45309");
+                    statusText = $"Решено успешно • со {attemptOrdinal}";
+                }
+            }
+            else
+            {
+                statusBg = Color.FromArgb("#FEE2E2");
+                statusBorder = Color.FromArgb("#FECDD3");
+                statusTextColor = Color.FromArgb("#B91C1C");
+                statusText = $"Не решено • попыток: {record.AttemptsCount}";
+            }
 
             var card = new Border
             {
@@ -2814,20 +2859,13 @@ public partial class MainPage : ContentPage
                                         TextColor = badgeText
                                     }
                                 },
-                                new HorizontalStackLayout
+                                new Label
                                 {
-                                    Spacing = 4,
-                                    VerticalOptions = LayoutOptions.Center,
-                                    Children =
-                                    {
-                                        new Label
-                                        {
-                                            Text = $"+{record.RewardCoins} монет",
-                                            FontFamily = "MontserratBold",
-                                            FontSize = 11,
-                                            TextColor = Color.FromArgb("#059669")
-                                        }
-                                    }
+                                    Text = record.IsSuccess ? $"+{record.RewardCoins} монет" : "0 монет",
+                                    FontFamily = "MontserratBold",
+                                    FontSize = 11,
+                                    TextColor = record.IsSuccess ? Color.FromArgb("#059669") : Color.FromArgb("#9CA3AF"),
+                                    VerticalOptions = LayoutOptions.Center
                                 }
                             }
                         },
@@ -2837,6 +2875,27 @@ public partial class MainPage : ContentPage
                             FontFamily = "MontserratBold",
                             FontSize = 12,
                             TextColor = Color.FromArgb("#1F2937")
+                        },
+                        new HorizontalStackLayout
+                        {
+                            Children =
+                            {
+                                new Border
+                                {
+                                    BackgroundColor = statusBg,
+                                    Stroke = statusBorder,
+                                    StrokeThickness = 1,
+                                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(6) },
+                                    Padding = new Thickness(6, 2),
+                                    Content = new Label
+                                    {
+                                        Text = statusText,
+                                        FontFamily = "MontserratBold",
+                                        FontSize = 10,
+                                        TextColor = statusTextColor
+                                    }
+                                }
+                            }
                         },
                         new Label
                         {

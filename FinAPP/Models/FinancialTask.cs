@@ -49,5 +49,7 @@ public class TaskCompletionRecord
     public int PeriodNumber { get; set; } = 1;
     public DateTime CompletedAt { get; set; } = DateTime.Now;
     public int RewardCoins { get; set; } = 0;
+    public bool IsSuccess { get; set; } = true;
+    public int AttemptsCount { get; set; } = 1;
 }
 

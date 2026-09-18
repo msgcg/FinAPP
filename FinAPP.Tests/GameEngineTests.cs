@@ -737,6 +737,70 @@ public class GameEngineTests
         Assert.Equal(TaskTopic.SavingsAndReserve, loadedProfile.TaskCompletionLog[0].Topic);
         Assert.Equal("Сбережения и подушка", loadedProfile.TaskCompletionLog[0].TopicName);
         Assert.Equal(60, loadedProfile.TaskCompletionLog[0].RewardCoins);
+        Assert.True(loadedProfile.TaskCompletionLog[0].IsSuccess);
+        Assert.Equal(1, loadedProfile.TaskCompletionLog[0].AttemptsCount);
+    }
+
+    [Fact]
+    public void CompleteTask_TrackAttemptsAndSuccessState_CorrectFirstAttempt_ShouldLogSuccessAndOneAttempt()
+    {
+        _engine.Profile.TaskCompletionLog.Clear();
+        var task = new FinancialTask
+        {
+            Id = "task_attempt_first",
+            Title = "Разумные покупки",
+            Topic = TaskTopic.BudgetPlanning,
+            CompetencyReference = "Рамка Минфина 2.1",
+            Options = new()
+            {
+                new TaskOption { Text = "Составить список", IsCorrect = true, RewardCoins = 45 }
+            }
+        };
+
+        var result = _engine.CompleteTask(task, task.Options[0], isRetry: false, attemptNumber: 1);
+
+        Assert.True(result.Success);
+        Assert.Single(_engine.Profile.TaskCompletionLog);
+        var record = _engine.Profile.TaskCompletionLog[0];
+        Assert.True(record.IsSuccess);
+        Assert.Equal(1, record.AttemptsCount);
+        Assert.Equal(45, record.RewardCoins);
+    }
+
+    [Fact]
+    public void CompleteTask_TrackAttemptsAndSuccessState_WrongThenRetryCorrect_ShouldUpdateLogToSuccessAndMultipleAttempts()
+    {
+        _engine.Profile.TaskCompletionLog.Clear();
+        var task = new FinancialTask
+        {
+            Id = "task_attempt_retry",
+            Title = "Безопасность в сети",
+            Topic = TaskTopic.PaymentsAndSecurity,
+            CompetencyReference = "Рамка Минфина 4.2",
+            Options = new()
+            {
+                new TaskOption { Text = "Открыть неизвестный файл", IsCorrect = false, RewardCoins = 0 },
+                new TaskOption { Text = "Посоветоваться со взрослыми", IsCorrect = true, RewardCoins = 55 }
+            }
+        };
+
+        // Первая неверная попытка
+        var failResult = _engine.CompleteTask(task, task.Options[0], isRetry: false, attemptNumber: 1);
+        Assert.False(failResult.Success);
+        Assert.Single(_engine.Profile.TaskCompletionLog);
+        var recordFail = _engine.Profile.TaskCompletionLog[0];
+        Assert.False(recordFail.IsSuccess);
+        Assert.Equal(1, recordFail.AttemptsCount);
+        Assert.Equal(0, recordFail.RewardCoins);
+
+        // Вторая правильная попытка
+        var successResult = _engine.CompleteTask(task, task.Options[1], isRetry: true, attemptNumber: 2);
+        Assert.True(successResult.Success);
+        Assert.Single(_engine.Profile.TaskCompletionLog);
+        var recordSuccess = _engine.Profile.TaskCompletionLog[0];
+        Assert.True(recordSuccess.IsSuccess);
+        Assert.Equal(2, recordSuccess.AttemptsCount);
+        Assert.Equal(55, recordSuccess.RewardCoins);
     }
 }
 
