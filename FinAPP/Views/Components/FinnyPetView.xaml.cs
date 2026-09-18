@@ -520,14 +520,21 @@ public partial class FinnyPetView : ContentView
 
         try
         {
-            // 1. Тактильный отклик (изолированно)
+            // 1. Звук мяуканья при тапе по котику Финни
+            try
+            {
+                AudioService.Instance.PlaySfx("sfx_meow");
+            }
+            catch { }
+
+            // 2. Тактильный отклик (изолированно)
             try
             {
                 HapticFeedback.Default.Perform(HapticFeedbackType.Click);
             }
             catch { }
 
-            // 2. Смена цитаты Финни (вызывает SpeechTextChanged, где играет sfx_meow)
+            // 3. Смена цитаты Финни
             if (_currentEmotionGif.EndsWith("_sad.gif"))
             {
                 SetSpeechText("Мяу... Животик урчит или мне грустно! Давай заглянем в магазин заботы или поиграем!");

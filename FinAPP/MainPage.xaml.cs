@@ -108,11 +108,10 @@ public partial class MainPage : ContentPage
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 LblSpeech.Text = text;
-                AudioService.Instance.PlaySfx("sfx_meow");
             });
         };
 
-        WvTaskResultFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => AudioService.Instance.PlaySfx("sfx_meow"));
+        WvTaskResultFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => OnTaskResultFinnyTapped(this, EventArgs.Empty));
 
         Loaded += OnPageLoaded;
     }
@@ -238,6 +237,7 @@ public partial class MainPage : ContentPage
 
     private async void OnSpeechBubbleTapped(object? sender, EventArgs e)
     {
+        try { AudioService.Instance.PlaySfx("sfx_meow"); } catch { }
         await AnimateTap(SpeechBubble);
         if (_engine.CurrentEmotion == "sad")
         {
@@ -1250,7 +1250,7 @@ public partial class MainPage : ContentPage
         if (!string.IsNullOrEmpty(html))
         {
             WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
-            FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => AudioService.Instance.PlaySfx("sfx_meow"));
+            FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => OnTaskResultFinnyTapped(this, EventArgs.Empty));
         }
 
         // 3. Плавное появление с подскоком персонажа
@@ -1290,8 +1290,13 @@ public partial class MainPage : ContentPage
         // Поглощает клики по модальному фону и карточке, предотвращая пробивание на нижние слои
     }
 
+    private long _lastTaskFinnyTapTime = 0;
     private async void OnTaskResultFinnyTapped(object? sender, EventArgs e)
     {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (now - _lastTaskFinnyTapTime < 350) return;
+        _lastTaskFinnyTapTime = now;
+
         try
         {
             AudioService.Instance.PlaySfx("sfx_meow");
