@@ -14,7 +14,7 @@ namespace FinAPP.Services
         private const string PrefSfxKey = "audio_sfx_enabled";
         private const string PrefMusicKey = "audio_music_enabled";
         private const string PrefAudioVersionKey = "audio_assets_version";
-        private const int CurrentAudioVersion = 12;
+        private const int CurrentAudioVersion = 13;
 
         private bool _isSfxEnabled;
         private bool _isMusicEnabled;
@@ -24,6 +24,7 @@ namespace FinAPP.Services
 #if ANDROID
         private Android.Media.SoundPool? _soundPool;
         private Android.Media.MediaPlayer? _bgmPlayer;
+        private Android.Media.MediaPlayer? _meowPlayer;
         private readonly Dictionary<string, int> _soundIds = new(StringComparer.OrdinalIgnoreCase);
 #endif
 
@@ -89,6 +90,7 @@ namespace FinAPP.Services
                     "sfx_money.mp3",
                     "sfx_success.mp3",
                     "sfx_error.mp3",
+                    "sfx_meow.wav",
                     "sfx_meow.mp3",
                     "sfx_purr.mp3",
                     "bgm_idle.mp3"
@@ -122,16 +124,16 @@ namespace FinAPP.Services
                     Preferences.Default.Set(PrefAudioVersionKey, CurrentAudioVersion);
                 }
 
-                // Initialize SoundPool for SFX
+                // Initialize SoundPool for SFX on Media/Music stream (matches volume rocker)
                 var audioAttributes = new Android.Media.AudioAttributes.Builder()
-                    ?.SetUsage(Android.Media.AudioUsageKind.Game)
-                    ?.SetContentType(Android.Media.AudioContentType.Sonification)
+                    ?.SetUsage(Android.Media.AudioUsageKind.Media)
+                    ?.SetContentType(Android.Media.AudioContentType.Music)
                     ?.Build();
 
                 if (audioAttributes != null)
                 {
                     _soundPool = new Android.Media.SoundPool.Builder()
-                        ?.SetMaxStreams(6)
+                        ?.SetMaxStreams(8)
                         ?.SetAudioAttributes(audioAttributes)
                         ?.Build();
                 }
@@ -152,6 +154,29 @@ namespace FinAPP.Services
                             }
                         }
                     }
+                }
+
+                // Pre-prepare dedicated instant player for sfx_meow
+                try
+                {
+                    var meowPath = Path.Combine(audioDir, "sfx_meow.wav");
+                    if (!File.Exists(meowPath)) meowPath = Path.Combine(audioDir, "sfx_meow.mp3");
+                    if (File.Exists(meowPath))
+                    {
+                        _meowPlayer = new Android.Media.MediaPlayer();
+                        _meowPlayer.SetAudioAttributes(
+                            new Android.Media.AudioAttributes.Builder()
+                                ?.SetUsage(Android.Media.AudioUsageKind.Media)
+                                ?.SetContentType(Android.Media.AudioContentType.Music)
+                                ?.Build());
+                        _meowPlayer.SetDataSource(meowPath);
+                        _meowPlayer.SetVolume(1.0f, 1.0f);
+                        _meowPlayer.Prepare();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"_meowPlayer init error: {ex.Message}");
                 }
 
                 _isInitialized = true;
@@ -178,16 +203,36 @@ namespace FinAPP.Services
             {
                 lock (_lock)
                 {
-                    string key = soundName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) 
+                    string key = soundName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) || soundName.EndsWith(".wav", StringComparison.OrdinalIgnoreCase)
                         ? Path.GetFileNameWithoutExtension(soundName) 
                         : soundName;
 
+                    // 1. Быстрый гарантированный путь для кошачьего мяуканья
+                    if (key.Equals("sfx_meow", StringComparison.OrdinalIgnoreCase) && _meowPlayer != null)
+                    {
+                        try
+                        {
+                            if (_meowPlayer.IsPlaying)
+                            {
+                                _meowPlayer.SeekTo(0);
+                            }
+                            _meowPlayer.Start();
+                            return;
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"_meowPlayer Play error: {ex.Message}");
+                        }
+                    }
+
+                    // 2. Основной SoundPool
                     int streamId = 0;
                     if (_soundPool != null && _soundIds.TryGetValue(key, out int soundId) && soundId > 0)
                     {
                         streamId = _soundPool.Play(soundId, 1.0f, 1.0f, 1, 0, 1.0f);
                     }
 
+                    // 3. Fallback через MediaPlayer при нулевом результате SoundPool
                     if (streamId == 0)
                     {
                         PlaySfxFallback(soundName);
@@ -208,18 +253,17 @@ namespace FinAPP.Services
             try
             {
                 var audioDir = Path.Combine(FileSystem.CacheDirectory, "audio");
-                string fileName = soundName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) 
-                    ? soundName 
-                    : $"{soundName}.mp3";
-                string filePath = Path.Combine(audioDir, fileName);
+                string baseName = Path.GetFileNameWithoutExtension(soundName);
+                string filePath = Path.Combine(audioDir, $"{baseName}.wav");
+                if (!File.Exists(filePath)) filePath = Path.Combine(audioDir, $"{baseName}.mp3");
 
                 if (!File.Exists(filePath)) return;
 
                 var player = new Android.Media.MediaPlayer();
                 player.SetAudioAttributes(
                     new Android.Media.AudioAttributes.Builder()
-                        ?.SetUsage(Android.Media.AudioUsageKind.Game)
-                        ?.SetContentType(Android.Media.AudioContentType.Sonification)
+                        ?.SetUsage(Android.Media.AudioUsageKind.Media)
+                        ?.SetContentType(Android.Media.AudioContentType.Music)
                         ?.Build());
                 player.SetDataSource(filePath);
                 player.SetVolume(1.0f, 1.0f);

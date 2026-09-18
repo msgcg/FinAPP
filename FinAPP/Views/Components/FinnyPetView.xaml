@@ -7,7 +7,11 @@
           WidthRequest="165"
           HeightRequest="240"
           HorizontalOptions="Start"
-          VerticalOptions="Center">
+          VerticalOptions="Center"
+          InputTransparent="False">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnPetTapped"/>
+        </Grid.GestureRecognizers>
 
         <!-- Золотое свечение для высшей стадии Мастер -->
         <Border x:Name="MasterAura"
@@ -74,14 +78,16 @@
                IsVisible="False"
                Margin="0,0,0,10"/>
 
-        <!-- Невидимый прозрачный слой для 100% надежного перехвата тапов по всей площади персонажа -->
-        <BoxView BackgroundColor="Transparent"
-                 HorizontalOptions="Fill"
-                 VerticalOptions="Fill">
-            <BoxView.GestureRecognizers>
+        <!-- Невидимый слой для 100% надежного перехвата тапов по всей площади персонажа -->
+        <Border BackgroundColor="#01000000"
+                StrokeThickness="0"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                InputTransparent="False">
+            <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnPetTapped"/>
-            </BoxView.GestureRecognizers>
-        </BoxView>
+            </Border.GestureRecognizers>
+        </Border>
 
         <!-- Бейдж стадии роста в левом верхнем углу -->
         <Border BackgroundColor="#520978"

@@ -273,7 +273,7 @@ public static class ContentRepository
                 Id = "junior_task_1",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Хочу или Надо: поход в буфет 🥪",
+                Title = "Хочу или Надо: поход в буфет",
                 CompetencyReference = "Единая рамка компетенций, п. 6.2: Различение необходимого и желаемого",
                 ScenarioDescription = "На перемене ты проголодался. Горячий сытный пирожок стоит 25 монет, а рядом лежит брелок с котиком за 25 монет. В кармане ровно 30 монет. Что правильнее купить в первую очередь?",
                 Options = new()
@@ -299,7 +299,7 @@ public static class ContentRepository
                 Id = "junior_task_2",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Три конверта для карманных денег ✉️",
+                Title = "Три конверта для карманных денег",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Личный бюджет и метод конвертов",
                 ScenarioDescription = "Родители выдали тебе 30 монет на неделю. Как распределить их по правилу трёх конвертов?",
                 Options = new()
@@ -332,7 +332,7 @@ public static class ContentRepository
                 Id = "junior_task_3",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Копилка на мечту: шаг за шагом 🐷",
+                Title = "Копилка на мечту: шаг за шагом",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Формирование регулярных сбережений",
                 ScenarioDescription = "Ты мечтаешь о новом конструкторе за 100 монет. Каждую неделю у тебя остается 20 монет. Как быстрее и надежнее достичь цели?",
                 Options = new()
@@ -358,7 +358,7 @@ public static class ContentRepository
                 Id = "junior_task_4",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "В супермаркет со списком покупок 📝",
+                Title = "В супермаркет со списком покупок",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Принятие решений в условиях ограниченного бюджета",
                 ScenarioDescription = "Мама отправила тебя в магазин за хлебом и молоком, дав список и 50 монет. Возле кассы стоят яркие леденцы. Как поступить?",
                 Options = new()
@@ -384,7 +384,7 @@ public static class ContentRepository
                 Id = "junior_task_5",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Считаем сдачу у кассы 🧮",
+                Title = "Считаем сдачу у кассы",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Расчеты наличными деньгами и проверка сдачи",
                 ScenarioDescription = "Тетрадь стоит 15 монет. Ты протянул кассиру монету достоинством 20 монет. Сколько сдачи тебе обязаны вернуть?",
                 Options = new()
@@ -417,7 +417,7 @@ public static class ContentRepository
                 Id = "junior_task_6",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Секрет твоего кошелька во дворе 🛡️",
+                Title = "Секрет твоего кошелька во дворе",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность и защита карманных денег",
                 ScenarioDescription = "Во дворе незнакомый подросток говорит: «Покажи, сколько у тебя монеток в кошельке, я фокус покажу и удвою их!». Что ты сделаешь?",
                 Options = new()
@@ -443,7 +443,7 @@ public static class ContentRepository
                 Id = "junior_task_7",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Чужая банковская карта на площадке 💳",
+                Title = "Чужая банковская карта на площадке",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Финансовая безопасность и правовые нормы",
                 ScenarioDescription = "На детской площадке у качелей ты увидел лежащую банковскую карту. Твой знакомый предлагает попробовать купить по ней чипсы. Как поступить правильно?",
                 Options = new()
@@ -469,7 +469,7 @@ public static class ContentRepository
                 Id = "junior_task_8",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Береги школьные вещи 🎒",
+                Title = "Береги школьные вещи",
                 CompetencyReference = "Единая рамка компетенций, п. 6.2: Бережное отношение к вещам как экономия бюджета",
                 ScenarioDescription = "Почему аккуратное отношение к школьному рюкзаку, куртке и учебникам помогает твоей семье экономить деньги?",
                 Options = new()
@@ -495,7 +495,7 @@ public static class ContentRepository
                 Id = "junior_task_9",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Секретный ПИН-код детской карты 🤫",
+                Title = "Секретный ПИН-код детской карты",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Конфиденциальность платежных реквизитов",
                 ScenarioDescription = "Родители оформили тебе детскую карту для школьных обедов. Где правильнее всего хранить 4-значный ПИН-код?",
                 Options = new()
@@ -528,7 +528,7 @@ public static class ContentRepository
                 Id = "junior_task_10",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Игрушка-ловушка у кассы 🍭",
+                Title = "Игрушка-ловушка у кассы",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Маркетинговые уловки и спонтанные покупки",
                 ScenarioDescription = "Почему в магазинах самые яркие конфеты и маленькие игрушки кладут прямо перед кассой на уровне детских глаз?",
                 Options = new()
@@ -554,7 +554,7 @@ public static class ContentRepository
                 Id = "junior_task_11",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Откуда берутся деньги в семье? 💼",
+                Title = "Откуда берутся деньги в семье?",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Источники доходов и ценность труда",
                 ScenarioDescription = "Откуда в семейном кошельке и на банковских картах родителей появляются деньги?",
                 Options = new()
@@ -580,7 +580,7 @@ public static class ContentRepository
                 Id = "junior_task_12",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Сравнение цен на цветные карандаши ✏️",
+                Title = "Сравнение цен на цветные карандаши",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Сравнение предложений и выбор выгодной цены",
                 ScenarioDescription = "Тебе нужен набор из 12 карандашей для рисования. В киоске у школы он стоит 40 монет, а в канцелярском магазине за углом — 25 монет. Где лучше купить?",
                 Options = new()
@@ -606,7 +606,7 @@ public static class ContentRepository
                 Id = "junior_task_13",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Срочный случай: потерялся проездной 🚌",
+                Title = "Срочный случай: потерялся проездной",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Непредвиденные расходы и личный резерв",
                 ScenarioDescription = "После школы ты обнаружил, что забыл дома проездной билет на автобус. Какая полезная привычка выручит тебя в такой ситуации?",
                 Options = new()
@@ -632,7 +632,7 @@ public static class ContentRepository
                 Id = "junior_task_14",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Игра на планшете просит монеты 🎮",
+                Title = "Игра на планшете просит монеты",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность встроенных покупок в цифровых играх",
                 ScenarioDescription = "В мобильной игре появилось яркое окно: «Нажми зеленую кнопку, чтобы получить супер-меч за 99 рублей!». Карта привязана к аккаунту мамы. Что делать?",
                 Options = new()
@@ -658,7 +658,7 @@ public static class ContentRepository
                 Id = "junior_task_15",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Угощение для друга: щедрость и баланс 🍏",
+                Title = "Угощение для друга: щедрость и баланс",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Планирование личных трат и социальное поведение",
                 ScenarioDescription = "Друг забыл дома яблоко и просит тебя купить ему в столовой обед на все твои карманные деньги (50 монет). Как поступить мудро?",
                 Options = new()
@@ -684,7 +684,7 @@ public static class ContentRepository
                 Id = "junior_task_16",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Кассир ошибся в твою пользу 🪙",
+                Title = "Кассир ошибся в твою пользу",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Честность в расчетах и финансовая этика",
                 ScenarioDescription = "В магазине продавец по ошибке дал тебе сдачу 50 монет вместо 20 монет. Заметил это только ты. Как поступить честно?",
                 Options = new()
@@ -710,7 +710,7 @@ public static class ContentRepository
                 Id = "junior_task_17",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Свет и вода дома — это тоже деньги 💡",
+                Title = "Свет и вода дома — это тоже деньги",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Коммунальные платежи и бережное потребление",
                 ScenarioDescription = "Почему полезно выключать свет в пустой комнате и закрывать кран, когда чистишь зубы?",
                 Options = new()
@@ -736,7 +736,7 @@ public static class ContentRepository
                 Id = "junior_task_18",
                 TargetAge = AgeGroup.Junior7_8,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Разбитая копилка или терпение? ⏳",
+                Title = "Разбитая копилка или терпение?",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Достижение долгосрочных целей и самоконтроль",
                 ScenarioDescription = "Ты копишь на классный самокат за 150 монет, накопил уже 80 монет. В магазине увидел светящийся спиннер за 80 монет. Что посоветует грамотный финансист?",
                 Options = new()
@@ -766,7 +766,7 @@ public static class ContentRepository
                 Id = "senior_task_1",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Золотое правило 50 / 30 / 20 📊",
+                Title = "Золотое правило 50 / 30 / 20",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Назначение личного бюджета и баланс расходов",
                 ScenarioDescription = "Тебе выделили 100 монет карманных денег на месяц. Как грамотнее всего распределить их по популярной системе личных финансов?",
                 Options = new()
@@ -799,7 +799,7 @@ public static class ContentRepository
                 Id = "senior_task_2",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Ловушка акции «Второй за полцены» 🏷️",
+                Title = "Ловушка акции «Второй за полцены»",
                 CompetencyReference = "Единая рамка компетенций, п. 6.2: Различение необходимого и желаемого, маркетинговые уловки",
                 ScenarioDescription = "Пачка витаминов стоит 60 монет. По акции вторую пачку отдают за 30 монет. Но срок годности истекает через 3 дня, а питомцу хватит одной пачки на месяц. Выгодно ли брать вторую?",
                 Options = new()
@@ -825,7 +825,7 @@ public static class ContentRepository
                 Id = "senior_task_3",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Подушка безопасности для бюджета 🛡️",
+                Title = "Подушка безопасности для бюджета",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Формирование сбережений и резерва на непредвиденный случай",
                 ScenarioDescription = "Финансовые консультанты рекомендуют иметь «подушку безопасности» в размере 3–6 месяцев обязательных расходов семьи. Зачем она нужна?",
                 Options = new()
@@ -851,7 +851,7 @@ public static class ContentRepository
                 Id = "senior_task_4",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Сравнение цены за грамм товара ⚖️",
+                Title = "Сравнение цены за грамм товара",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Принятие решений в условиях ограниченного бюджета",
                 ScenarioDescription = "В зоомагазине две пачки корма: 200г за 60 монет (30 монет за 100г) и большая 500г за 120 монет (24 монеты за 100г). Какая покупка выгоднее при регулярном питании котика?",
                 Options = new()
@@ -877,7 +877,7 @@ public static class ContentRepository
                 Id = "senior_task_5",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Звонок от «Службы безопасности» 📞",
+                Title = "Звонок от «Службы безопасности»",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Защита от финансового мошенничества и социальная инженерия",
                 ScenarioDescription = "Незнакомец звонит с неизвестного номера и тревожно говорит: «Ваш счет заблокирован подозрительным переводом! Срочно продиктуйте код из СМС, чтобы спасти средства!». Твои действия?",
                 Options = new()
@@ -903,7 +903,7 @@ public static class ContentRepository
                 Id = "senior_task_6",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Фишинг: бесплатные монеты в онлайн-игре 🎣",
+                Title = "Фишинг: бесплатные монеты в онлайн-игре",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность в цифровой среде и защита персональных данных",
                 ScenarioDescription = "В чате популярной онлайн-игры прислали ссылку: «Раздача бесплатных робуксов и монет! Перейди по ссылке, введи логин, пароль и телефон мамы». Что делать?",
                 Options = new()
@@ -929,7 +929,7 @@ public static class ContentRepository
                 Id = "senior_task_7",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Сложный процент: денежный снежный ком ❄️",
+                Title = "Сложный процент: денежный снежный ком",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Банковский вклад, капитализация и сложный процент",
                 ScenarioDescription = "Ты положил 100 монет на вклад под 10% годовых с ежегодной капитализацией (сложным процентом). В конце 1 года стало 110 монет. Сколько начислит банк в конце 2 года?",
                 Options = new()
@@ -955,7 +955,7 @@ public static class ContentRepository
                 Id = "senior_task_8",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Инфляция: почему деньги худеют? 📉",
+                Title = "Инфляция: почему деньги худеют?",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Покупательная способность денег и влияние инфляции",
                 ScenarioDescription = "Пять лет назад на 100 рублей можно было купить 5 шоколадок, а сегодня только 2 такие же шоколадки. Какое экономическое явление это объясняет?",
                 Options = new()
@@ -981,7 +981,7 @@ public static class ContentRepository
                 Id = "senior_task_9",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Первый стартап: выручка и чистая прибыль 🍋",
+                Title = "Первый стартап: выручка и чистая прибыль",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Основы предпринимательства, доходы и себестоимость",
                 ScenarioDescription = "Ты открыл лимонадную стойку. На лимоны, сахар и стаканчики потратил 40 монет. За день продал лимонада на 100 монет. Какова твоя чистая прибыль?",
                 Options = new()
@@ -1007,7 +1007,7 @@ public static class ContentRepository
                 Id = "senior_task_10",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Оплата по QR-коду и СБП в кафе 📲",
+                Title = "Оплата по QR-коду и СБП в кафе",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Цифровые платежи и безналичные расчеты",
                 ScenarioDescription = "В кафе ты оплачиваешь перекус через камеру смартфона по QR-коду Системы быстрых платежей (СБП). Что обязательно нужно сделать перед подтверждением оплаты?",
                 Options = new()
@@ -1033,7 +1033,7 @@ public static class ContentRepository
                 Id = "senior_task_11",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Общественный Wi-Fi в торговом центре 📶",
+                Title = "Общественный Wi-Fi в торговом центре",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Кибергигиена в общественных сетях",
                 ScenarioDescription = "Ты сидишь в фудкорте и подключился к открытой сети Wi-Fi без пароля. Безопасно ли заходить в мобильный банк или совершать онлайн-покупки через такую сеть?",
                 Options = new()
@@ -1059,7 +1059,7 @@ public static class ContentRepository
                 Id = "senior_task_12",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Покупка с рук в интернете: предоплата 📦",
+                Title = "Покупка с рук в интернете: предоплата",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность онлайн-шопинга и защита от обмана",
                 ScenarioDescription = "На сайте объявлений продавец предлагает редкую приставку в 3 раза дешевле рынка, но требует: «Переведи мне 100% денег на карту прямо сейчас, а посылку я отправлю завтра». Как поступить?",
                 Options = new()
@@ -1085,7 +1085,7 @@ public static class ContentRepository
                 Id = "senior_task_13",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Кассовый чек и гарантия на товар 🧾",
+                Title = "Кассовый чек и гарантия на товар",
                 CompetencyReference = "Единая рамка компетенций, п. 6.3: Защита прав потребителей и подтверждение покупки",
                 ScenarioDescription = "Ты купил наушники, но дома обнаружил, что один динамик не работает. Зачем при обращении в магазин тебе потребуется чек или электронная квитанция?",
                 Options = new()
@@ -1111,7 +1111,7 @@ public static class ContentRepository
                 Id = "senior_task_14",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Опасность кредитов и «Купи сейчас — плати потом» 💳",
+                Title = "Опасность кредитов и «Купи сейчас — плати потом»",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Кредитование, проценты за пользование чужими деньгами",
                 ScenarioDescription = "Почему брать кредит или заем на покупку развлечений и модных гаджетов часто приводит к финансовым проблемам?",
                 Options = new()
@@ -1137,7 +1137,7 @@ public static class ContentRepository
                 Id = "senior_task_15",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.PaymentsAndSecurity,
-                Title = "Секретный код CVC/CVV на обороте карты 🔒",
+                Title = "Секретный код CVC/CVV на обороте карты",
                 CompetencyReference = "Единая рамка компетенций, п. 6.5: Безопасность пластиковых карт и реквизиты",
                 ScenarioDescription = "Друг в чате просит: «Сфотографируй свою карту с двух сторон, я хочу посмотреть дизайн». Можно ли отправлять фото обратной стороны карты?",
                 Options = new()
@@ -1163,7 +1163,7 @@ public static class ContentRepository
                 Id = "senior_task_16",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Незаметные микротраты: подписки и сервисы 📱",
+                Title = "Незаметные микротраты: подписки и сервисы",
                 CompetencyReference = "Единая рамка компетенций, п. 6.1: Учет мелких регулярных списаний в бюджете",
                 ScenarioDescription = "Ты оформил бесплатный пробный период на 5 онлайн-сервисов (музыка, кино, игры), забыв их отключить. Через месяц со счета списалось 1500 рублей. Как защитить себя от таких утечек бюджета?",
                 Options = new()
@@ -1189,7 +1189,7 @@ public static class ContentRepository
                 Id = "senior_task_17",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.BudgetPlanning,
-                Title = "Донаты любимому стримеру или блогеру 🎥",
+                Title = "Донаты любимому стримеру или блогеру",
                 CompetencyReference = "Единая рамка компетенций, п. 6.2: Осознанные расходы в цифровой среде",
                 ScenarioDescription = "Во время прямой трансляции стример призывает зрителей присылать платные донаты, чтобы попасть на экран. Как к этому относиться с точки зрения личных финансов?",
                 Options = new()
@@ -1215,7 +1215,7 @@ public static class ContentRepository
                 Id = "senior_task_18",
                 TargetAge = AgeGroup.Senior9_11,
                 Topic = TaskTopic.SavingsAndReserve,
-                Title = "Финансовая цель по правилу SMART 🎯",
+                Title = "Финансовая цель по правилу SMART",
                 CompetencyReference = "Единая рамка компетенций, п. 6.4: Целеполагание и планирование сбережений",
                 ScenarioDescription = "Какая из этих формулировок является грамотно поставленной финансовой целью?",
                 Options = new()

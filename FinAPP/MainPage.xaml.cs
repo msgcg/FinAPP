@@ -199,8 +199,14 @@ public partial class MainPage : ContentPage
         UpdateParentStageButtons();
     }
 
+    private void OnPetAreaTapped(object? sender, EventArgs e)
+    {
+        PetView.TapPet();
+    }
+
     private async void OnSpeechBubbleTapped(object? sender, EventArgs e)
     {
+        AudioService.Instance.PlaySfx("sfx_meow");
         await AnimateTap(SpeechBubble);
         if (_engine.CurrentEmotion == "sad")
         {
@@ -612,7 +618,7 @@ public partial class MainPage : ContentPage
             else
             {
                 bool canAfford = _engine.Profile.Balance >= price;
-                lbl.Text = canAfford ? $"🔓 {price} м." : $"🔒 {price} м.";
+                lbl.Text = $"{price} м.";
                 lbl.TextColor = Colors.White;
                 badge.BackgroundColor = canAfford ? Color.FromArgb("#10B981") : Color.FromArgb("#EF4444");
                 badge.StrokeThickness = 0;
@@ -725,7 +731,7 @@ public partial class MainPage : ContentPage
                 $"Этот рабочий стол закрыт. Стоимость: {price} монет.",
                 GetDeskIcon(desk),
                 "Отмена",
-                $"Купить за {price} монет", "Поставить целью накопления 🎯");
+                $"Купить за {price} монет", "Поставить целью накопления");
             if (choice == $"Купить за {price} монет")
             {
                 if (p.Balance < price)
@@ -753,7 +759,7 @@ public partial class MainPage : ContentPage
                 PetView.PlayAction("proud");
                 return;
             }
-            else if (choice == "Поставить целью накопления 🎯")
+            else if (choice == "Поставить целью накопления")
             {
                 SetDeskAsGoal(desk);
                 return;
@@ -1444,7 +1450,14 @@ public partial class MainPage : ContentPage
                     InputTransparent = false,
                     VerticalOptions = LayoutOptions.Center
                 };
-                goalBtn.Content = new Label { Text = "🎯", FontFamily = "MontserratBold", FontSize = 12, HorizontalOptions = LayoutOptions.Center };
+                goalBtn.Content = new Image
+                {
+                    Source = "ic_stat_savings.png",
+                    WidthRequest = 18,
+                    HeightRequest = 18,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center
+                };
                 var tapGoal = new TapGestureRecognizer();
                 tapGoal.Tapped += async (s, e) =>
                 {
@@ -1467,7 +1480,7 @@ public partial class MainPage : ContentPage
                 };
                 buyBtn.Content = new Label
                 {
-                    Text = canAfford ? $"{item.Price} м." : $"🔒 {item.Price} м.",
+                    Text = $"{item.Price} м.",
                     TextColor = Colors.White,
                     FontFamily = "MontserratBold",
                     FontSize = 12,
@@ -1757,7 +1770,7 @@ public partial class MainPage : ContentPage
                     InputTransparent = false,
                     VerticalOptions = LayoutOptions.Center
                 };
-                buyAchievedBtn.Content = new Label { Text = "Купить! 🎉", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 11 };
+                buyAchievedBtn.Content = new Label { Text = "Купить!", TextColor = Colors.White, FontFamily = "MontserratBold", FontSize = 11 };
                 var tapAchieved = new TapGestureRecognizer();
                 tapAchieved.Tapped += async (s, e) =>
                 {
@@ -1880,7 +1893,7 @@ public partial class MainPage : ContentPage
             PetView.PlayAction("proud");
 
             await ShowStyledAlertAsync(
-                "Эволюция питомца! 🌟",
+                "Эволюция питомца!",
                 $"Поздравляем! Ты достиг уже {p.GoalsAchievedCount} целей накопления!\n\nТвой любимец {p.PetName} повзрослел и стал «{stageName}»! Открылись новые горизонты финансовой грамотности!",
                 "ic_master.png",
                 "Ура!");
@@ -1891,7 +1904,7 @@ public partial class MainPage : ContentPage
             PetView.PlayAction("proud");
 
             await ShowStyledAlertAsync(
-                "Цель достигнута! 🎯",
+                "Цель достигнута!",
                 $"Ура! Мечта «{goal.Title}» исполнена!\nВсего достигнуто целей: {p.GoalsAchievedCount}.",
                 "ic_stat_savings.png",
                 "Выбрать следующую цель");
@@ -1959,7 +1972,7 @@ public partial class MainPage : ContentPage
     {
         string deskOption = $"Выбрать рабочий столик {_engine.Profile.PetName}";
         string? choice = await ShowStyledActionSheetAsync(
-            "Новая цель накопления 🎯",
+            "Новая цель накопления",
             "Как ты хочешь выбрать цель?",
             "ic_stat_savings.png",
             "Отмена",

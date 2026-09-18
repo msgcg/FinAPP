@@ -202,10 +202,14 @@
             <Grid ColumnDefinitions="165,*" ColumnSpacing="8" Margin="-16,2,0,2">
                 
                 <!-- Финни до упора влево + всплывающий бейдж эффекта покупки -->
-                <Grid Grid.Column="0" WidthRequest="165" HeightRequest="240" HorizontalOptions="Start" VerticalOptions="Center">
+                <Grid Grid.Column="0" WidthRequest="165" HeightRequest="240" HorizontalOptions="Start" VerticalOptions="Center" InputTransparent="False">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnPetAreaTapped"/>
+                    </Grid.GestureRecognizers>
                     <comp:FinnyPetView x:Name="PetView"
                                        HorizontalOptions="Start"
-                                       VerticalOptions="Center"/>
+                                       VerticalOptions="Center"
+                                       InputTransparent="False"/>
                     
                     <Border x:Name="BorderPurchaseToast"
                             BackgroundColor="#10B981"

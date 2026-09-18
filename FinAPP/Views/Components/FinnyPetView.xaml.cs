@@ -69,7 +69,10 @@ public partial class FinnyPetView : ContentView
                 nativeWebView.SetBackgroundColor(Android.Graphics.Color.Transparent);
                 nativeWebView.VerticalScrollBarEnabled = false;
                 nativeWebView.HorizontalScrollBarEnabled = false;
-                nativeWebView.SetScrollContainer(false);
+                nativeWebView.Clickable = false;
+                nativeWebView.Focusable = false;
+                nativeWebView.FocusableInTouchMode = false;
+                nativeWebView.SetOnTouchListener(null);
                 if (nativeWebView.Settings != null)
                 {
                     nativeWebView.Settings.DisplayZoomControls = false;
