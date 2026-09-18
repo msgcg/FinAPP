@@ -38,3 +38,16 @@ public class FinancialTask
         _ => "Финансы"
     };
 }
+
+public class TaskCompletionRecord
+{
+    public string TaskId { get; set; } = string.Empty;
+    public string TaskTitle { get; set; } = string.Empty;
+    public TaskTopic Topic { get; set; }
+    public string TopicName { get; set; } = string.Empty;
+    public string CompetencyReference { get; set; } = string.Empty;
+    public int PeriodNumber { get; set; } = 1;
+    public DateTime CompletedAt { get; set; } = DateTime.Now;
+    public int RewardCoins { get; set; } = 0;
+}
+

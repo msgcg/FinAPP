@@ -2712,6 +2712,159 @@ public partial class MainPage : ContentPage
             $"Текущий баланс: {p.Balance} монет";
 
         UpdateParentStageButtons();
+        UpdateParentTaskLog();
+    }
+
+    private void UpdateParentTaskLog()
+    {
+        if (_engine == null) return;
+        var p = _engine.Profile;
+        p.TaskCompletionLog ??= new();
+
+        // Обратная совместимость: если лог пуст, но задачи уже выполнялись
+        if (p.TaskCompletionLog.Count == 0 && p.CompletedTaskIds != null && p.CompletedTaskIds.Count > 0)
+        {
+            var allTasks = ContentRepository.GetFinancialTasks();
+            foreach (var tid in p.CompletedTaskIds)
+            {
+                var t = allTasks.FirstOrDefault(x => x.Id == tid);
+                if (t != null)
+                {
+                    p.TaskCompletionLog.Add(new TaskCompletionRecord
+                    {
+                        TaskId = t.Id,
+                        TaskTitle = t.Title,
+                        Topic = t.Topic,
+                        TopicName = t.TopicDisplayName,
+                        CompetencyReference = t.CompetencyReference,
+                        PeriodNumber = 1,
+                        CompletedAt = DateTime.Now,
+                        RewardCoins = t.Options.FirstOrDefault(o => o.IsCorrect)?.RewardCoins ?? 60
+                    });
+                }
+            }
+        }
+
+        // Подсчет уникальных пройденных заданий по темам
+        int budgetCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.BudgetPlanning).Select(t => t.TaskId).Distinct().Count();
+        int savingsCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.SavingsAndReserve).Select(t => t.TaskId).Distinct().Count();
+        int securityCount = p.TaskCompletionLog.Where(t => t.Topic == TaskTopic.PaymentsAndSecurity).Select(t => t.TaskId).Distinct().Count();
+
+        if (LblParentTopicBudget != null) LblParentTopicBudget.Text = $"{budgetCount} тем";
+        if (LblParentTopicSavings != null) LblParentTopicSavings.Text = $"{savingsCount} тем";
+        if (LblParentTopicSecurity != null) LblParentTopicSecurity.Text = $"{securityCount} тем";
+
+        if (ContainerParentTaskLog == null) return;
+        ContainerParentTaskLog.Children.Clear();
+
+        if (p.TaskCompletionLog.Count == 0)
+        {
+            if (LblParentTaskLogEmpty != null) LblParentTaskLogEmpty.IsVisible = true;
+            return;
+        }
+
+        if (LblParentTaskLogEmpty != null) LblParentTaskLogEmpty.IsVisible = false;
+
+        // Показываем последние записи (до 10 штук, новые сверху)
+        var recentRecords = p.TaskCompletionLog.AsEnumerable().Reverse().Take(10);
+        foreach (var record in recentRecords)
+        {
+            var (badgeBg, badgeText, badgeBorder) = record.Topic switch
+            {
+                TaskTopic.BudgetPlanning => (Color.FromArgb("#ECFDF5"), Color.FromArgb("#047857"), Color.FromArgb("#A7F3D0")),
+                TaskTopic.SavingsAndReserve => (Color.FromArgb("#FFFBEB"), Color.FromArgb("#B45309"), Color.FromArgb("#FDE68A")),
+                TaskTopic.PaymentsAndSecurity => (Color.FromArgb("#F5F3FF"), Color.FromArgb("#6D28D9"), Color.FromArgb("#DDD6FE")),
+                _ => (Color.FromArgb("#F3F4F6"), Color.FromArgb("#374151"), Color.FromArgb("#E5E7EB"))
+            };
+
+            var card = new Border
+            {
+                BackgroundColor = Colors.White,
+                Stroke = Color.FromArgb("#E5E7EB"),
+                StrokeThickness = 1,
+                StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(10) },
+                Padding = new Thickness(10, 8),
+                Content = new VerticalStackLayout
+                {
+                    Spacing = 4,
+                    Children =
+                    {
+                        new Grid
+                        {
+                            ColumnDefinitions = new ColumnDefinitionCollection
+                            {
+                                new ColumnDefinition { Width = GridLength.Auto },
+                                new ColumnDefinition { Width = GridLength.Star },
+                                new ColumnDefinition { Width = GridLength.Auto }
+                            },
+                            Children =
+                            {
+                                new Border
+                                {
+                                    BackgroundColor = badgeBg,
+                                    Stroke = badgeBorder,
+                                    StrokeThickness = 1,
+                                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(6) },
+                                    Padding = new Thickness(6, 2),
+                                    Content = new Label
+                                    {
+                                        Text = record.TopicName,
+                                        FontFamily = "MontserratBold",
+                                        FontSize = 10,
+                                        TextColor = badgeText
+                                    }
+                                },
+                                new HorizontalStackLayout
+                                {
+                                    Spacing = 4,
+                                    VerticalOptions = LayoutOptions.Center,
+                                    Children =
+                                    {
+                                        new Label
+                                        {
+                                            Text = $"+{record.RewardCoins} монет",
+                                            FontFamily = "MontserratBold",
+                                            FontSize = 11,
+                                            TextColor = Color.FromArgb("#059669")
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        new Label
+                        {
+                            Text = record.TaskTitle,
+                            FontFamily = "MontserratBold",
+                            FontSize = 12,
+                            TextColor = Color.FromArgb("#1F2937")
+                        },
+                        new Label
+                        {
+                            Text = record.CompetencyReference,
+                            FontFamily = "OpenSansRegular",
+                            FontSize = 10,
+                            TextColor = Color.FromArgb("#6B7280")
+                        },
+                        new Label
+                        {
+                            Text = $"Период #{record.PeriodNumber} • {record.CompletedAt:dd.MM.yyyy HH:mm}",
+                            FontFamily = "MontserratMedium",
+                            FontSize = 9,
+                            TextColor = Color.FromArgb("#9CA3AF")
+                        }
+                    }
+                }
+            };
+
+            // Привязка колонки 2 для правого блока с монетками
+            var grid = (card.Content as VerticalStackLayout)?.Children[0] as Grid;
+            if (grid != null && grid.Children.Count > 1 && grid.Children[1] is BindableObject rightItem)
+            {
+                Grid.SetColumn(rightItem, 2);
+            }
+
+            ContainerParentTaskLog.Children.Add(card);
+        }
     }
 
     private void UpdateParentStageButtons()

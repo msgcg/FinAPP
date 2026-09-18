@@ -163,6 +163,9 @@ public class PetProfile
     // Список выполненных ID заданий
     public List<string> CompletedTaskIds { get; set; } = new();
 
+    // Журнал (лог) пройденных тем и заданий для кабинета взрослого
+    public List<TaskCompletionRecord> TaskCompletionLog { get; set; } = new();
+
     // Алиасы для совместимости с кодом интерфейса
     public int SpentObligatory { get => ActualObligatory; set => ActualObligatory = value; }
     public int SpentDiscretionary { get => ActualDiscretionary; set => ActualDiscretionary = value; }

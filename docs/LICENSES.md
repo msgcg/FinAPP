@@ -17,7 +17,7 @@
 | 5 | **Маскот Финни и подиумы** | Авторский эскиз художницы команды + Google Generative AI / Imagen API | Google Terms of Service & Generative AI Additional Terms of Service | Интерактивный персонаж-маскот, анимированный в 3 возрастных стадиях (Малыш, Юниор, Мастер) и 4 эмоциональных состояниях |
 | 6 | **Microsoft .NET MAUI / .NET 10** | .NET Foundation and Contributors (Microsoft Corporation) | MIT License | Мультиплатформенный UI-фреймворк и среда выполнения приложения |
 | 7 | **AndroidX Core & AppCompat** | The Android Open Source Project (Google LLC) | Apache License, Version 2.0 | Системные компоненты интеграции с Android OS, Splash screen, Activity lifecycle |
-| 8 | **xUnit.net Testing Framework** | Brad Wilson, James Newkirk | Apache License, Version 2.0 | Модульное автоматизированное тестирование бизнес-логики и сценариев ТЗ (32/32 тестов) |
+| 8 | **xUnit.net Testing Framework** | Brad Wilson, James Newkirk | Apache License, Version 2.0 | Модульное автоматизированное тестирование бизнес-логики и сценариев ТЗ (34/34 тестов) |
 
 ---
 

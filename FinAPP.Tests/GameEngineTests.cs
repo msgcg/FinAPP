@@ -659,4 +659,84 @@ public class GameEngineTests
         Assert.Contains("goal_toy_laser", _engine.Profile.CompletedGoalIds);
         Assert.True(_engine.Profile.IsNonRegularItemPurchased("toy_laser"));
     }
+
+    [Fact]
+    public void CompleteTask_CorrectOption_ShouldLogTopicAndTaskDetailsInParentLog()
+    {
+        _engine.Profile.TaskCompletionLog.Clear();
+        _engine.Profile.CompletedTaskIds.Clear();
+
+        var taskBudget = new FinancialTask
+        {
+            Id = "test_task_budget",
+            Title = "Планирование недели",
+            Topic = TaskTopic.BudgetPlanning,
+            CompetencyReference = "Рамка компетенций 6.1",
+            Options = new()
+            {
+                new TaskOption { Text = "Правильный ответ", IsCorrect = true, RewardCoins = 50, Explanation = "Отлично!" }
+            }
+        };
+
+        var taskSecurity = new FinancialTask
+        {
+            Id = "test_task_security",
+            Title = "Безопасность пароля",
+            Topic = TaskTopic.PaymentsAndSecurity,
+            CompetencyReference = "Рамка компетенций 6.5",
+            Options = new()
+            {
+                new TaskOption { Text = "Не сообщать никому", IsCorrect = true, RewardCoins = 70, Explanation = "Верно!" }
+            }
+        };
+
+        var res1 = _engine.CompleteTask(taskBudget, taskBudget.Options[0]);
+        Assert.True(res1.Success);
+
+        var res2 = _engine.CompleteTask(taskSecurity, taskSecurity.Options[0]);
+        Assert.True(res2.Success);
+
+        Assert.Equal(2, _engine.Profile.TaskCompletionLog.Count);
+        Assert.Equal("test_task_budget", _engine.Profile.TaskCompletionLog[0].TaskId);
+        Assert.Equal("Планирование недели", _engine.Profile.TaskCompletionLog[0].TaskTitle);
+        Assert.Equal(TaskTopic.BudgetPlanning, _engine.Profile.TaskCompletionLog[0].Topic);
+        Assert.Equal("Планирование бюджета", _engine.Profile.TaskCompletionLog[0].TopicName);
+        Assert.Equal(50, _engine.Profile.TaskCompletionLog[0].RewardCoins);
+
+        Assert.Equal("test_task_security", _engine.Profile.TaskCompletionLog[1].TaskId);
+        Assert.Equal(TaskTopic.PaymentsAndSecurity, _engine.Profile.TaskCompletionLog[1].Topic);
+        Assert.Equal("Платежи и безопасность", _engine.Profile.TaskCompletionLog[1].TopicName);
+        Assert.Equal(70, _engine.Profile.TaskCompletionLog[1].RewardCoins);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task TaskCompletionLog_SerializationAndPersistence_ShouldRetainLoggedTopics()
+    {
+        _engine.Profile.TaskCompletionLog.Clear();
+        var task = new FinancialTask
+        {
+            Id = "test_task_savings",
+            Title = "Копилка мечты",
+            Topic = TaskTopic.SavingsAndReserve,
+            CompetencyReference = "Рамка компетенций 6.4",
+            Options = new()
+            {
+                new TaskOption { Text = "Копить регулярно", IsCorrect = true, RewardCoins = 60 }
+            }
+        };
+
+        _engine.CompleteTask(task, task.Options[0]);
+        await _engine.SaveAsync();
+
+        var storage = new StorageService(_testDbPath);
+        var loadedProfile = await storage.LoadProfileAsync();
+
+        Assert.NotNull(loadedProfile.TaskCompletionLog);
+        Assert.Single(loadedProfile.TaskCompletionLog);
+        Assert.Equal("test_task_savings", loadedProfile.TaskCompletionLog[0].TaskId);
+        Assert.Equal(TaskTopic.SavingsAndReserve, loadedProfile.TaskCompletionLog[0].Topic);
+        Assert.Equal("Сбережения и подушка", loadedProfile.TaskCompletionLog[0].TopicName);
+        Assert.Equal(60, loadedProfile.TaskCompletionLog[0].RewardCoins);
+    }
 }
+

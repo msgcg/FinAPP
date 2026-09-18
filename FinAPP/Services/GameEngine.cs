@@ -230,6 +230,19 @@ public class GameEngine
                 Profile.CompletedTaskIds.Add(task.Id);
             }
 
+            Profile.TaskCompletionLog ??= new();
+            Profile.TaskCompletionLog.Add(new TaskCompletionRecord
+            {
+                TaskId = task.Id,
+                TaskTitle = task.Title,
+                Topic = task.Topic,
+                TopicName = task.TopicDisplayName,
+                CompetencyReference = task.CompetencyReference,
+                PeriodNumber = Profile.CurrentPeriod,
+                CompletedAt = DateTime.Now,
+                RewardCoins = option.RewardCoins
+            });
+
             int moodGain = isRetry ? (15 + TaskMoodPenalty) : 15;
             Profile.Mood = Math.Min(100, Profile.Mood + moodGain);
 
