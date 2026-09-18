@@ -1646,7 +1646,11 @@
           BackgroundColor="#CC090214"
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
+          InputTransparent="False"
           ZIndex="130">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnModalBlockTapped"/>
+        </Grid.GestureRecognizers>
 
         <Border x:Name="TaskResultCard"
                 StrokeThickness="2.5"
@@ -1655,7 +1659,11 @@
                 Margin="16"
                 MaximumWidthRequest="390"
                 HorizontalOptions="Center"
-                VerticalOptions="Center">
+                VerticalOptions="Center"
+                InputTransparent="False">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnModalBlockTapped"/>
+            </Border.GestureRecognizers>
             <Border.Shadow>
                 <Shadow x:Name="ShadowTaskResult" Brush="#10B981" Offset="0,6" Radius="24" Opacity="0.4"/>
             </Border.Shadow>
@@ -1700,16 +1708,23 @@
                     
                     <!-- Сетка: Финни слева + Карточка мудрости/совета справа -->
                     <Grid ColumnDefinitions="130,*" ColumnSpacing="10" VerticalOptions="Center">
-                        <!-- Анимированный Финни (слева) -->
-                        <WebView x:Name="WvTaskResultFinny"
-                                 Grid.Column="0"
-                                 HeightRequest="155"
-                                 WidthRequest="130"
-                                 BackgroundColor="Transparent"
-                                 InputTransparent="True"
-                                 HorizontalOptions="Start"
-                                 VerticalOptions="Center"
-                                 Margin="-14,0,0,0"/>
+                        <!-- Анимированный Финни (слева) с блокировкой проклика и собственным тапом-мяу -->
+                        <Grid Grid.Column="0"
+                              HeightRequest="155"
+                              WidthRequest="130"
+                              HorizontalOptions="Start"
+                              VerticalOptions="Center"
+                              Margin="-14,0,0,0"
+                              InputTransparent="False">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnTaskResultFinnyTapped"/>
+                            </Grid.GestureRecognizers>
+                            <WebView x:Name="WvTaskResultFinny"
+                                     HorizontalOptions="Fill"
+                                     VerticalOptions="Fill"
+                                     BackgroundColor="Transparent"
+                                     InputTransparent="True"/>
+                        </Grid>
 
                         <!-- Карточка с разбором и пояснением финансовой мудрости (справа от Финни) -->
                         <Border x:Name="BorderTaskResultExplanation"
@@ -1717,7 +1732,11 @@
                                 StrokeThickness="1.5"
                                 StrokeShape="RoundRectangle 14"
                                 Padding="12,10"
-                                VerticalOptions="Center">
+                                VerticalOptions="Center"
+                                InputTransparent="False">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnModalBlockTapped"/>
+                            </Border.GestureRecognizers>
                             <VerticalStackLayout Spacing="4">
                                 <Label x:Name="LblTaskResultExplanationHeader"
                                        Text="Мудрость Финни:"
@@ -1789,7 +1808,11 @@
           BackgroundColor="#CC090214"
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
+          InputTransparent="False"
           ZIndex="140">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnModalBlockTapped"/>
+        </Grid.GestureRecognizers>
 
         <Border x:Name="OnboardingCard"
                 BackgroundColor="White"
@@ -1800,7 +1823,11 @@
                 Margin="18"
                 MaximumWidthRequest="390"
                 HorizontalOptions="Center"
-                VerticalOptions="Center">
+                VerticalOptions="Center"
+                InputTransparent="False">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnModalBlockTapped"/>
+            </Border.GestureRecognizers>
             <Border.Shadow>
                 <Shadow Brush="#520978" Offset="0,8" Radius="24" Opacity="0.35"/>
             </Border.Shadow>

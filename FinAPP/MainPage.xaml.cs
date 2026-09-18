@@ -1045,6 +1045,7 @@ public partial class MainPage : ContentPage
         LblTaskTopic.Text = $"{task.TopicDisplayName}";
         LblTaskSituation.Text = $"{task.Title}\n\n{FormatPetText(task.ScenarioDescription)}";
         TaskFeedbackBorder.IsVisible = false;
+        TaskOptionsContainer.InputTransparent = false;
 
         TaskOptionsContainer.Children.Clear();
         for (int i = 0; i < task.Options.Count; i++)
@@ -1074,6 +1075,7 @@ public partial class MainPage : ContentPage
             var tap = new TapGestureRecognizer();
             tap.Tapped += async (s, e) =>
             {
+                if (ModalTaskResult.IsVisible || TaskOptionsContainer.InputTransparent) return;
                 await AnimateTap(optionBorder);
                 await SelectTaskAnswer(task, option, optionBorder);
             };
@@ -1085,6 +1087,7 @@ public partial class MainPage : ContentPage
 
     private async Task SelectTaskAnswer(FinancialTask task, TaskOption option, Border selectedBorder)
     {
+        TaskOptionsContainer.InputTransparent = true;
         var (success, msg) = _engine.CompleteTask(task, option, _isCurrentTaskRetry);
         TaskFeedbackBorder.IsVisible = true;
 
@@ -1228,6 +1231,7 @@ public partial class MainPage : ContentPage
         await Task.WhenAll(f, s);
         ModalTaskResult.IsVisible = false;
         WvTaskResultFinny.Source = null;
+        TaskOptionsContainer.InputTransparent = false;
     }
 
     private async void OnTaskResultNextClicked(object? sender, EventArgs e)
@@ -1238,9 +1242,27 @@ public partial class MainPage : ContentPage
         await Task.WhenAll(f, s);
         ModalTaskResult.IsVisible = false;
         WvTaskResultFinny.Source = null;
+        TaskOptionsContainer.InputTransparent = false;
 
         _currentTaskIndex++;
         RenderCurrentTask();
+    }
+
+    private void OnModalBlockTapped(object? sender, EventArgs e)
+    {
+        // Поглощает клики по модальному фону и карточке, предотвращая пробивание на нижние слои
+    }
+
+    private async void OnTaskResultFinnyTapped(object? sender, EventArgs e)
+    {
+        try
+        {
+            HapticFeedback.Default.Perform(HapticFeedbackType.Click);
+            AudioService.Instance.PlaySfx("sfx_meow");
+            await WvTaskResultFinny.ScaleToAsync(1.08, 100, Easing.CubicOut);
+            await WvTaskResultFinny.ScaleToAsync(1.0, 100, Easing.CubicIn);
+        }
+        catch { }
     }
 
     private async void OnNextTaskClicked(object? sender, EventArgs e)

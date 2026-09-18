@@ -13,6 +13,8 @@ namespace FinAPP.Services
 
         private const string PrefSfxKey = "audio_sfx_enabled";
         private const string PrefMusicKey = "audio_music_enabled";
+        private const string PrefAudioVersionKey = "audio_assets_version";
+        private const int CurrentAudioVersion = 12;
 
         private bool _isSfxEnabled;
         private bool _isMusicEnabled;
@@ -79,6 +81,9 @@ namespace FinAPP.Services
                 var audioDir = Path.Combine(FileSystem.CacheDirectory, "audio");
                 Directory.CreateDirectory(audioDir);
 
+                int savedVersion = Preferences.Default.Get(PrefAudioVersionKey, 0);
+                bool forceRefresh = savedVersion < CurrentAudioVersion;
+
                 string[] audioFiles =
                 [
                     "sfx_money.mp3",
@@ -94,9 +99,14 @@ namespace FinAPP.Services
                     var targetPath = Path.Combine(audioDir, file);
                     try
                     {
-                        using var srcStream = await FileSystem.OpenAppPackageFileAsync($"audio/{file}");
-                        if (!File.Exists(targetPath) || new FileInfo(targetPath).Length != srcStream.Length)
+                        if (forceRefresh && File.Exists(targetPath))
                         {
+                            try { File.Delete(targetPath); } catch { }
+                        }
+
+                        if (!File.Exists(targetPath))
+                        {
+                            using var srcStream = await FileSystem.OpenAppPackageFileAsync($"audio/{file}");
                             using var dstStream = File.Create(targetPath);
                             await srcStream.CopyToAsync(dstStream);
                         }
@@ -105,6 +115,11 @@ namespace FinAPP.Services
                     {
                         System.Diagnostics.Debug.WriteLine($"Audio asset copy error {file}: {ex.Message}");
                     }
+                }
+
+                if (forceRefresh)
+                {
+                    Preferences.Default.Set(PrefAudioVersionKey, CurrentAudioVersion);
                 }
 
                 // Initialize SoundPool for SFX
@@ -167,18 +182,66 @@ namespace FinAPP.Services
                         ? Path.GetFileNameWithoutExtension(soundName) 
                         : soundName;
 
+                    int streamId = 0;
                     if (_soundPool != null && _soundIds.TryGetValue(key, out int soundId) && soundId > 0)
                     {
-                        _soundPool.Play(soundId, 1.0f, 1.0f, 1, 0, 1.0f);
+                        streamId = _soundPool.Play(soundId, 1.0f, 1.0f, 1, 0, 1.0f);
+                    }
+
+                    if (streamId == 0)
+                    {
+                        PlaySfxFallback(soundName);
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"PlaySfx error {soundName}: {ex.Message}");
+                PlaySfxFallback(soundName);
             }
 #endif
         }
+
+#if ANDROID
+        private void PlaySfxFallback(string soundName)
+        {
+            try
+            {
+                var audioDir = Path.Combine(FileSystem.CacheDirectory, "audio");
+                string fileName = soundName.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) 
+                    ? soundName 
+                    : $"{soundName}.mp3";
+                string filePath = Path.Combine(audioDir, fileName);
+
+                if (!File.Exists(filePath)) return;
+
+                var player = new Android.Media.MediaPlayer();
+                player.SetAudioAttributes(
+                    new Android.Media.AudioAttributes.Builder()
+                        ?.SetUsage(Android.Media.AudioUsageKind.Game)
+                        ?.SetContentType(Android.Media.AudioContentType.Sonification)
+                        ?.Build());
+                player.SetDataSource(filePath);
+                player.SetVolume(1.0f, 1.0f);
+                player.Completion += (s, e) =>
+                {
+                    try
+                    {
+                        player.Stop();
+                        player.Release();
+                        player.Dispose();
+                    }
+                    catch { }
+                };
+                player.Prepare();
+                player.Start();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"PlaySfxFallback error {soundName}: {ex.Message}");
+            }
+        }
+#endif
 
         public void PlayMusic(string musicName = "bgm_idle")
         {
