@@ -79,11 +79,13 @@
                Margin="0,0,0,10"/>
 
         <!-- Невидимый слой для 100% надежного перехвата тапов по всей площади персонажа -->
-        <Border BackgroundColor="#01000000"
+        <Border x:Name="TouchOverlayBorder"
+                BackgroundColor="#01000000"
                 StrokeThickness="0"
                 HorizontalOptions="Fill"
                 VerticalOptions="Fill"
-                InputTransparent="False">
+                InputTransparent="False"
+                ZIndex="50">
             <Border.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnPetTapped"/>
             </Border.GestureRecognizers>

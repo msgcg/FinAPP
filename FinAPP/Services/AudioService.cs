@@ -14,7 +14,7 @@ namespace FinAPP.Services
         private const string PrefSfxKey = "audio_sfx_enabled";
         private const string PrefMusicKey = "audio_music_enabled";
         private const string PrefAudioVersionKey = "audio_assets_version";
-        private const int CurrentAudioVersion = 13;
+        private const int CurrentAudioVersion = 14;
 
         private bool _isSfxEnabled;
         private bool _isMusicEnabled;
@@ -90,7 +90,6 @@ namespace FinAPP.Services
                     "sfx_money.mp3",
                     "sfx_success.mp3",
                     "sfx_error.mp3",
-                    "sfx_meow.wav",
                     "sfx_meow.mp3",
                     "sfx_purr.mp3",
                     "bgm_idle.mp3"
@@ -156,11 +155,10 @@ namespace FinAPP.Services
                     }
                 }
 
-                // Pre-prepare dedicated instant player for sfx_meow
+                // Pre-prepare dedicated instant player for sfx_meow (using MP3)
                 try
                 {
-                    var meowPath = Path.Combine(audioDir, "sfx_meow.wav");
-                    if (!File.Exists(meowPath)) meowPath = Path.Combine(audioDir, "sfx_meow.mp3");
+                    var meowPath = Path.Combine(audioDir, "sfx_meow.mp3");
                     if (File.Exists(meowPath))
                     {
                         _meowPlayer = new Android.Media.MediaPlayer();
@@ -254,8 +252,7 @@ namespace FinAPP.Services
             {
                 var audioDir = Path.Combine(FileSystem.CacheDirectory, "audio");
                 string baseName = Path.GetFileNameWithoutExtension(soundName);
-                string filePath = Path.Combine(audioDir, $"{baseName}.wav");
-                if (!File.Exists(filePath)) filePath = Path.Combine(audioDir, $"{baseName}.mp3");
+                string filePath = Path.Combine(audioDir, $"{baseName}.mp3");
 
                 if (!File.Exists(filePath)) return;
 

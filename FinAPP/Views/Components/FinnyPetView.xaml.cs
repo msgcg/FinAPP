@@ -38,6 +38,7 @@ public partial class FinnyPetView : ContentView
     private string _currentEmotionGif = "finny_baby_idle.gif";
     private string _activeGif = string.Empty;
     private double _baseScale = 1.0;
+    private long _lastTapTime = 0;
     private bool _isReacting = false;
     private CancellationTokenSource? _waveCts;
 
@@ -47,19 +48,98 @@ public partial class FinnyPetView : ContentView
     // Потокобезопасный кэш бинарных байтов GIF для мгновенной генерации уникальных тактов в памяти
     private static readonly ConcurrentDictionary<string, byte[]> s_gifBytesCache = new();
 
+#if ANDROID
+    private class PetNativeTouchListener : Java.Lang.Object, Android.Views.View.IOnTouchListener
+    {
+        private readonly Action _onTap;
+        private float _downX;
+        private float _downY;
+        private long _downTime;
+
+        public PetNativeTouchListener(Action onTap)
+        {
+            _onTap = onTap;
+        }
+
+        public bool OnTouch(Android.Views.View? v, Android.Views.MotionEvent? e)
+        {
+            if (e == null) return false;
+
+            switch (e.ActionMasked)
+            {
+                case Android.Views.MotionEventActions.Down:
+                    _downX = e.GetX();
+                    _downY = e.GetY();
+                    _downTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    return true;
+
+                case Android.Views.MotionEventActions.Up:
+                    float dx = Math.Abs(e.GetX() - _downX);
+                    float dy = Math.Abs(e.GetY() - _downY);
+                    long duration = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - _downTime;
+
+                    if (dx < 50 && dy < 50 && duration < 700)
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            try
+                            {
+                                _onTap?.Invoke();
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Pet touch callback error: {ex.Message}");
+                            }
+                        });
+                    }
+                    return true;
+
+                case Android.Views.MotionEventActions.Cancel:
+                    return true;
+            }
+
+            return false;
+        }
+    }
+#endif
+
     public FinnyPetView()
     {
         InitializeComponent();
         Loaded += OnLoaded;
         PetWebView.HandlerChanged += OnPetWebViewHandlerChanged;
+        TouchOverlayBorder.HandlerChanged += OnTouchOverlayHandlerChanged;
+        PetContainer.HandlerChanged += OnPetContainerHandlerChanged;
     }
 
     private void OnPetWebViewHandlerChanged(object? sender, EventArgs e)
     {
-        ConfigurePlatformWebView(PetWebView);
+        ConfigurePlatformWebView(PetWebView, () => TapPet());
     }
 
-    public static void ConfigurePlatformWebView(WebView webView)
+    private void OnTouchOverlayHandlerChanged(object? sender, EventArgs e)
+    {
+#if ANDROID
+        if (TouchOverlayBorder.Handler?.PlatformView is Android.Views.View nativeOverlay)
+        {
+            nativeOverlay.Clickable = true;
+            nativeOverlay.SetOnTouchListener(new PetNativeTouchListener(() => TapPet()));
+        }
+#endif
+    }
+
+    private void OnPetContainerHandlerChanged(object? sender, EventArgs e)
+    {
+#if ANDROID
+        if (PetContainer.Handler?.PlatformView is Android.Views.View nativeGrid)
+        {
+            nativeGrid.Clickable = true;
+            nativeGrid.SetOnTouchListener(new PetNativeTouchListener(() => TapPet()));
+        }
+#endif
+    }
+
+    public static void ConfigurePlatformWebView(WebView webView, Action? onTapped = null)
     {
 #if ANDROID
         try
@@ -69,10 +149,20 @@ public partial class FinnyPetView : ContentView
                 nativeWebView.SetBackgroundColor(Android.Graphics.Color.Transparent);
                 nativeWebView.VerticalScrollBarEnabled = false;
                 nativeWebView.HorizontalScrollBarEnabled = false;
-                nativeWebView.Clickable = false;
                 nativeWebView.Focusable = false;
                 nativeWebView.FocusableInTouchMode = false;
-                nativeWebView.SetOnTouchListener(null);
+
+                if (onTapped != null)
+                {
+                    nativeWebView.Clickable = true;
+                    nativeWebView.SetOnTouchListener(new PetNativeTouchListener(onTapped));
+                }
+                else
+                {
+                    nativeWebView.Clickable = false;
+                    nativeWebView.SetOnTouchListener(null);
+                }
+
                 if (nativeWebView.Settings != null)
                 {
                     nativeWebView.Settings.DisplayZoomControls = false;
@@ -125,7 +215,7 @@ public partial class FinnyPetView : ContentView
 
     private void OnLoaded(object? sender, EventArgs e)
     {
-        ConfigurePlatformWebView(PetWebView);
+        ConfigurePlatformWebView(PetWebView, () => TapPet());
         ApplyAnimation(_currentEmotionGif, force: true);
 
         // В фоне прогреваем кэш остальных анимаций текущей стадии для мгновенного переключения
@@ -319,7 +409,6 @@ public partial class FinnyPetView : ContentView
 
     public void ReplayCurrent()
     {
-        if (_isReacting) return;
         _ = LoadAndRenderGifAsync(_currentEmotionGif);
     }
 
@@ -344,7 +433,7 @@ public partial class FinnyPetView : ContentView
                     PetWebView.Source = new HtmlWebViewSource { Html = html };
                     PetWebView.IsVisible = true;
                     ImgPetFallback.IsVisible = false;
-                    ConfigurePlatformWebView(PetWebView);
+                    ConfigurePlatformWebView(PetWebView, () => TapPet());
                 }
                 else
                 {
@@ -424,7 +513,9 @@ public partial class FinnyPetView : ContentView
 
     private async void OnPetTapped(object? sender, EventArgs e)
     {
-        if (_isReacting) return;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (now - _lastTapTime < 350) return;
+        _lastTapTime = now;
         _isReacting = true;
 
         try
@@ -474,15 +565,13 @@ public partial class FinnyPetView : ContentView
             if (!ct.IsCancellationRequested)
             {
                 ApplyAnimation(_currentEmotionGif, force: true);
+                _isReacting = false;
             }
         }
         catch (TaskCanceledException) { }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"[FinnyPetView] Error in OnPetTapped: {ex.Message}");
-        }
-        finally
-        {
             _isReacting = false;
         }
     }

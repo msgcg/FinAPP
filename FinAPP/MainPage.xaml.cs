@@ -80,7 +80,7 @@ public partial class MainPage : ContentPage
             });
         };
 
-        WvTaskResultFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny);
+        WvTaskResultFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => AudioService.Instance.PlaySfx("sfx_meow"));
 
         Loaded += OnPageLoaded;
     }
@@ -1219,7 +1219,7 @@ public partial class MainPage : ContentPage
         if (!string.IsNullOrEmpty(html))
         {
             WvTaskResultFinny.Source = new HtmlWebViewSource { Html = html };
-            FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny);
+            FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => AudioService.Instance.PlaySfx("sfx_meow"));
         }
 
         // 3. Плавное появление с подскоком персонажа
