@@ -802,5 +802,70 @@ public class GameEngineTests
         Assert.Equal(2, recordSuccess.AttemptsCount);
         Assert.Equal(55, recordSuccess.RewardCoins);
     }
+
+    [Fact]
+    public void EvaluateBudgetDiscipline_WithinLimits_AwardsBonusOncePerPeriod()
+    {
+        _engine.Profile.CurrentPeriod = 1;
+        _engine.Profile.BudgetBonusAwardedPeriod = 0;
+        _engine.Profile.PlannedObligatory = 150;
+        _engine.Profile.PlannedDiscretionary = 100;
+        _engine.Profile.ActualObligatory = 120;
+        _engine.Profile.ActualDiscretionary = 80;
+        int initialBalance = _engine.Profile.Balance;
+
+        // Первый вызов: награда начисляется
+        var eval1 = _engine.EvaluateBudgetDiscipline();
+        Assert.True(eval1.IsDisciplineKept);
+        Assert.True(eval1.BonusAwarded);
+        Assert.Equal(25, eval1.BonusAmount);
+        Assert.Equal(initialBalance + 25, _engine.Profile.Balance);
+        Assert.Equal(1, _engine.Profile.BudgetBonusAwardedPeriod);
+
+        // Повторный вызов в том же периоде: повторного начисления нет
+        var eval2 = _engine.EvaluateBudgetDiscipline();
+        Assert.True(eval2.IsDisciplineKept);
+        Assert.False(eval2.BonusAwarded);
+        Assert.Equal(initialBalance + 25, _engine.Profile.Balance);
+
+        // Переход в период 2: в новом периоде награду можно получить снова
+        _engine.Profile.CurrentPeriod = 2;
+        _engine.Profile.ActualObligatory = 100;
+        _engine.Profile.ActualDiscretionary = 70;
+        var eval3 = _engine.EvaluateBudgetDiscipline();
+        Assert.True(eval3.IsDisciplineKept);
+        Assert.True(eval3.BonusAwarded);
+        Assert.Equal(initialBalance + 50, _engine.Profile.Balance);
+        Assert.Equal(2, _engine.Profile.BudgetBonusAwardedPeriod);
+    }
+
+    [Fact]
+    public void EvaluateBudgetDiscipline_Overspent_DoesNotAwardBonus()
+    {
+        _engine.Profile.CurrentPeriod = 1;
+        _engine.Profile.BudgetBonusAwardedPeriod = 0;
+        _engine.Profile.PlannedObligatory = 150;
+        _engine.Profile.PlannedDiscretionary = 100;
+        _engine.Profile.ActualObligatory = 170; // Перерасход обязательных трат
+        _engine.Profile.ActualDiscretionary = 80;
+        int initialBalance = _engine.Profile.Balance;
+
+        var eval = _engine.EvaluateBudgetDiscipline();
+        Assert.False(eval.IsDisciplineKept);
+        Assert.False(eval.BonusAwarded);
+        Assert.Equal(0, eval.BonusAmount);
+        Assert.Equal(initialBalance, _engine.Profile.Balance);
+        Assert.Equal(0, _engine.Profile.BudgetBonusAwardedPeriod);
+    }
+
+    [Fact]
+    public void KidName_UpdateAndPersistence_ShouldRetainValue()
+    {
+        _engine.Profile.KidName = "Максим";
+        Assert.Equal("Максим", _engine.Profile.KidName);
+
+        _engine.Profile.KidName = "Алиса";
+        Assert.Equal("Алиса", _engine.Profile.KidName);
+    }
 }
 

@@ -76,6 +76,7 @@ public partial class MainPage : ContentPage
 
     // Ввод PIN-кода родителя
     private string _currentPinInput = "";
+    private string _setupPinEntered = "";
 
     // Активная задача
     private int _currentTaskIndex = 0;
@@ -113,6 +114,7 @@ public partial class MainPage : ContentPage
         };
 
         WvTaskResultFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvTaskResultFinny, () => OnTaskResultFinnyTapped(this, EventArgs.Empty));
+        WvBudgetComparisonFinny.HandlerChanged += (s, e) => FinnyPetView.ConfigurePlatformWebView(WvBudgetComparisonFinny, () => OnBudgetComparisonFinnyTapped(this, EventArgs.Empty));
 
         Loaded += OnPageLoaded;
     }
@@ -350,14 +352,32 @@ public partial class MainPage : ContentPage
     private TaskCompletionSource<string?>? _dialogPromptTcs;
     private TaskCompletionSource<string?>? _dialogActionSheetTcs;
 
-    private async Task ShowStyledAlertAsync(string title, string message, string icon = "ic_stat_balance.png", string buttonText = "Понятно")
+    private void SetupDialogHeader(string title, string? icon)
+    {
+        StylizedDialogTitle.Text = title;
+        bool hasIcon = !string.IsNullOrWhiteSpace(icon);
+        StylizedDialogIconContainer.IsVisible = hasIcon;
+        StylizedDialogHeaderGrid.ColumnSpacing = hasIcon ? 10 : 0;
+        if (hasIcon)
+        {
+            StylizedDialogIcon.Source = icon;
+            Grid.SetColumn(StylizedDialogTitle, 1);
+            Grid.SetColumnSpan(StylizedDialogTitle, 1);
+        }
+        else
+        {
+            Grid.SetColumn(StylizedDialogTitle, 0);
+            Grid.SetColumnSpan(StylizedDialogTitle, 2);
+        }
+    }
+
+    private async Task ShowStyledAlertAsync(string title, string message, string? icon = "ic_stat_balance.png", string buttonText = "Понятно")
     {
         _dialogAlertTcs?.TrySetCanceled();
         _dialogAlertTcs = new TaskCompletionSource<bool>();
 
-        StylizedDialogTitle.Text = title;
+        SetupDialogHeader(title, icon);
         StylizedDialogMessage.Text = message;
-        StylizedDialogIcon.Source = icon;
 
         StylizedDialogInputContainer.IsVisible = false;
         StylizedDialogOptionsScroll.IsVisible = false;
@@ -376,14 +396,13 @@ public partial class MainPage : ContentPage
         await AnimateHideStyledDialog();
     }
 
-    private async Task<bool> ShowStyledConfirmAsync(string title, string message, string icon = "ic_stat_balance.png", string confirmText = "Да", string cancelText = "Отмена", bool isDestructive = false)
+    private async Task<bool> ShowStyledConfirmAsync(string title, string message, string? icon = "ic_stat_balance.png", string confirmText = "Да", string cancelText = "Отмена", bool isDestructive = false)
     {
         _dialogAlertTcs?.TrySetCanceled();
         _dialogAlertTcs = new TaskCompletionSource<bool>();
 
-        StylizedDialogTitle.Text = title;
+        SetupDialogHeader(title, icon);
         StylizedDialogMessage.Text = message;
-        StylizedDialogIcon.Source = icon;
 
         StylizedDialogInputContainer.IsVisible = false;
         StylizedDialogOptionsScroll.IsVisible = false;
@@ -407,14 +426,13 @@ public partial class MainPage : ContentPage
         return result;
     }
 
-    private async Task<string?> ShowStyledPromptAsync(string title, string message, string icon = "ic_stat_balance.png", string acceptText = "ОК", string cancelText = "Отмена", string placeholder = "", Keyboard? keyboard = null, int maxLength = 40)
+    private async Task<string?> ShowStyledPromptAsync(string title, string message, string? icon = "ic_stat_balance.png", string acceptText = "ОК", string cancelText = "Отмена", string placeholder = "", Keyboard? keyboard = null, int maxLength = 40)
     {
         _dialogPromptTcs?.TrySetCanceled();
         _dialogPromptTcs = new TaskCompletionSource<string?>();
 
-        StylizedDialogTitle.Text = title;
+        SetupDialogHeader(title, icon);
         StylizedDialogMessage.Text = message;
-        StylizedDialogIcon.Source = icon;
 
         StylizedDialogEntry.Text = string.Empty;
         StylizedDialogEntry.Placeholder = placeholder;
@@ -443,14 +461,13 @@ public partial class MainPage : ContentPage
         return result;
     }
 
-    private async Task<string?> ShowStyledActionSheetAsync(string title, string message, string icon = "ic_stat_balance.png", string cancelText = "Отмена", params string[] options)
+    private async Task<string?> ShowStyledActionSheetAsync(string title, string message, string? icon = "ic_stat_balance.png", string cancelText = "Отмена", params string[] options)
     {
         _dialogActionSheetTcs?.TrySetCanceled();
         _dialogActionSheetTcs = new TaskCompletionSource<string?>();
 
-        StylizedDialogTitle.Text = title;
+        SetupDialogHeader(title, icon);
         StylizedDialogMessage.Text = message;
-        StylizedDialogIcon.Source = icon;
 
         StylizedDialogInputContainer.IsVisible = false;
         StylizedDialogOptionsContainer.Children.Clear();
@@ -876,7 +893,6 @@ public partial class MainPage : ContentPage
         _tempDisc = p.PlannedDiscretionary > 0 ? p.PlannedDiscretionary : 150;
         _tempSav = p.PlannedSavings > 0 ? p.PlannedSavings : 100;
 
-        BorderPlanFactCard.IsVisible = false;
         BorderBudgetAlert.IsVisible = false;
         LblComparePlanFactButton.Text = "Сравнить План и Факт";
 
@@ -1017,44 +1033,165 @@ public partial class MainPage : ContentPage
     private async void OnShowPlanFactClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
-        AudioService.Instance.PlaySfx("sfx_money");
+        await ShowBudgetComparisonModalAsync();
+    }
 
-        BorderPlanFactCard.IsVisible = !BorderPlanFactCard.IsVisible;
-        if (!BorderPlanFactCard.IsVisible)
-        {
-            LblComparePlanFactButton.Text = "Сравнить План и Факт";
-            return;
-        }
-
-        LblComparePlanFactButton.Text = "Скрыть сравнение";
-
+    private async Task ShowBudgetComparisonModalAsync()
+    {
         var p = _engine.Profile;
-        int obligDiff = p.SpentObligatory - _tempOblig;
-        int discDiff = p.SpentDiscretionary - _tempDisc;
 
-        LblPlanFactOblig.Text = $"План {_tempOblig} м. | Факт {p.SpentObligatory} м.";
-        LblPlanFactOblig.TextColor = obligDiff > 0 ? Color.FromArgb("#DC2626") : Color.FromArgb("#166534");
-
-        LblPlanFactDisc.Text = $"План {_tempDisc} м. | Факт {p.SpentDiscretionary} м.";
-        LblPlanFactDisc.TextColor = discDiff > 0 ? Color.FromArgb("#DC2626") : Color.FromArgb("#9D174D");
-
-        LblPlanFactSav.Text = $"План {_tempSav} м. | Факт {p.Savings} м.";
-        LblPlanFactSav.TextColor = Color.FromArgb("#1E40AF");
-
-        if (obligDiff > 0 || discDiff > 0)
+        // Префикс анимации в строгом соответствии со стадией развития Финни (Малыш / Юниор-подросток / Мастер)
+        string stagePrefix = p.Stage switch
         {
-            LblPlanFactStatusBadge.Text = "Есть перерасход!";
-            LblPlanFactStatusBadge.TextColor = Color.FromArgb("#DC2626");
-            LblPlanFactAdvice.Text = "Внимание: по одной из категорий факт превысил план. Старайся не превышать конверт!";
+            GrowthStage.Baby => "finny_baby",
+            GrowthStage.Teen => "finny_teen",
+            _ => "finny_master"
+        };
+
+        int obligPlan = _tempOblig > 0 ? _tempOblig : (p.PlannedObligatory > 0 ? p.PlannedObligatory : 250);
+        int discPlan = _tempDisc > 0 ? _tempDisc : (p.PlannedDiscretionary > 0 ? p.PlannedDiscretionary : 150);
+        int savPlan = _tempSav > 0 ? _tempSav : (p.PlannedSavings > 0 ? p.PlannedSavings : 100);
+
+        var (isDisciplineKept, bonusAwarded, bonusAmount, advice) = _engine.EvaluateBudgetDiscipline(obligPlan, discPlan);
+
+        int obligDiff = p.SpentObligatory - obligPlan;
+        int discDiff = p.SpentDiscretionary - discPlan;
+
+        LblBudgetCompOblig.Text = $"План {obligPlan} м. | Факт {p.SpentObligatory} м.";
+        LblBudgetCompOblig.TextColor = obligDiff > 0 ? Color.FromArgb("#DC2626") : Color.FromArgb("#166534");
+
+        LblBudgetCompDisc.Text = $"План {discPlan} м. | Факт {p.SpentDiscretionary} м.";
+        LblBudgetCompDisc.TextColor = discDiff > 0 ? Color.FromArgb("#DC2626") : Color.FromArgb("#6D28D9");
+
+        LblBudgetCompSav.Text = $"План {savPlan} м. | Копилка {p.Savings} м.";
+        LblBudgetCompSav.TextColor = Color.FromArgb("#B45309");
+
+        string gif;
+        if (isDisciplineKept)
+        {
+            // Звуковой эффект победы и соблюдения бюджета
+            AudioService.Instance.PlaySfx("sfx_success");
+
+            HeaderBudgetComparison.Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(Color.FromArgb("#059669"), 0.0f),
+                    new GradientStop(Color.FromArgb("#10B981"), 1.0f)
+                }
+            };
+            BudgetComparisonCard.Stroke = Color.FromArgb("#10B981");
+            ShadowBudgetComparison.Brush = Color.FromArgb("#10B981");
+
+            ImgBudgetComparisonIcon.Source = "ic_gift.png";
+            LblBudgetComparisonTitle.Text = "ОТЛИЧНАЯ ДИСЦИПЛИНА!";
+            BadgeBudgetComparisonReward.IsVisible = true;
+            BadgeBudgetComparisonReward.BackgroundColor = Color.FromArgb("#FEF08A");
+            LblBudgetComparisonReward.TextColor = Color.FromArgb("#854D0E");
+            LblBudgetComparisonReward.Text = bonusAwarded
+                ? $"+{bonusAmount} монет за соблюдение плана!"
+                : "Дисциплина бюджета соблюдена!";
+
+            LblBudgetComparisonAdviceHeader.Text = $"Мудрость {p.PetName}:";
+            LblBudgetComparisonAdviceHeader.TextColor = Color.FromArgb("#059669");
+            LblBudgetComparisonAdvice.Text = advice;
+            LblBudgetComparisonAdvice.TextColor = Color.FromArgb("#065F46");
+            BorderBudgetComparisonAdvice.BackgroundColor = Color.FromArgb("#F0FDF4");
+            BorderBudgetComparisonAdvice.Stroke = Color.FromArgb("#86EFAC");
+
+            BtnBudgetComparisonClose.BackgroundColor = Color.FromArgb("#10B981");
+            LblBudgetComparisonClose.Text = "Отлично! ➜";
+
+            gif = $"{stagePrefix}_proud.gif";
         }
         else
         {
-            LblPlanFactStatusBadge.Text = "В рамках плана ✓";
-            LblPlanFactStatusBadge.TextColor = Color.FromArgb("#166534");
-            LblPlanFactAdvice.Text = "Отличная дисциплина! Твои расходы строго в рамках запланированного бюджета.";
+            // Звуковой эффект предупреждения об ошибке
+            AudioService.Instance.PlaySfx("sfx_error");
+
+            HeaderBudgetComparison.Background = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1),
+                GradientStops = new GradientStopCollection
+                {
+                    new GradientStop(Color.FromArgb("#BE123C"), 0.0f),
+                    new GradientStop(Color.FromArgb("#E11D48"), 1.0f)
+                }
+            };
+            BudgetComparisonCard.Stroke = Color.FromArgb("#E11D48");
+            ShadowBudgetComparison.Brush = Color.FromArgb("#E11D48");
+
+            ImgBudgetComparisonIcon.Source = "ic_shield_white.png";
+            LblBudgetComparisonTitle.Text = "ВНИМАНИЕ: ПЕРЕРАСХОД!";
+            BadgeBudgetComparisonReward.IsVisible = true;
+            BadgeBudgetComparisonReward.BackgroundColor = Color.FromArgb("#FEE2E2");
+            LblBudgetComparisonReward.TextColor = Color.FromArgb("#991B1B");
+            LblBudgetComparisonReward.Text = "Превышение запланированного бюджета";
+
+            LblBudgetComparisonAdviceHeader.Text = $"Урок {p.PetName}:";
+            LblBudgetComparisonAdviceHeader.TextColor = Color.FromArgb("#BE123C");
+            LblBudgetComparisonAdvice.Text = advice;
+            LblBudgetComparisonAdvice.TextColor = Color.FromArgb("#881337");
+            BorderBudgetComparisonAdvice.BackgroundColor = Color.FromArgb("#FFF1F2");
+            BorderBudgetComparisonAdvice.Stroke = Color.FromArgb("#FECDD3");
+
+            BtnBudgetComparisonClose.BackgroundColor = Color.FromArgb("#6B7280");
+            LblBudgetComparisonClose.Text = "Буду стараться! ➜";
+
+            gif = $"{stagePrefix}_sad.gif";
         }
 
-        PetView.SetSpeechText("Вот как соотносятся твои планы и реальные расходы!");
+        RefreshUI();
+
+        // 1. Делаем контейнер видимым с начальным масштабом
+        ModalBudgetComparison.Opacity = 0;
+        ModalBudgetComparison.IsVisible = true;
+        BudgetComparisonCard.Scale = 0.88;
+        WvBudgetComparisonFinny.Scale = 0.85;
+
+        // 2. Загружаем свежий HTML для анимации Финни текущей стадии
+        string html = await FinnyPetView.GetFreshHtmlAsync(gif);
+        if (!string.IsNullOrEmpty(html))
+        {
+            WvBudgetComparisonFinny.Source = new HtmlWebViewSource { Html = html };
+            FinnyPetView.ConfigurePlatformWebView(WvBudgetComparisonFinny, () => OnBudgetComparisonFinnyTapped(this, EventArgs.Empty));
+        }
+
+        // 3. Плавная анимация появления
+        var f = ModalBudgetComparison.FadeToAsync(1.0, 160, Easing.CubicOut);
+        var s = BudgetComparisonCard.ScaleToAsync(1.0, 160, Easing.CubicOut);
+        var w = WvBudgetComparisonFinny.ScaleToAsync(1.0, 180, Easing.CubicOut);
+        await Task.WhenAll(f, s, w);
+    }
+
+    private long _lastBudgetFinnyTapTime = 0;
+    private async void OnBudgetComparisonFinnyTapped(object? sender, EventArgs e)
+    {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (now - _lastBudgetFinnyTapTime < 350) return;
+        _lastBudgetFinnyTapTime = now;
+
+        try
+        {
+            AudioService.Instance.PlaySfx("sfx_meow");
+            try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+            await WvBudgetComparisonFinny.ScaleToAsync(1.08, 100, Easing.CubicOut);
+            await WvBudgetComparisonFinny.ScaleToAsync(1.0, 100, Easing.CubicIn);
+        }
+        catch { }
+    }
+
+    private async void OnBudgetComparisonCloseClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        var f = ModalBudgetComparison.FadeToAsync(0.0, 120, Easing.CubicIn);
+        var s = BudgetComparisonCard.ScaleToAsync(0.88, 120, Easing.CubicIn);
+        await Task.WhenAll(f, s);
+        ModalBudgetComparison.IsVisible = false;
+        WvBudgetComparisonFinny.Source = null;
     }
 
     // =========================================================================
@@ -2656,35 +2793,138 @@ public partial class MainPage : ContentPage
         UpdatePinDisplay();
     }
 
-    private async void OnParentChangePinClicked(object? sender, EventArgs e)
+    private async void OnParentEditKidNameClicked(object? sender, EventArgs e)
     {
         if (sender is VisualElement v) await AnimateTap(v);
-        string? result = await ShowStyledPromptAsync(
-            "PIN-код родителей",
-            "Задайте 4-значный цифровой PIN для входа (или оставьте пустым для входа по арифметическому примеру):",
-            "ic_nav_parent.png",
-            "Сохранить", "Отмена", placeholder: "4 цифры", maxLength: 4, keyboard: Keyboard.Numeric);
+        AudioService.Instance.PlaySfx("sfx_money");
 
-        if (result != null)
+        string? result = await ShowStyledPromptAsync(
+            "Имя ребенка",
+            "Введите имя ребенка для профиля и персонализации обучения:",
+            "ic_kid_profile.png",
+            "Сохранить", "Отмена",
+            placeholder: _engine.Profile.KidName,
+            maxLength: 15);
+
+        if (!string.IsNullOrWhiteSpace(result))
         {
-            result = result.Trim();
-            if (result.Length == 4 && int.TryParse(result, out _))
+            string clean = result.Trim();
+            if (clean.Length >= 2 && clean.Length <= 15)
             {
-                _engine.Profile.ParentPin = result;
+                _engine.Profile.KidName = clean;
                 await _engine.SaveAsync();
-                PetView.SetSpeechText("Новый 4-значный PIN-код родителей успешно установлен!");
-            }
-            else if (string.IsNullOrEmpty(result))
-            {
-                _engine.Profile.ParentPin = string.Empty;
-                await _engine.SaveAsync();
-                PetView.SetSpeechText("PIN-код снят. Доступ теперь через арифметический пример.");
+                LblParentKidName.Text = clean;
+                AudioService.Instance.PlaySfx("sfx_success");
+                PetView.SetSpeechText($"Имя ребенка успешно сохранено: {clean}!");
             }
             else
             {
-                PetView.SetSpeechText("PIN-код должен состоять ровно из 4 цифр!");
+                AudioService.Instance.PlaySfx("sfx_error");
+                PetView.SetSpeechText("Имя ребенка должно быть от 2 до 15 символов.");
             }
         }
+    }
+
+    private async void OnParentChangePinClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        AudioService.Instance.PlaySfx("sfx_money");
+
+        _setupPinEntered = "";
+        UpdateSetupPinDisplay();
+
+        ModalPinSetup.Opacity = 0;
+        ModalPinSetup.IsVisible = true;
+        await ModalPinSetup.FadeToAsync(1.0, 160, Easing.CubicOut);
+    }
+
+    private void UpdateSetupPinDisplay()
+    {
+        int len = _setupPinEntered.Length;
+        string[] dots = new string[4];
+        for (int i = 0; i < 4; i++)
+        {
+            dots[i] = i < len ? "●" : "○";
+        }
+        LblSetupPinDisplay.Text = string.Join("   ", dots);
+        LblSetupPinDisplay.TextColor = Color.FromArgb("#520978");
+    }
+
+    private async void OnSetupPinDigitClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        AudioService.Instance.PlaySfx("sfx_money");
+        try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+
+        string? digit = null;
+        if (e is TappedEventArgs te && te.Parameter != null)
+        {
+            digit = te.Parameter.ToString();
+        }
+        else if (sender is Border b && b.Content is Label lbl)
+        {
+            digit = lbl.Text?.Trim();
+        }
+
+        if (!string.IsNullOrEmpty(digit) && _setupPinEntered.Length < 4)
+        {
+            _setupPinEntered += digit;
+            UpdateSetupPinDisplay();
+        }
+    }
+
+    private async void OnSetupPinClearClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        AudioService.Instance.PlaySfx("sfx_money");
+        try { HapticFeedback.Default.Perform(HapticFeedbackType.Click); } catch { }
+        _setupPinEntered = "";
+        UpdateSetupPinDisplay();
+    }
+
+    private async void OnSetupPinSubmitClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+
+        if (_setupPinEntered.Length == 4)
+        {
+            _engine.Profile.ParentPin = _setupPinEntered;
+            await _engine.SaveAsync();
+            LblParentPinButtonText.Text = "Сменить 4-значный PIN";
+            AudioService.Instance.PlaySfx("sfx_success");
+            PetView.SetSpeechText("Новый 4-значный PIN-код успешно установлен!");
+            await CloseSetupPinModalAsync();
+        }
+        else
+        {
+            AudioService.Instance.PlaySfx("sfx_error");
+            LblSetupPinDisplay.TextColor = Color.FromArgb("#EF4444");
+            PetView.SetSpeechText("PIN-код должен состоять ровно из 4 цифр!");
+        }
+    }
+
+    private async void OnSetupPinResetToMathClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        AudioService.Instance.PlaySfx("sfx_money");
+
+        _engine.Profile.ParentPin = string.Empty;
+        await _engine.SaveAsync();
+        LblParentPinButtonText.Text = "Установить 4-значный PIN";
+        PetView.SetSpeechText("PIN-код сброшен. Доступ теперь через математический пример.");
+        await CloseSetupPinModalAsync();
+    }
+
+    private async void OnSetupPinCloseClicked(object? sender, EventArgs e)
+    {
+        if (sender is VisualElement v) await AnimateTap(v);
+        await CloseSetupPinModalAsync();
+    }
+
+    private async Task CloseSetupPinModalAsync()
+    {
+        await ModalPinSetup.FadeToAsync(0.0, 120, Easing.CubicIn);
+        ModalPinSetup.IsVisible = false;
     }
 
     private async void OnParentUnlockClicked(object? sender, EventArgs e)
@@ -2709,8 +2949,11 @@ public partial class MainPage : ContentPage
 
         var p = _engine.Profile;
         SwitchParentDemoMode.IsToggled = p.IsDemoMode;
-        LblParentStats.Text = $"Ребенок: {p.KidName}\n" +
-            $"Периодов сыграно: {p.CurrentPeriod}\n" +
+        LblParentKidName.Text = p.KidName;
+        LblParentPinButtonText.Text = string.IsNullOrEmpty(p.ParentPin)
+            ? "Установить 4-значный PIN"
+            : "Сменить 4-значный PIN";
+        LblParentStats.Text = $"Периодов сыграно: {p.CurrentPeriod}\n" +
             $"Накоплено в копилке: {p.Savings} монет\n" +
             $"Заданий выполнено: {p.CompletedTasksCount}\n" +
             $"Текущий баланс: {p.Balance} монет";

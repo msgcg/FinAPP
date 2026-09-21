@@ -167,6 +167,40 @@ public class GameEngine
                       $"• Свободный остаток: {remainder} монет");
     }
 
+    // Оценка дисциплины бюджета и начисление награды (+25 монет) за соблюдение плана
+    public (bool IsDisciplineKept, bool BonusAwarded, int BonusAmount, string Advice) EvaluateBudgetDiscipline(int? planObligatory = null, int? planDiscretionary = null)
+    {
+        var p = Profile;
+        int plannedOblig = planObligatory ?? p.PlannedObligatory;
+        int plannedDisc = planDiscretionary ?? p.PlannedDiscretionary;
+
+        bool isDisciplineKept = p.ActualObligatory <= plannedOblig && p.ActualDiscretionary <= plannedDisc;
+        int bonus = 25;
+        bool bonusAwarded = false;
+
+        if (isDisciplineKept)
+        {
+            if (p.BudgetBonusAwardedPeriod != p.CurrentPeriod)
+            {
+                p.BudgetBonusAwardedPeriod = p.CurrentPeriod;
+                AddIncome(bonus, "Награда за соблюдение бюджета");
+                bonusAwarded = true;
+                _ = SaveAsync();
+            }
+
+            string advice = bonusAwarded
+                ? $"Ура! Ты строго соблюдаешь финансовый план и не выходишь за рамки конвертов! За дисциплину начислена награда: +{bonus} монет на баланс!"
+                : "Отличная дисциплина! Твои расходы строго в рамках запланированного бюджета. Награда за соблюдение плана в этом периоде уже была получена.";
+
+            return (true, bonusAwarded, bonus, advice);
+        }
+        else
+        {
+            string advice = "Внимание: по статьям расходов есть перерасход по сравнению с планом! Когда мы тратим больше намеченного, не остаётся денег на важные нужды и копилку мечты. Постарайся в следующем периоде не выходить за рамки конверта!";
+            return (false, false, 0, advice);
+        }
+    }
+
     // Пополнение копилки / цели (ТЗ п. 2.5.7)
     public (bool Success, string Message) DepositToSavings(int amount, FinancialGoal goal)
     {

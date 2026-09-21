@@ -94,6 +94,9 @@ public class PetProfile
     // Купленные нерегулярные товары (игрушки, предметы интерьера) текущей стадии роста (п. 2 ТЗ)
     public List<string> PurchasedNonRegularItemIds { get; set; } = new();
 
+    // Номер периода, за соблюдение бюджета которого уже начислена награда за дисциплину (+25 монет)
+    public int BudgetBonusAwardedPeriod { get; set; } = 0;
+
     public bool IsNonRegularItemPurchased(string itemId)
     {
         return PurchasedNonRegularItemIds != null && PurchasedNonRegularItemIds.Contains(itemId);
