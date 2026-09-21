@@ -70,8 +70,8 @@ conversions = [
     },
     {
         "name": "finny_master_sad",
-        "video": "sources/586104840_1789636324786831.mp4",
-        "start": 0.2, "duration": 2.3, "fps": 12, "key": "green"
+        "video": "sources/171991838_1789999841913639.mp4",
+        "start": 0.0, "duration": 2.25, "fps": 13, "key": "white"
     }
 ]
 
