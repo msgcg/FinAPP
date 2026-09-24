@@ -3,7 +3,7 @@
 [![Platform: Android](https://img.shields.io/badge/Platform-Android_8.0%2B-brightgreen.svg)](https://developer.android.com/)
 [![Framework: .NET MAUI 10](https://img.shields.io/badge/Framework-.NET_MAUI_10-512BD4.svg)](https://dotnet.microsoft.com/en-us/apps/maui)
 [![Tests: 39 Passed](https://img.shields.io/badge/Tests-39_Passed-success.svg)]()
-[![Hackathon: ЛЦТ 2026](https://img.shields.io/badge/Hackathon-LCT_2026-520978.svg)](https://leaders2026.innoagency.ru/)
+[![Hackathon: ЛЦТ 2026](https://img.shields.io/badge/Hackathon-ЛЦТ_2026-520978.svg)](https://leaders2026.innoagency.ru/)
 
 > Разработано в рамках хакатона «Лидеры цифровой трансформации 2026» по заказу **Департамента финансов города Москвы**.
 
