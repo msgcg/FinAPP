@@ -920,11 +920,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Cloud\\OneDrive - MSFT\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\FinAPP.Tests.csproj",
+      "projectUniqueName": "D:\\GDrive\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\FinAPP.Tests.csproj",
       "projectName": "FinAPP.Tests",
-      "projectPath": "D:\\Cloud\\OneDrive - MSFT\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\FinAPP.Tests.csproj",
+      "projectPath": "D:\\GDrive\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\FinAPP.Tests.csproj",
       "packagesPath": "C:\\Users\\maxxf\\.nuget\\packages\\",
-      "outputPath": "D:\\Cloud\\OneDrive - MSFT\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\obj\\",
+      "outputPath": "D:\\GDrive\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

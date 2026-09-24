@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "AomrlIhWks4=",
+  "dgSpecHash": "arqdIW23qG4=",
   "success": true,
-  "projectFilePath": "D:\\Cloud\\OneDrive - MSFT\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\FinAPP.Tests.csproj",
+  "projectFilePath": "D:\\GDrive\\Документы\\Visual Studio 2022\\FinAPP\\FinAPP.Tests\\FinAPP.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\maxxf\\.nuget\\packages\\coverlet.collector\\6.0.4\\coverlet.collector.6.0.4.nupkg.sha512",
     "C:\\Users\\maxxf\\.nuget\\packages\\microsoft.codecoverage\\17.14.1\\microsoft.codecoverage.17.14.1.nupkg.sha512",
